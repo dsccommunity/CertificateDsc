@@ -1,4 +1,4 @@
-﻿configuration SSL
+configuration SSL
 {
     param (
         [Parameter(Mandatory=$true)] 
@@ -8,14 +8,14 @@
     Import-DscResource -ModuleName xCertificate
     Node 'localhost'
     {
-	    xCertReq SSLCert
-	    {
-		    CARootName                = 'test-dc01-ca'
-		    CAServerFQDN              = 'dc01.test.pha'
-		    Subject                   = 'foodomain.test.net'
-		    AutoRenew                 = $true
-		    Credential                = $Credential
-	    }
+        xCertReq SSLCert
+        {
+            CARootName                = 'test-dc01-ca'
+            CAServerFQDN              = 'dc01.test.pha'
+            Subject                   = 'foodomain.test.net'
+            AutoRenew                 = $true
+            Credential                = $Credential
+        }
     }
 }
 $configData = @{

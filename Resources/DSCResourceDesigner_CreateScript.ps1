@@ -1,4 +1,4 @@
-﻿$modules = 'C:\Program Files\WindowsPowerShell\Modules\'
+$modules = 'C:\Program Files\WindowsPowerShell\Modules\'
 $modulename = 'xCertificate'
 $Description = 'This module includes DSC resources that simplify administration of certificates on a Windows Server'
 
@@ -83,12 +83,12 @@ When making changes to these resources, we suggest the following practice
 1. Update the following names by replacing MSFT with your company/community name
 and replacing the **"x" with **"c" (short for "Community") or another prefix of your
 choice
- -	Module name (ex: xModule becomes cModule)
- -	Resource folder (ex: MSFT\_xResource becomes Contoso\_xResource)
- -	Resource Name (ex: MSFT\_xResource becomes Contoso\_cResource)
- -	Resource Friendly Name (ex: xResource becomes cResource)
- -	MOF class name (ex: MSFT\_xResource becomes Contoso\_cResource)
- -	Filename for the <resource\>.schema.mof (ex: MSFT\_xResource.schema.mof becomes Contoso\_cResource.schema.mof)
+ -    Module name (ex: xModule becomes cModule)
+ -    Resource folder (ex: MSFT\_xResource becomes Contoso\_xResource)
+ -    Resource Name (ex: MSFT\_xResource becomes Contoso\_cResource)
+ -    Resource Friendly Name (ex: xResource becomes cResource)
+ -    MOF class name (ex: MSFT\_xResource becomes Contoso\_cResource)
+ -    Filename for the <resource\>.schema.mof (ex: MSFT\_xResource.schema.mof becomes Contoso\_cResource.schema.mof)
 
 2. Update module and metadata information in the module manifest  
 3. Update any configuration that use these resources
@@ -103,7 +103,7 @@ Versions
 - Initial release with the following resources
 "@
 foreach ($res in $P1) {$MD += @"
-	- $($res.Name)
+    - $($res.Name)
 
 "@
     }
@@ -124,14 +124,14 @@ Examples
         Import-DscResource -ModuleName xCertificate
         Node 'localhost'
         {
-	        xCertReq SSLCert
-	        {
-		        CARootName                = 'test-dc01-ca'
-		        CAServerFQDN              = 'dc01.test.pha'
-		        Subject                   = 'foodomain.test.net'
-		        AutoRenew                 = $true
-		        Credential                = $Credential
-	        }
+            xCertReq SSLCert
+            {
+                CARootName                = 'test-dc01-ca'
+                CAServerFQDN              = 'dc01.test.pha'
+                Subject                   = 'foodomain.test.net'
+                AutoRenew                 = $true
+                Credential                = $Credential
+            }
         }
     }
     $configData = @{
