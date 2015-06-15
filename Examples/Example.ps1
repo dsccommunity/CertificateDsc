@@ -1,3 +1,9 @@
+<#
+ # This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword to $true.
+ # Storing passwords in plain text is not a good practice and is presented only for simplicity and demonstration purposes.
+ # To learn how to securely store credentials through the use of certificates, please refer to the following blog post:
+ # http://blogs.msdn.com/b/powershell/archive/2014/01/31/want-to-secure-credentials-in-windows-powershell-desired-state-configuration.aspx
+ #>
 configuration SSL
 {
     param (
