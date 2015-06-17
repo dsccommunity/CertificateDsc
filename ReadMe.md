@@ -68,14 +68,10 @@ We reserve resource and module names without prefixes ("x" or "c") for future us
 Versions
 --------
 
-**0.1.0.0**
+### 1.0.0.0
 
-- Initial release with the following resources
-	- Subject
-	- CAServerFQDN
-	- CARootName
-	- Credential
-	- AutoRenew
+* Initial public release of xCertificate module with following resources
+	* xCertReq
 
 Examples
 --------
