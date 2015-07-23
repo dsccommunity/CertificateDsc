@@ -34,6 +34,10 @@ Resources
 Versions
 --------
 
+### 1.0.1.0
+
+* Minor documentation updates
+
 ### 1.0.0.0
 
 * Initial public release of xCertificate module with following resources
