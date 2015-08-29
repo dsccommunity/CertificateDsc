@@ -1,14 +1,17 @@
 #---------------------------------# 
 #      environment configuration  # 
 #---------------------------------# 
+# This is necessary to use WMF5
+os: unstable
 version: 1.1.{build}.0
 install: 
-  - cinst -y pester
-  - git clone https://github.com/PowerShell/DscResource.Tests
-  - ps: Push-Location
-  - cd DscResource.Tests
-  - ps: Import-Module .\TestHelper.psm1 -force
-  - ps: Pop-Location
+    - cinst -y pester
+    - git clone https://github.com/PowerShell/DscResource.Tests
+    - ps: Push-Location
+    - cd DscResource.Tests
+    - ps: Import-Module .\TestHelper.psm1 -force
+    - ps: Pop-Location
+    - ps: nuget.exe install xDscResourceDesigner -source 'https://www.powershellgallery.com/api/v2' -outputDirectory "$env:USERPROFILE\Documents\WindowsPowerShell\Modules\" -ExcludeVersion
 
 #---------------------------------# 
 #      build configuration        # 
