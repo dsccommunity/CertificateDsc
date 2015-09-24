@@ -218,6 +218,10 @@ function Test-TargetResource
         $Store = 'My' ,
 
         [Parameter()]
+        [bool]
+        $Exportable = $false ,
+
+        [Parameter()]
         [PSCredential]
         $Credential
     )
