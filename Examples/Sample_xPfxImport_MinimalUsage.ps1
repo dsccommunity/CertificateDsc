@@ -5,7 +5,7 @@ Configuration MyNode
         $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
     )
 
-    Import-DscResource -ModuleName xPKI
+    Import-DscResource -ModuleName xCertificate
 
     Node $AllNodes.NodeName
     {
