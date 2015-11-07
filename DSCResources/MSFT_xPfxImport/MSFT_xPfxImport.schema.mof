@@ -1,0 +1,10 @@
+[ClassVersion("1.0"), FriendlyName("xPfxImport")]
+class MSFT_xPfxImport : OMI_BaseResource
+{
+[Key] string Thumbprint;
+[Key] string Path;
+[write,ValueMap{"LocalMachine"},Values{"LocalMachine"}] string Location;
+[write] string Store;
+[write] boolean Exportable;
+[write,EmbeddedInstance("MSFT_Credential")] string Credential;
+};

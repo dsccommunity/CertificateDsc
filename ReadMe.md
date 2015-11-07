@@ -31,6 +31,16 @@ Resources
 - **Credential**: The credentials that will be used to access the template in the Certificate Authority
 - **AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration
 
+**xPfxImport** resource has following properties
+
+- **Thumbprint**: The thumbprint (unique identifier) of the certificate you're importing.
+- **Path**: The path to the PFX file you want to import.
+- **Location**: Currently the only valid value here is `LocalMachine`.
+- **Store**: Defaults to `My` (the personal store) but can be any store that is valid on the machine (for example, `WebHosting`).
+- **Exportable**: Defaults to `$false`. Determines whether the private key is exportable from the machine after you import it.
+- **Credential**: A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+
+
 Versions
 --------
 
@@ -46,45 +56,75 @@ Versions
 Examples
 --------
 
+## xCertReq
+
 **Example 1**:  Request and Accept a certificate from an Active Directory Root Certificate Authority.
 
-    configuration SSL
-    {
-        param (
-            [Parameter(Mandatory=$true)] 
-            [ValidateNotNullorEmpty()] 
-            [PsCredential] $Credential 
-            )
-        Import-DscResource -ModuleName xCertificate
-        Node 'localhost'
-        {
-		xCertReq SSLCert
+```powershell
+configuration SSL
+{
+param (
+    [Parameter(Mandatory=$true)] 
+    [ValidateNotNullorEmpty()] 
+    [PsCredential] $Credential 
+    )
+Import-DscResource -ModuleName xCertificate
+Node 'localhost'
+{
+	xCertReq SSLCert
 
-	        {
-		        
-			CARootName                = 'test-dc01-ca'
+	{
+		
+		CARootName                = 'test-dc01-ca'
 
-		        CAServerFQDN              = 'dc01.test.pha'
+		CAServerFQDN              = 'dc01.test.pha'
 
-		        Subject                   = 'foodomain.test.net'
+		Subject                   = 'foodomain.test.net'
 
-		        AutoRenew                 = $true
+		AutoRenew                 = $true
 
-		        Credential                = $Credential
+		Credential                = $Credential
 
-	        }
-        }
-    }
-    $configData = @{
-        AllNodes = @(
-            @{
-                NodeName                    = 'localhost';
-                PSDscAllowPlainTextPassword = $true
-                }
-            )
-        }
-    SSL -ConfigurationData $configData -Credential (get-credential) -OutputPath 'c:\SSLConfig'
-    Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\SSLConfig'
+	}
+}
+}
+$configData = @{
+AllNodes = @(
+    @{
+	NodeName                    = 'localhost';
+	PSDscAllowPlainTextPassword = $true
+	}
+    )
+}
+SSL -ConfigurationData $configData -Credential (get-credential) -OutputPath 'c:\SSLConfig'
+Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\SSLConfig'
 
-    # Validate results
-    Get-ChildItem Cert:\LocalMachine\My
+# Validate results
+Get-ChildItem Cert:\LocalMachine\My
+```
+
+## xPfxImport
+
+### Simple Usage
+
+```powershell
+xPfxImport CompanyCert
+{
+    Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
+    Path = '\\Server\Share\Certificates\CompanyCert.pfx'
+    Credential = $PfxPassword
+}
+```
+
+### Used with xWebAdministration Resources
+
+```powershell
+xPfxImport CompanyCert
+{
+    Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
+    Path = '\\Server\Share\Certificates\CompanyCert.pfx'
+    Store = 'WebHosting'
+    Credential = $PfxPassword
+    DependsOn = '[WindowsFeature]IIS'
+}
+```
