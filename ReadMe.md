@@ -44,6 +44,9 @@ Resources
 Versions
 --------
 
+### 1.1.0.0
+* Added new resource: xPfxImport
+
 ### 1.0.1.0
 
 * Minor documentation updates
