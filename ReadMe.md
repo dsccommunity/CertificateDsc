@@ -40,9 +40,18 @@ Resources
 - **Exportable**: Defaults to `$false`. Determines whether the private key is exportable from the machine after you import it.
 - **Credential**: A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
 
+**xCertificate** resource has following properties
+
+- **Thumbprint**: The thumbprint (unique identifier) of the certificate you're importing.
+- **Path**: The path to the PFX file you want to import.
+- **Location**: Currently the only valid value here is `LocalMachine`.
+- **Store**: Defaults to `My` (the personal store) but can be any store that is valid on the machine (for example, `WebHosting`).
 
 Versions
 --------
+
+### Unreleased
+* Added new resource: xCertificateImport
 
 ### 1.1.0.0
 * Added new resource: xPfxImport
@@ -67,9 +76,9 @@ Examples
 configuration SSL
 {
 param (
-    [Parameter(Mandatory=$true)] 
-    [ValidateNotNullorEmpty()] 
-    [PsCredential] $Credential 
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullorEmpty()]
+    [PsCredential] $Credential
     )
 Import-DscResource -ModuleName xCertificate
 Node 'localhost'
@@ -77,7 +86,7 @@ Node 'localhost'
 	xCertReq SSLCert
 
 	{
-		
+
 		CARootName                = 'test-dc01-ca'
 
 		CAServerFQDN              = 'dc01.test.pha'
@@ -129,5 +138,18 @@ xPfxImport CompanyCert
     Store = 'WebHosting'
     Credential = $PfxPassword
     DependsOn = '[WindowsFeature]IIS'
+}
+```
+
+## xCertificateImport
+
+**Example 1**: Import public key certificate into Trusted Root store
+
+```powershell
+xCertificateImport MyTrustedRoot
+{
+    Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
+    Store = "Root"
+    Path = '\\Server\Share\Certificates\MyTrustedRoot.cer'
 }
 ```
