@@ -40,9 +40,9 @@ Resources
 - **Exportable**: Defaults to `$false`. Determines whether the private key is exportable from the machine after you import it.
 - **Credential**: A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
 
+## Versions
 
-Versions
---------
+### Unreleased
 
 ### 1.1.0.0
 * Added new resource: xPfxImport
