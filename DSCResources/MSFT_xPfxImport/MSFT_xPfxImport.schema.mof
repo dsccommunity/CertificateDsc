@@ -2,7 +2,7 @@
 class MSFT_xPfxImport : OMI_BaseResource
 {
 [Key] string Thumbprint;
-[write] string Path;
+[Required] string Path;
 [Key,ValueMap{"LocalMachine", "CurrentUser"},Values{"LocalMachine", "CurrentUser"}] string Location;
 [Key,ValueMap{"TrustedPublisher", "ClientAuthIssuer", "Remote Desktop", "Root", "TrustedDevices", "WebHosting", "CA", "AuthRoot", "TrustedPeople", "My", "SmartCardRoot", "Trust", "Disallowed"},Values{"TrustedPublisher", "ClientAuthIssuer", "Remote Desktop", "Root", "TrustedDevices", "WebHosting", "CA", "AuthRoot", "TrustedPeople", "My", "SmartCardRoot", "Trust", "Disallowed"}] string Store;
 [write] boolean Exportable;

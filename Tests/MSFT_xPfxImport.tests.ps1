@@ -132,7 +132,7 @@ InModuleScope $moduleName {
     Describe 'Get-TargetResource' {
         $null | Set-Content -Path $validPath
 
-        $result = Get-TargetResource -Thumbprint $validThumbprint -Path $validPath
+        $result = Get-TargetResource @PresentParams
         It 'should return a hashtable' {
             ($result -is [hashtable]) | Should Be $true
         }
@@ -145,7 +145,7 @@ InModuleScope $moduleName {
         $null | Set-Content -Path $validPath
 
         It 'should return a bool' {
-            ((Test-TargetResource -Thumbprint $validThumbprint -Path $validPath) -is [bool]) | Should Be $true
+            ((Test-TargetResource @PresentParams) -is [bool]) | Should Be $true
         }
         It 'Fails when valid path + thumbprint and Ensure is Absent' {
             Mock Get-TargetResource { 
