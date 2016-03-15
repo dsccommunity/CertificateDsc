@@ -143,7 +143,7 @@ InModuleScope $moduleName {
         It 'should return a bool' {
             ((Test-TargetResource -Thumbprint $validThumbprint -Path $validPath) -is [bool]) | Should Be $true
         }
-        It 'Fails when valid path and thumbprint and Ensure is Present' {
+        It 'Fails when valid path + thumbprint and Ensure is Absent' {
             Mock Get-TargetResource { 
                 return @{
                     Thumbprint = $validThumbprint
@@ -154,7 +154,7 @@ InModuleScope $moduleName {
         
         Test-TargetResource @PresentParams | Should Be $false
         }
-        It 'Success when valid path and thumbprint and Ensure is Present' {
+        It 'Success when valid path + thumbprint and Ensure is Present' {
             Mock Get-TargetResource { 
                 return @{
                     Thumbprint = $validThumbprint
