@@ -154,11 +154,12 @@ function Get-TargetResource
         [String]
         $Path ,
 
-        [Parameter()]
+        [Parameter(Mandatory)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [String]
         $Location = 'LocalMachine' ,
 
+        [Parameter(Mandatory)]
         [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
         [System.String]
         $Store = 'My',
@@ -171,6 +172,7 @@ function Get-TargetResource
         [PSCredential]
         $Credential,
 
+        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
@@ -208,11 +210,12 @@ function Test-TargetResource
         [String]
         $Path ,
 
-        [Parameter()]
+        [Parameter(Mandatory)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [String]
         $Location = 'LocalMachine' ,
 
+        [Parameter(Mandatory)]
         [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
         [System.String]
         $Store = 'My',
@@ -225,6 +228,7 @@ function Test-TargetResource
         [PSCredential]
         $Credential,
 
+        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
@@ -250,11 +254,12 @@ function Set-TargetResource
         [String]
         $Path ,
 
-        [Parameter()]
+        [Parameter(Mandatory)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [String]
         $Location = 'LocalMachine' ,
 
+        [Parameter(Mandatory)]
         [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
         [System.String]
         $Store = 'My',
@@ -267,6 +272,7 @@ function Set-TargetResource
         [PSCredential]
         $Credential,
 
+        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
