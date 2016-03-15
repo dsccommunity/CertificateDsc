@@ -29,12 +29,16 @@ InModuleScope $moduleName {
         Thumbprint = $validThumbprint
         Path = $validPath
         Ensure = 'Present'
+        Location = 'LocalMachine'
+        Store = 'My'
     }
 
     $AbsentParams = @{
         Thumbprint = $validThumbprint
         Path = $validPath
         Ensure = 'Absent'
+        Location = 'LocalMachine'
+        Store = 'My'
     }
     
     Describe 'Validate-PfxPath' {
