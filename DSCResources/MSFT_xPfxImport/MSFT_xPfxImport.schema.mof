@@ -2,9 +2,9 @@
 class MSFT_xPfxImport : OMI_BaseResource
 {
 [Key] string Thumbprint;
-[Key] string Path;
-[write,ValueMap{"LocalMachine", "CurrentUser"},Values{"LocalMachine", "CurrentUser"}] string Location;
-[Write,ValueMap{"TrustedPublisher", "ClientAuthIssuer", "Remote Desktop", "Root", "TrustedDevices", "WebHosting", "CA", "AuthRoot", "TrustedPeople", "My", "SmartCardRoot", "Trust", "Disallowed"},Values{"TrustedPublisher", "ClientAuthIssuer", "Remote Desktop", "Root", "TrustedDevices", "WebHosting", "CA", "AuthRoot", "TrustedPeople", "My", "SmartCardRoot", "Trust", "Disallowed"}] string Store;
+[write] string Path;
+[Key,ValueMap{"LocalMachine", "CurrentUser"},Values{"LocalMachine", "CurrentUser"}] string Location;
+[Key,ValueMap{"TrustedPublisher", "ClientAuthIssuer", "Remote Desktop", "Root", "TrustedDevices", "WebHosting", "CA", "AuthRoot", "TrustedPeople", "My", "SmartCardRoot", "Trust", "Disallowed"},Values{"TrustedPublisher", "ClientAuthIssuer", "Remote Desktop", "Root", "TrustedDevices", "WebHosting", "CA", "AuthRoot", "TrustedPeople", "My", "SmartCardRoot", "Trust", "Disallowed"}] string Store;
 [write] boolean Exportable;
 [write,EmbeddedInstance("MSFT_Credential")] string Credential;
 [Write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
