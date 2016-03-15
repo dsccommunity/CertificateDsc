@@ -160,8 +160,8 @@ function Get-TargetResource
         $Location = 'LocalMachine' ,
 
         [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
-		[System.String]
-		$Store = 'My',
+        [System.String]
+        $Store = 'My',
 
         [Parameter()]
         [bool]
@@ -172,8 +172,8 @@ function Get-TargetResource
         $Credential,
 
         [ValidateSet('Present', 'Absent')]
-		[System.String]
-		$Ensure = 'Present'
+        [System.String]
+        $Ensure = 'Present'
     )
 
     $CheckEnsure = [Bool](
@@ -214,8 +214,8 @@ function Test-TargetResource
         $Location = 'LocalMachine' ,
 
         [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
-		[System.String]
-		$Store = 'My',
+        [System.String]
+        $Store = 'My',
 
         [Parameter()]
         [bool]
@@ -226,8 +226,8 @@ function Test-TargetResource
         $Credential,
 
         [ValidateSet('Present', 'Absent')]
-		[System.String]
-		$Ensure = 'Present'
+        [System.String]
+        $Ensure = 'Present'
     )
 
     $result = @(Get-TargetResource @PSBoundParameters)
@@ -256,8 +256,8 @@ function Set-TargetResource
         $Location = 'LocalMachine' ,
 
         [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
-		[System.String]
-		$Store = 'My',
+        [System.String]
+        $Store = 'My',
 
         [Parameter()]
         [bool]
@@ -268,8 +268,8 @@ function Set-TargetResource
         $Credential,
 
         [ValidateSet('Present', 'Absent')]
-		[System.String]
-		$Ensure = 'Present'
+        [System.String]
+        $Ensure = 'Present'
     )
 
     $certPath = 'Cert:' |
