@@ -176,9 +176,20 @@ function Get-TargetResource
 		$Ensure = 'Present'
     )
 
+    $CheckEnsure = [Bool](
+                        'Cert:' | 
+                        Join-Path -ChildPath $Location | 
+                        Join-Path -ChildPath $Store | 
+                        Get-ChildItem | 
+                        Where-Object -FilterScript {$_.Thumbprint -ieq $Thumbprint}
+                    )
+    if ($CheckEnsure){$Ensure = 'Present'}
+    else {$Ensure = 'Absent'}
+
     @{
         Thumbprint = $Thumbprint
         Path       = $Path
+        Ensure     = $Ensure
     }
 }
 
@@ -219,15 +230,10 @@ function Test-TargetResource
 		$Ensure = 'Present'
     )
 
-    [Bool](
-        'Cert:' | 
-        Join-Path -ChildPath $Location | 
-        Join-Path -ChildPath $Store | 
-        Get-ChildItem | 
-        Where-Object -FilterScript {
-            $_.Thumbprint -ieq $Thumbprint 
-        }
-    )
+    $result = @(Get-TargetResource @PSBoundParameters)
+    if ($Ensure -ne $result.Ensure) { return $false }
+    elseif ($Ensure -eq 'Present' -and ($result.Target -ne $Target)) { return $false }
+    return $true
 }
 
 function Set-TargetResource 
@@ -269,20 +275,31 @@ function Set-TargetResource
     $certPath = 'Cert:' |
     Join-Path -ChildPath $Location |
     Join-Path -ChildPath $Store
-    if ($PSCmdlet.ShouldProcess("Importing PFX '$Path' into '$certPath'")) 
+
+
+    if ($Ensure -ieq 'Present')
     {
-        $param = @{
-            Exportable        = $Exportable
-            CertStoreLocation = $certPath
-            FilePath          = $Path
-            Verbose           = $VerbosePreference
-        }
-        if ($Credential) 
+        if ($PSCmdlet.ShouldProcess("Importing PFX '$Path' into '$certPath'")) 
         {
-            $param['Password'] = $Credential.Password
+            $param = @{
+                Exportable        = $Exportable
+                CertStoreLocation = $certPath
+                FilePath          = $Path
+                Verbose           = $VerbosePreference
+            }
+            if ($Credential) 
+            {
+                $param['Password'] = $Credential.Password
+            }
+            Import-PfxCertificate @param
         }
-        Import-PfxCertificate @param
     }
+
+    elseif ($Ensure -ieq 'Absent')
+    {
+        Get-ChildItem -Path $certPath | Where-Object {$_.Thumbprint -ieq $thumbprint} | Remove-Item -Force
+    }
+
 }
 
 Export-ModuleMember -Function *-TargetResource
