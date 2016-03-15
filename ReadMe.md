@@ -35,14 +35,18 @@ Resources
 
 - **Thumbprint**: The thumbprint (unique identifier) of the certificate you're importing.
 - **Path**: The path to the PFX file you want to import.
-- **Location**: Currently the only valid value here is `LocalMachine`.
+- **Location**: 'LocalMachine' or 'CurrentUser
 - **Store**: Defaults to `My` (the personal store) but can be any store that is valid on the machine (for example, `WebHosting`).
 - **Exportable**: Defaults to `$false`. Determines whether the private key is exportable from the machine after you import it.
 - **Credential**: A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+- **Ensure**: Present or Absent; defines is a certificate should be installed if set to absent it will be removed it available.
 
 ## Versions
 
 ### Unreleased
+* Updated xPfxImport with new Ensure support
+* Updated xPfxImport with support for the CurrentUser value
+* Updated xPfxImport with validationset for the Store parameter
 
 ### 1.1.0.0
 * Added new resource: xPfxImport
