@@ -160,7 +160,6 @@ function Get-TargetResource
         $Location = 'LocalMachine' ,
 
         [Parameter(Mandatory)]
-        [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
         [System.String]
         $Store = 'My',
 
@@ -178,10 +177,17 @@ function Get-TargetResource
         $Ensure = 'Present'
     )
 
-    $CheckEnsure = [Bool](
-                        'Cert:' | 
+    $CertificateStore = 'Cert:' | 
                         Join-Path -ChildPath $Location | 
-                        Join-Path -ChildPath $Store | 
+                        Join-Path -ChildPath $Store
+
+    if ((Test-Path $CertificateStore) -eq $false)
+    {
+        throw [System.ArgumentException]"Certificate Store '$Store' not found."
+    }
+    
+    $CheckEnsure = [Bool](
+                        $CertificateStore | 
                         Get-ChildItem | 
                         Where-Object -FilterScript {$_.Thumbprint -ieq $Thumbprint}
                     )
@@ -216,7 +222,6 @@ function Test-TargetResource
         $Location = 'LocalMachine' ,
 
         [Parameter(Mandatory)]
-        [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
         [System.String]
         $Store = 'My',
 
@@ -260,7 +265,6 @@ function Set-TargetResource
         $Location = 'LocalMachine' ,
 
         [Parameter(Mandatory)]
-        [ValidateSet('TrustedPublisher', 'ClientAuthIssuer', 'Remote Desktop', 'Root', 'TrustedDevices', 'WebHosting', 'CA', 'AuthRoot', 'TrustedPeople', 'My', 'SmartCardRoot', 'Trust', 'Disallowed')]
         [System.String]
         $Store = 'My',
 
