@@ -1,34 +1,34 @@
 #Requires -Version 4.0
 
 <#
-.SYNOPSIS
-    Validates the existence of a file at a specific path.
+        .SYNOPSIS
+        Validates the existence of a file at a specific path.
 
-.PARAMETER Path
-    The location of the file. Supports any path that Test-Path supports.
+        .PARAMETER Path
+        The location of the file. Supports any path that Test-Path supports.
 
-.PARAMETER Quiet
-    Returns $false if the file does not exist. By default this function throws an exception if the file is missing.
+        .PARAMETER Quiet
+        Returns $false if the file does not exist. By default this function throws an exception if the file is missing.
 
-.EXAMPLE
-    Validate-PfxPath -Path '\\server\share\Certificates\mycert.pfx'
+        .EXAMPLE
+        Validate-PfxPath -Path '\\server\share\Certificates\mycert.pfx'
 
-.EXAMPLE
-    Validate-PfxPath -Path 'C:\certs\my_missing.pfx' -Quiet
+        .EXAMPLE
+        Validate-PfxPath -Path 'C:\certs\my_missing.pfx' -Quiet
 
-.EXAMPLE
-    'D:\CertRepo\a_cert.pfx' | Validate-PfxPath
+        .EXAMPLE
+        'D:\CertRepo\a_cert.pfx' | Validate-PfxPath
 
-.EXAMPLE
-    Get-ChildItem D:\CertRepo\*.pfx | Validate-PfxPath
+        .EXAMPLE
+        Get-ChildItem D:\CertRepo\*.pfx | Validate-PfxPath
 #>
 function Validate-PfxPath 
 {
     [CmdletBinding()]
     param(
         [Parameter(
-            Mandatory,
-            ValueFromPipeline
+                Mandatory,
+                ValueFromPipeline
         )]
         [String[]]
         $Path ,
@@ -59,31 +59,31 @@ function Validate-PfxPath
 }
 
 <#
-.SYNOPSIS
-    Validates whether a given certificate is valid based on the hash algoritms available on the system.
+        .SYNOPSIS
+        Validates whether a given certificate is valid based on the hash algoritms available on the system.
 
-.PARAMETER Thumbprint
-    One or more thumbprints to validate.
+        .PARAMETER Thumbprint
+        One or more thumbprints to validate.
 
-.PARAMETER Quiet
-    Returns $false if the thumbprint is not valid. By default this function throws an exception if validation fails.
+        .PARAMETER Quiet
+        Returns $false if the thumbprint is not valid. By default this function throws an exception if validation fails.
 
-.EXAMPLE
-    Validate-Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
+        .EXAMPLE
+        Validate-Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
 
-.EXAMPLE
-    Validate-Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de,0000e3a5a7991cb6ed3cd5dd01045edf7e220000 -Quiet
+        .EXAMPLE
+        Validate-Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de,0000e3a5a7991cb6ed3cd5dd01045edf7e220000 -Quiet
 
-.EXAMPLE
-    gci Cert:\LocalMachine -Recurse | ? { $_.Thumbprint } | select -exp Thumbprint | Validate-Thumbprint -Verbose
+        .EXAMPLE
+        gci Cert:\LocalMachine -Recurse | ? { $_.Thumbprint } | select -exp Thumbprint | Validate-Thumbprint -Verbose
 #>
 function Validate-Thumbprint 
 {
     [CmdletBinding()]
     param(
         [Parameter(
-            Mandatory,
-            ValueFromPipeline
+                Mandatory,
+                ValueFromPipeline
         )]
         [ValidateNotNullOrEmpty()]
         [String[]]
@@ -96,15 +96,18 @@ function Validate-Thumbprint
 
     Begin 
     {
-        $validHashes = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
+        $validHashes = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
+        Where-Object -FilterScript {
             $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-            $_.Name -cmatch 'Managed$'
-        } | ForEach-Object {
-            New-Object PSObject -Property @{
-                Hash = $_.BaseType.Name
+            ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+        } |
+        ForEach-Object -Process {
+            New-Object -TypeName PSObject -Property @{
+                Hash    = $_.BaseType.Name
                 BitSize = (New-Object $_).HashSize
-            } | Add-Member -MemberType ScriptProperty -Name HexLength -Value { 
-                $this.BitSize / 4 
+            } |
+            Add-Member -MemberType ScriptProperty -Name HexLength -Value {
+                $this.BitSize / 4
             } -PassThru
         }
     }
@@ -141,44 +144,60 @@ function Get-TargetResource
     [CmdletBinding()]
     [OutputType([Hashtable])]
     param(
-        [Parameter(
-            Mandatory
-        )]
-        [ValidateScript( {
-            $_ | Validate-Thumbprint
-        } )]
+        [Parameter(Mandatory)]
+        [ValidateScript( {$_ | Validate-Thumbprint} )]
         [String]
         $Thumbprint ,
 
-        [Parameter(
-            Mandatory
-        )]
-        [ValidateScript( {
-            $_ | Validate-PfxPath
-        } )]
+        [Parameter(Mandatory)]
+        [ValidateScript( {$_ | Validate-PfxPath} )]
         [String]
         $Path ,
 
-        [Parameter()]
-        [ValidateSet(
-             'LocalMachine'
-        )]
+        [Parameter(Mandatory)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
         [String]
         $Location = 'LocalMachine' ,
 
+        [Parameter(Mandatory)]
+        [System.String]
+        $Store = 'My',
+
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [String]
-        $Store = 'My' ,
+        [bool]
+        $Exportable = $false ,
 
         [Parameter()]
         [PSCredential]
-        $Credential
+        $Credential,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present'
     )
+
+    $CertificateStore = 'Cert:' | 
+                        Join-Path -ChildPath $Location | 
+                        Join-Path -ChildPath $Store
+
+    if ((Test-Path $CertificateStore) -eq $false)
+    {
+        throw [System.ArgumentException]"Certificate Store '$Store' not found."
+    }
+    
+    $CheckEnsure = [Bool](
+                        $CertificateStore | 
+                        Get-ChildItem | 
+                        Where-Object -FilterScript {$_.Thumbprint -ieq $Thumbprint}
+                    )
+    if ($CheckEnsure){$Ensure = 'Present'}
+    else {$Ensure = 'Absent'}
 
     @{
         Thumbprint = $Thumbprint
-        Path = $Path
+        Path       = $Path
+        Ensure     = $Ensure
     }
 }
 
@@ -187,35 +206,24 @@ function Test-TargetResource
     [CmdletBinding()]
     [OutputType([Bool])]
     param(
-        [Parameter(
-            Mandatory
-        )]
-        [ValidateScript( {
-            $_ | Validate-Thumbprint
-        } )]
+        [Parameter(Mandatory)]
+        [ValidateScript( {$_ | Validate-Thumbprint} )]
         [String]
         $Thumbprint ,
 
-        [Parameter(
-            Mandatory
-        )]
-        [ValidateScript( {
-            $_ | Validate-PfxPath
-        } )]
+        [Parameter(Mandatory)]
+        [ValidateScript( {$_ | Validate-PfxPath} )]
         [String]
         $Path ,
 
-        [Parameter()]
-        [ValidateSet(
-             'LocalMachine'
-        )]
+        [Parameter(Mandatory)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
         [String]
         $Location = 'LocalMachine' ,
 
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [String]
-        $Store = 'My' ,
+        [Parameter(Mandatory)]
+        [System.String]
+        $Store = 'My',
 
         [Parameter()]
         [bool]
@@ -223,51 +231,42 @@ function Test-TargetResource
 
         [Parameter()]
         [PSCredential]
-        $Credential
+        $Credential,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present'
     )
 
-    [Bool](
-        'Cert:' | 
-        Join-Path -ChildPath $Location | 
-        Join-Path -ChildPath $Store | 
-        Get-ChildItem | 
-        Where-Object { $_.Thumbprint -ieq $Thumbprint }
-     )
+    $result = @(Get-TargetResource @PSBoundParameters)
+    if ($Ensure -ne $result.Ensure) { return $false }
+    elseif ($Ensure -eq 'Present' -and ($result.Target -ne $Target)) { return $false }
+    return $true
 }
 
 function Set-TargetResource 
 {
     [CmdletBinding(SupportsShouldProcess)]
     param(
-        [Parameter(
-            Mandatory
-        )]
-        [ValidateScript( {
-            $_ | Validate-Thumbprint
-        } )]
+        [Parameter(Mandatory)]
+        [ValidateScript( {$_ | Validate-Thumbprint} )]
         [String]
         $Thumbprint ,
 
-        [Parameter(
-            Mandatory
-        )]
-        [ValidateScript( {
-            $_ | Validate-PfxPath
-        } )]
+        [Parameter(Mandatory)]
+        [ValidateScript( {$_ | Validate-PfxPath} )]
         [String]
         $Path ,
 
-        [Parameter()]
-        [ValidateSet(
-             'LocalMachine'
-        )]
+        [Parameter(Mandatory)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
         [String]
         $Location = 'LocalMachine' ,
 
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [String]
-        $Store = 'My' ,
+        [Parameter(Mandatory)]
+        [System.String]
+        $Store = 'My',
 
         [Parameter()]
         [bool]
@@ -275,24 +274,42 @@ function Set-TargetResource
 
         [Parameter()]
         [PSCredential]
-        $Credential
+        $Credential,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present'
     )
 
-    $certPath = 'Cert:' | Join-Path -ChildPath $Location | Join-Path -ChildPath $Store
-    if ($PSCmdlet.ShouldProcess("Importing PFX '$Path' into '$certPath'")) 
+    $certPath = 'Cert:' |
+    Join-Path -ChildPath $Location |
+    Join-Path -ChildPath $Store
+
+
+    if ($Ensure -ieq 'Present')
     {
-        $param = @{
-            Exportable = $Exportable
-            CertStoreLocation = $certPath 
-            FilePath = $Path
-            Verbose = $VerbosePreference
-        }
-        if ($Credential) 
+        if ($PSCmdlet.ShouldProcess("Importing PFX '$Path' into '$certPath'")) 
         {
-            $param['Password'] = $Credential.Password
+            $param = @{
+                Exportable        = $Exportable
+                CertStoreLocation = $certPath
+                FilePath          = $Path
+                Verbose           = $VerbosePreference
+            }
+            if ($Credential) 
+            {
+                $param['Password'] = $Credential.Password
+            }
+            Import-PfxCertificate @param
         }
-        Import-PfxCertificate @param
     }
+
+    elseif ($Ensure -ieq 'Absent')
+    {
+        Get-ChildItem -Path $certPath | Where-Object {$_.Thumbprint -ieq $thumbprint} | Remove-Item -Force
+    }
+
 }
 
-Export-ModuleMember *-TargetResource
+Export-ModuleMember -Function *-TargetResource

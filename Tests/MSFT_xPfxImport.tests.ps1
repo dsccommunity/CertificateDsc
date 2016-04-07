@@ -12,7 +12,7 @@ InModuleScope $moduleName {
     $validThumbprint = (
         [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
             $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-            $_.Name -cmatch 'Managed$'
+            ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
         } | Select-Object -First 1 | ForEach-Object { 
             (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object {
                 '{0:x2}' -f $_
@@ -24,6 +24,22 @@ InModuleScope $moduleName {
 
     $invalidPath = 'TestDrive:'
     $validPath = "TestDrive:\$testFile"
+
+    $PresentParams = @{
+        Thumbprint = $validThumbprint
+        Path = $validPath
+        Ensure = 'Present'
+        Location = 'LocalMachine'
+        Store = 'My'
+    }
+
+    $AbsentParams = @{
+        Thumbprint = $validThumbprint
+        Path = $validPath
+        Ensure = 'Absent'
+        Location = 'LocalMachine'
+        Store = 'My'
+    }
     
     Describe 'Validate-PfxPath' {
 
@@ -116,7 +132,7 @@ InModuleScope $moduleName {
     Describe 'Get-TargetResource' {
         $null | Set-Content -Path $validPath
 
-        $result = Get-TargetResource -Thumbprint $validThumbprint -Path $validPath
+        $result = Get-TargetResource @PresentParams
         It 'should return a hashtable' {
             ($result -is [hashtable]) | Should Be $true
         }
@@ -129,7 +145,29 @@ InModuleScope $moduleName {
         $null | Set-Content -Path $validPath
 
         It 'should return a bool' {
-            ((Test-TargetResource -Thumbprint $validThumbprint -Path $validPath) -is [bool]) | Should Be $true
+            ((Test-TargetResource @PresentParams) -is [bool]) | Should Be $true
+        }
+        It 'Fails when valid path + thumbprint and Ensure is Absent' {
+            Mock Get-TargetResource { 
+                return @{
+                    Thumbprint = $validThumbprint
+                    Path = $validPath
+                    Ensure = 'Absent'
+                }
+            }
+        
+        Test-TargetResource @PresentParams | Should Be $false
+        }
+        It 'Success when valid path + thumbprint and Ensure is Present' {
+            Mock Get-TargetResource { 
+                return @{
+                    Thumbprint = $validThumbprint
+                    Path = $validPath
+                    Ensure = 'Present'
+                }
+            }
+        
+            Test-TargetResource @PresentParams | Should Be $true
         }
     }
     Describe 'Set-TargetResource' {
@@ -137,7 +175,7 @@ InModuleScope $moduleName {
         
         Mock Import-PfxCertificate {} -Verifiable
 
-        Set-TargetResource -Thumbprint $validThumbprint -Path $validPath -Credential ([PSCredential]::Empty)
+        Set-TargetResource @PresentParams
 
         It 'calls Import-PfxCertificate' {
             Assert-VerifiableMocks
@@ -148,6 +186,11 @@ InModuleScope $moduleName {
                 $Path -eq $validPath
                 $Credential -eq [PSCredential]::Empty
             }
+        }
+        It 'calls Get-ChildItem' {
+            Mock Get-ChildItem {} -Verifiable
+            Set-TargetResource @AbsentParams
+            Assert-MockCalled Get-ChildItem -Scope It
         }
     }
 }
