@@ -24,6 +24,7 @@ InModuleScope $moduleName {
 
     $invalidPath = 'TestDrive:'
     $validPath = "TestDrive:\$testFile"
+    $validCertPath = "Cert:\LocalMachine\My"
 
     $PresentParams = @{
         Thumbprint = $validThumbprint
@@ -182,9 +183,10 @@ InModuleScope $moduleName {
         }
         It 'uses the parameters supplied' {
             Assert-MockCalled Import-PfxCertificate -Exactly -Times 1 -ParameterFilter {
-                $Thumbprint -eq $validThumbprint -and
-                $Path -eq $validPath
-                $Credential -eq [PSCredential]::Empty
+                $CertStoreLocation -eq $validCertPath -and
+                $FilePath -eq $validPath -and
+                $Exportable -eq $false -and
+                $Password -eq $null
             }
         }
         It 'calls Get-ChildItem' {
