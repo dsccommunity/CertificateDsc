@@ -1,6 +1,6 @@
 <#
 .Summary
-    Tests for xPfxImport
+    Tests for xCertificateImport
 #>
 
 
@@ -20,7 +20,7 @@ InModuleScope $moduleName {
         }
     ) -join ''
 
-    $testFile = 'test.pfx'
+    $testFile = 'test.cer'
 
     $invalidPath = 'TestDrive:'
     $validPath = "TestDrive:\$testFile"
@@ -42,12 +42,12 @@ InModuleScope $moduleName {
         Store = 'My'
     }
     
-    Describe 'Validate-PfxPath' {
+    Describe 'Validate-CertificatePath' {
 
         $null | Set-Content -Path $validPath
 
         Context 'a single existing file by parameter' {
-            $result = Validate-PfxPath -Path $validPath
+            $result = Validate-CertificatePath -Path $validPath
             It 'should return true' {
                 ($result -is [bool]) | Should Be $true
                 $result | Should Be $true
@@ -56,18 +56,18 @@ InModuleScope $moduleName {
         Context 'a single missing file by parameter' {
             It 'should throw an exception' {
                 # directories are not valid
-                { Validate-PfxPath -Path $invalidPath } | Should Throw
+                { Validate-CertificatePath -Path $invalidPath } | Should Throw
             }
         }
         Context 'a single missing file by parameter with -Quiet' {
-            $result = Validate-PfxPath -Path $invalidPath -Quiet
+            $result = Validate-CertificatePath -Path $invalidPath -Quiet
             It 'should return false' {
                 ($result -is [bool]) | Should Be $true
                 $result | Should Be $false
             }
         }
         Context 'a single existing file by pipeline' {
-            $result = $validPath | Validate-PfxPath
+            $result = $validPath | Validate-CertificatePath
             It 'should return true' {
                 ($result -is [bool]) | Should Be $true
                 $result | Should Be $true
@@ -76,11 +76,11 @@ InModuleScope $moduleName {
         Context 'a single missing file by pipeline' {
             It 'should throw an exception' {
                 # directories are not valid
-                { $invalidPath | Validate-PfxPath } | Should Throw
+                { $invalidPath | Validate-CertificatePath } | Should Throw
             }
         }
         Context 'a single missing file by pipeline with -Quiet' {
-            $result =  $invalidPath | Validate-PfxPath -Quiet
+            $result =  $invalidPath | Validate-CertificatePath -Quiet
             It 'should return false' {
                 ($result -is [bool]) | Should Be $true
                 $result | Should Be $false
@@ -174,19 +174,17 @@ InModuleScope $moduleName {
     Describe 'Set-TargetResource' {
         $null | Set-Content -Path $validPath
         
-        Mock Import-PfxCertificate {} -Verifiable
+        Mock Import-Certificate {} -Verifiable
 
         Set-TargetResource @PresentParams
 
-        It 'calls Import-PfxCertificate' {
+        It 'calls Import-Certificate' {
             Assert-VerifiableMocks
         }
         It 'uses the parameters supplied' {
-            Assert-MockCalled Import-PfxCertificate -Exactly -Times 1 -ParameterFilter {
+            Assert-MockCalled Import-Certificate -Exactly -Times 1 -ParameterFilter {
                 $CertStoreLocation -eq $validCertPath -and
-                $FilePath -eq $validPath -and
-                $Exportable -eq $false -and
-                $Password -eq $null
+                $FilePath -eq $validPath
             }
         }
         It 'calls Get-ChildItem' {
