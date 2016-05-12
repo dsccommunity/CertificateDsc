@@ -54,56 +54,13 @@ function Set-TargetResource
         $Credential,
 
         [System.Boolean]
-        $AutoRenew,
-        
-        [System.String]
-        $KeySpec = '1',
-
-        [System.String]
-        $KeyLength = '2048',
-
-        [System.String]
-        $Exportable = 'TRUE',
-
-        [System.String]
-        $MachineKeySet = 'TRUE',
-
-        [System.String]
-        $SMIME = 'False',
-
-        [System.String]
-        $PrivateKeyArchive = 'FALSE',
-
-        [System.String]
-        $UserProtected = 'FALSE',
-
-        [System.String]
-        $UseExistingKeySet = 'FALSE',
-
-        [System.String]
-        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
-
-        [System.String]
-        $ProviderType = '12',
-
-        [System.String]
-        $RequestType = 'CMC',
-        [System.String]
-        $KeyUsage = '0xa0',
-
-        [System.String]
-        $OID = '1.3.6.1.5.5.7.3.1',
-
-        [System.String]
-        $CertificateTemplate = 'WebServer'
+        $AutoRenew
     )
 # If the Subject does not contain a full X500 path, construct just the CN
 if (($Subject.split('=').count) -eq 1)
 {
     [System.String]$Subject = "CN=$Subject"
 }
-
-[System.String]$Subject = "`"$Subject`""
 
 # If we should look for renewals, check for existing certs
 if ($AutoRenew) {
@@ -112,6 +69,24 @@ $Cert = Get-Childitem Cert:\LocalMachine\My | ? {$_.Subject -eq $Subject -and $_
 # If multiple certs have the same subject and were issued by the CA and are 30 days from expiration, return the newest
 $Thumprint = $Cert | Sort-Object NotBefore -Descending | Select -first 1 | foreach {$_.Thumbprint}
 }
+
+# Information that will be used in the INF file to generate the certificate request
+# In future versions, select variables from the list below could be moved to parameters!
+[System.String]$Subject = "`"$Subject`""
+[System.String]$KeySpec = '1'
+[System.String]$KeyLength = '1024'
+[System.String]$Exportable = 'TRUE'
+[System.String]$MachineKeySet = 'TRUE'
+[System.String]$SMIME = 'False'
+[System.String]$PrivateKeyArchive = 'FALSE'
+[System.String]$UserProtected = 'FALSE'
+[System.String]$UseExistingKeySet = 'FALSE'
+[System.String]$ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"'
+[System.String]$ProviderType = '12'
+[System.String]$RequestType = 'CMC'
+[System.String]$KeyUsage = '0xa0'
+[System.String]$OID = '1.3.6.1.5.5.7.3.1'
+[System.String]$CertificateTemplate = 'WebServer'
 
 # A unique identifier for temporary files that will be used when interacting with the command line utility
 [system.guid]$GUID = [system.guid]::NewGuid().guid
