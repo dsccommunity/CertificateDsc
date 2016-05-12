@@ -56,6 +56,7 @@ Resources
 * Updated xPfxImport with support for the CurrentUser value
 * Updated xPfxImport with validationset for the Store parameter
 * Added new resource: xCertificateImport
+* Fixed xCertReq to support CA Root Name with spaces
 
 ### 1.1.0.0
 * Added new resource: xPfxImport
