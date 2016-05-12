@@ -121,7 +121,7 @@ $Thumprint = $Cert | Sort-Object NotBefore -Descending | Select -first 1 | forea
 [System.String]$RSP = "$env:Temp\$GUID.rsp"
 
 # The certificate authority, accessible on the local area network
-[System.String]$CA = "$CAServerFQDN\$CARootName"
+[System.String]$CA = "'$CAServerFQDN\$CARootName'"
 
 # Create INF file
 $requestDetails = @"
