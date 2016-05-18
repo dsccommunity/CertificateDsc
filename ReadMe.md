@@ -51,7 +51,7 @@ Resources
 ## Versions
 
 ### Unreleased
-* Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory�
+* Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
 * Updated xPfxImport with new Ensure support
 * Updated xPfxImport with support for the CurrentUser value
 * Updated xPfxImport with validationset for the Store parameter
