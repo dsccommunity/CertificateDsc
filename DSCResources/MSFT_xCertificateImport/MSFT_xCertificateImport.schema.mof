@@ -1,0 +1,9 @@
+[ClassVersion("1.0"), FriendlyName("xCertificateImport")]
+class MSFT_xCertificateImport : OMI_BaseResource
+{
+[Key] string Thumbprint;
+[Required] string Path;
+[Key,ValueMap{"LocalMachine", "CurrentUser"},Values{"LocalMachine", "CurrentUser"}] string Location;
+[Key] string Store;
+[Write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
+};

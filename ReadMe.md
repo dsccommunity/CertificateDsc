@@ -1,7 +1,6 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xcertificate/branch/master)
 
 # xCertificate
-
 The **xCertificate** module is a part of the Windows PowerShell Desired State Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This module includes DSC resources that simplify administration of certificates on a Windows Server, with simple declarative language.
 
 Installation
@@ -35,14 +34,30 @@ Resources
 
 - **Thumbprint**: The thumbprint (unique identifier) of the certificate you're importing.
 - **Path**: The path to the PFX file you want to import.
-- **Location**: Currently the only valid value here is `LocalMachine`.
+- **Location**: 'LocalMachine' or 'CurrentUser
 - **Store**: Defaults to `My` (the personal store) but can be any store that is valid on the machine (for example, `WebHosting`).
 - **Exportable**: Defaults to `$false`. Determines whether the private key is exportable from the machine after you import it.
 - **Credential**: A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+- **Ensure**: Present or Absent; Specifies whether the certificate should be present or absent.
 
+**xCertificateImport** resource has following properties
 
-Versions
---------
+- **Thumbprint**: The thumbprint (unique identifier) of the certificate you're importing.
+- **Path**: The path to the CER file you want to import.
+- **Location**: 'LocalMachine' or 'CurrentUser
+- **Store**: Defaults to `My` (the personal store) but can be any store that is valid on the machine (for example, `WebHosting`).
+- **Ensure**: Present or Absent; Specifies whether the certificate should be present or absent.
+
+## Versions
+
+### Unreleased
+
+### 2.0.0.0
+* Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
+* Updated xPfxImport with new Ensure support
+* Updated xPfxImport with support for the CurrentUser value
+* Updated xPfxImport with validationset for the Store parameter
+* Added new resource: xCertificateImport
 
 ### 1.1.0.0
 * Added new resource: xPfxImport
@@ -66,37 +81,30 @@ Examples
 ```powershell
 configuration SSL
 {
-param (
-    [Parameter(Mandatory=$true)] 
-    [ValidateNotNullorEmpty()] 
-    [PsCredential] $Credential 
-    )
-Import-DscResource -ModuleName xCertificate
-Node 'localhost'
-{
-	xCertReq SSLCert
-
-	{
-		
-		CARootName                = 'test-dc01-ca'
-
-		CAServerFQDN              = 'dc01.test.pha'
-
-		Subject                   = 'foodomain.test.net'
-
-		AutoRenew                 = $true
-
-		Credential                = $Credential
-
-	}
-}
+    param (
+        [Parameter(Mandatory=$true)] 
+        [ValidateNotNullorEmpty()] 
+        [PsCredential] $Credential 
+        )
+    Import-DscResource -ModuleName xCertificate
+    Node 'localhost'
+    {
+        xCertReq SSLCert
+        {
+            CARootName                = 'test-dc01-ca'
+            CAServerFQDN              = 'dc01.test.pha'
+            Subject                   = 'foodomain.test.net'
+            AutoRenew                 = $true
+            Credential                = $Credential
+        }
+    }
 }
 $configData = @{
-AllNodes = @(
-    @{
-	NodeName                    = 'localhost';
-	PSDscAllowPlainTextPassword = $true
-	}
+    AllNodes = @(
+        @{
+            NodeName                    = 'localhost';
+            PSDscAllowPlainTextPassword = $true
+        }
     )
 }
 SSL -ConfigurationData $configData -Credential (get-credential) -OutputPath 'c:\SSLConfig'
@@ -129,5 +137,18 @@ xPfxImport CompanyCert
     Store = 'WebHosting'
     Credential = $PfxPassword
     DependsOn = '[WindowsFeature]IIS'
+}
+```
+
+## xCertificateImport
+
+**Example 1**: Import public key certificate into Trusted Root store 
+
+```powershell
+xCertificateImport MyTrustedRoot
+{
+    Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
+    Store = 'Root'
+    Path = '\\Server\Share\Certificates\MyTrustedRoot.cer'
 }
 ```

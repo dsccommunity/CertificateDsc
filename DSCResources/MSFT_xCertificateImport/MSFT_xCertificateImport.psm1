@@ -11,18 +11,18 @@
         Returns $false if the file does not exist. By default this function throws an exception if the file is missing.
 
         .EXAMPLE
-        Validate-PfxPath -Path '\\server\share\Certificates\mycert.pfx'
+        Validate-CertificatePath -Path '\\server\share\Certificates\mycert.cer'
 
         .EXAMPLE
-        Validate-PfxPath -Path 'C:\certs\my_missing.pfx' -Quiet
+        Validate-CertificatePath -Path 'C:\certs\my_missing.cer' -Quiet
 
         .EXAMPLE
-        'D:\CertRepo\a_cert.pfx' | Validate-PfxPath
+        'D:\CertRepo\a_cert.cer' | Validate-CertificatePath
 
         .EXAMPLE
-        Get-ChildItem D:\CertRepo\*.pfx | Validate-PfxPath
+        Get-ChildItem D:\CertRepo\*.cer | Validate-CertificatePath
 #>
-function Validate-PfxPath 
+function Validate-CertificatePath 
 {
     [CmdletBinding()]
     param(
@@ -150,7 +150,7 @@ function Get-TargetResource
         $Thumbprint ,
 
         [Parameter(Mandatory)]
-        [ValidateScript( {$_ | Validate-PfxPath} )]
+        [ValidateScript( {$_ | Validate-CertificatePath} )]
         [String]
         $Path ,
 
@@ -162,14 +162,6 @@ function Get-TargetResource
         [Parameter(Mandatory)]
         [System.String]
         $Store = 'My',
-
-        [Parameter()]
-        [bool]
-        $Exportable = $false ,
-
-        [Parameter()]
-        [PSCredential]
-        $Credential,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -212,7 +204,7 @@ function Test-TargetResource
         $Thumbprint ,
 
         [Parameter(Mandatory)]
-        [ValidateScript( {$_ | Validate-PfxPath} )]
+        [ValidateScript( {$_ | Validate-CertificatePath} )]
         [String]
         $Path ,
 
@@ -224,14 +216,6 @@ function Test-TargetResource
         [Parameter(Mandatory)]
         [System.String]
         $Store = 'My',
-
-        [Parameter()]
-        [bool]
-        $Exportable = $false ,
-
-        [Parameter()]
-        [PSCredential]
-        $Credential,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -255,7 +239,7 @@ function Set-TargetResource
         $Thumbprint ,
 
         [Parameter(Mandatory)]
-        [ValidateScript( {$_ | Validate-PfxPath} )]
+        [ValidateScript( {$_ | Validate-CertificatePath} )]
         [String]
         $Path ,
 
@@ -269,42 +253,27 @@ function Set-TargetResource
         $Store = 'My',
 
         [Parameter()]
-        [bool]
-        $Exportable = $false ,
-
-        [Parameter()]
-        [PSCredential]
-        $Credential,
-
-        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
     )
 
     $certPath = 'Cert:' |
-    Join-Path -ChildPath $Location |
-    Join-Path -ChildPath $Store
-
+                Join-Path -ChildPath $Location |
+                Join-Path -ChildPath $Store
 
     if ($Ensure -ieq 'Present')
     {
-        if ($PSCmdlet.ShouldProcess("Importing PFX '$Path' into '$certPath'")) 
+        if ($PSCmdlet.ShouldProcess("Importing certificate '$Path' into '$certPath'")) 
         {
             $param = @{
-                Exportable        = $Exportable
                 CertStoreLocation = $certPath
                 FilePath          = $Path
                 Verbose           = $VerbosePreference
             }
-            if ($Credential) 
-            {
-                $param['Password'] = $Credential.Password
-            }
-            Import-PfxCertificate @param
+            Import-Certificate @param
         }
     }
-
     elseif ($Ensure -ieq 'Absent')
     {
         Get-ChildItem -Path $certPath | Where-Object {$_.Thumbprint -ieq $thumbprint} | Remove-Item -Force
