@@ -54,6 +54,8 @@ Resources
 ## Versions
 
 ### Unreleased
+
+### 2.1.0.0
 * Fixed xCertReq to support CA Root Name with spaces
 
 ### 2.0.0.0

@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '2.0.0.0'
+ModuleVersion = '2.1.0.0'
 
 # ID used to uniquely identify this module
 GUID = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -104,7 +104,9 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = '* Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
+        ReleaseNotes = '* Fixed xCertReq to support CA Root Name with spaces
+
+'
 * Updated xPfxImport with new Ensure support
 * Updated xPfxImport with support for the CurrentUser value
 * Updated xPfxImport with validationset for the Store parameter
