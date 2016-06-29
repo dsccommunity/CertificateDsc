@@ -54,6 +54,7 @@ Resources
 ## Versions
 
 ### Unreleased
+* Fixed xCertReq to support CA Root Name with spaces
 
 ### 2.0.0.0
 * Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
@@ -61,7 +62,6 @@ Resources
 * Updated xPfxImport with support for the CurrentUser value
 * Updated xPfxImport with validationset for the Store parameter
 * Added new resource: xCertificateImport
-* Fixed xCertReq to support CA Root Name with spaces
 
 ### 1.1.0.0
 * Added new resource: xPfxImport
