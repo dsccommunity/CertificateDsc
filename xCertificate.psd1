@@ -105,13 +105,6 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '* Fixed xCertReq to support CA Root Name with spaces
-
-'
-* Updated xPfxImport with new Ensure support
-* Updated xPfxImport with support for the CurrentUser value
-* Updated xPfxImport with validationset for the Store parameter
-* Added new resource: xCertificateImport
-
 '
 
     } # End of PSData hashtable
