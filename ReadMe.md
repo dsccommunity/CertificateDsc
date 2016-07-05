@@ -54,6 +54,7 @@ Resources
 ## Versions
 
 ### Unreleased
+* Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
 
 ### 2.1.0.0
 * Fixed xCertReq to support CA Root Name with spaces
