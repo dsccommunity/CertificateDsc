@@ -50,6 +50,30 @@ function Set-TargetResource
         [System.String]
         $CARootName,
 
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $TemplateName,
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $KeyKength = '1024',
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $Exportable = 'TRUE',
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider""',
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $OID,
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $KeyUsage,
+
         [System.Management.Automation.PSCredential]
         $Credential,
 
@@ -64,29 +88,26 @@ if (($Subject.split('=').count) -eq 1)
 
 # If we should look for renewals, check for existing certs
 if ($AutoRenew) {
-$Cert = Get-Childitem Cert:\LocalMachine\My | ? {$_.Subject -eq $Subject -and $_.Issuer.split(',')[0] -eq "CN=$CARootName" -and $_.NotAfter -lt (get-date).AddDays(-30)}
-    
-# If multiple certs have the same subject and were issued by the CA and are 30 days from expiration, return the newest
-$Thumprint = $Cert | Sort-Object NotBefore -Descending | Select -first 1 | foreach {$_.Thumbprint}
+    $Cert = Get-Childitem Cert:\LocalMachine\My | ? {$_.Subject -eq $Subject -and $_.Issuer.split(',')[0] -eq "CN=$CARootName" -and $_.NotAfter -lt (get-date).AddDays(-30)}
+        
+    # If multiple certs have the same subject and were issued by the CA and are 30 days from expiration, return the newest
+    $Thumprint = $Cert | Sort-Object NotBefore -Descending | Select -first 1 | foreach {$_.Thumbprint}
 }
 
 # Information that will be used in the INF file to generate the certificate request
 # In future versions, select variables from the list below could be moved to parameters!
-[System.String]$Subject = "`"$Subject`""
-[System.String]$KeySpec = '1'
-[System.String]$KeyLength = '1024'
-[System.String]$Exportable = 'TRUE'
-[System.String]$MachineKeySet = 'TRUE'
-[System.String]$SMIME = 'False'
-[System.String]$PrivateKeyArchive = 'FALSE'
-[System.String]$UserProtected = 'FALSE'
-[System.String]$UseExistingKeySet = 'FALSE'
-[System.String]$ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"'
-[System.String]$ProviderType = '12'
-[System.String]$RequestType = 'CMC'
-[System.String]$KeyUsage = '0xa0'
-[System.String]$OID = '1.3.6.1.5.5.7.3.1'
-[System.String]$CertificateTemplate = 'WebServer'
+[System.String]$Subject               = "`"$Subject`""
+[System.String]$KeySpec               = '1'
+[System.String]$MachineKeySet         = 'TRUE'
+[System.String]$SMIME                 = 'False'
+[System.String]$PrivateKeyArchive     = 'FALSE'
+[System.String]$UserProtected         = 'FALSE'
+[System.String]$UseExistingKeySet     = 'FALSE'
+[System.String]$ProviderType          = '12'
+[System.String]$RequestType           = 'CMC'
+[System.String]$KeyUsage              = '0xa0'
+[System.String]$OID                   = '1.3.6.1.5.5.7.3.1'
+[System.String]$CertificateTemplate   = 'WebServer'
 
 # A unique identifier for temporary files that will be used when interacting with the command line utility
 [system.guid]$GUID = [system.guid]::NewGuid().guid
@@ -101,21 +122,21 @@ $Thumprint = $Cert | Sort-Object NotBefore -Descending | Select -first 1 | forea
 # Create INF file
 $requestDetails = @"
 [NewRequest]
-Subject = $Subject
-KeySpec = $KeySpec
-KeyLength = $KeyLength
-Exportable = $Exportable
-MachineKeySet = $MachineKeySet
-SMIME = $SMIME
-PrivateKeyArchive = $PrivateKeyArchive
-UserProtected = $UserProtected
-UseExistingKeySet = $UseExistingKeySet
-ProviderName = $ProviderName
-ProviderType = $ProviderType
-RequestType = $RequestType
-KeyUsage = $KeyUsage
+Subject              = $Subject
+KeySpec              = $KeySpec
+KeyLength            = $KeyLength
+Exportable           = $Exportable
+MachineKeySet        = $MachineKeySet
+SMIME                = $SMIME
+PrivateKeyArchive    = $PrivateKeyArchive
+UserProtected        = $UserProtected
+UseExistingKeySet    = $UseExistingKeySet
+ProviderName         = $ProviderName
+ProviderType         = $ProviderType
+RequestType          = $RequestType
+KeyUsage             = $KeyUsage
 [RequestAttributes]
-CertificateTemplate=$CertificateTemplate
+CertificateTemplate  = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 OID=$OID
 "@ 
@@ -132,22 +153,28 @@ $createRequest = C:\windows\system32\certreq.exe -new -q $INF $REQ
 if (test-path $REQ) {
     if ($Credential) {
         Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        $Process = StartWin32Process -Path 'C:\windows\system32\certreq.exe' -Arguments "-submit -q -config $CA $REQ $CER" -Credential $Credential
-        Write-Verbose $Process
-        WaitForWin32ProcessEnd -Path 'C:\windows\system32\certreq.exe' -Arguments "-submit -q -config $CA $REQ $CER" -Credential $Credential
+        $Process = StartWin32Process `
+                        -Path 'C:\windows\system32\certreq.exe' `
+                        -Arguments "-submit -q -config $CA $REQ $CER" `
+                        -Credential $Credential
+        Write-Verbose -Messsage $Process
+        WaitForWin32ProcessEnd `
+            -Path 'C:\windows\system32\certreq.exe' `
+            -Arguments "-submit -q -config $CA $REQ $CER" `
+            -Credential $Credential
         }
     else {
         $submitRequest = C:\windows\system32\certreq.exe -submit -q -config $CA $REQ $CER
-        write-verbose $submitRequest[2]}
+        Write-Verbose -Messsage $submitRequest[2]}
     }
 
 # Accept request
 if (test-path $CER) {
-    write-verbose 'Accepting certificate'
+    Write-Verbose -Messsage 'Accepting certificate'
     $acceptRequest = C:\windows\system32\certreq.exe -accept -machine -q $CER
     }
 
-write-verbose 'Cleaning up files'
+Write-Verbose -Message 'Cleaning up files'
 #foreach ($file in @($INF,$REQ,$CER,$RSP)) {if (test-path $file) {Remove-Item $file -force}}
 
 # Syntax: https://technet.microsoft.com/en-us/library/cc736326.aspx
@@ -193,14 +220,14 @@ function Test-TargetResource
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $Cert = $Cert | Sort-Object NotBefore -Descending | Select -first 1
 
-    Write-Verbose "Checking Certificates"
+    Write-Verbose -Messsage "Checking Certificates"
     if ($AutoRenew) {
         if ($Cert.NotAfter -gt (get-date).AddDays(-30)) {
             [boolean]$true
             }
         else {
             [boolean]$false
-            Write-Verbose "No valid certificate found with subject $Subject from CA $CARootName, or certificate is about to expire"
+            Write-Verbose -Messsage "No valid certificate found with subject $Subject from CA $CARootName, or certificate is about to expire"
             }
         }
     else {
@@ -209,7 +236,7 @@ function Test-TargetResource
             }
         else {
             [boolean]$false
-            Write-Verbose "No valid certificate found with subject $Subject from CA $CARootName"
+            Write-Verbose -Messsage "No valid certificate found with subject $Subject from CA $CARootName"
             }
         }
 }
