@@ -17,21 +17,22 @@ function Get-TargetResource
         $CARootName
     )
 
-    $Cert = Get-Childitem Cert:\LocalMachine\My | ? {$_.Subject -eq "CN=$Subject" -and $_.Issuer.split(',')[0] -eq "CN=$CARootName"}
+    $Cert = Get-Childitem Cert:\LocalMachine\My | ? `
+                {$_.Subject -eq "CN=$Subject" -and `
+                $_.Issuer.split(',')[0] -eq "CN=$CARootName"}
     
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $Cert = $Cert | Sort-Object NotBefore -Descending | Select -first 1
 
     $returnValue = @{
-        Subject = if ($Cert){[System.String]$Cert.Subject};
-        CAServerFQDN = if ($Cert){'Issued By: '+[System.String]$Cert.Issuer};
-        CARootName = if ($Cert){[System.String]$Cert.Issuer.split(',')[0].replace('CN=','')}
+        Subject       = if ($Cert){[System.String]$Cert.Subject};
+        CAServerFQDN  = if ($Cert){'Issued By: '+[System.String]$Cert.Issuer};
+        CARootName    = if ($Cert){[System.String]$Cert.Issuer.split(',')[0].replace('CN=','')}
     }
 
     $returnValue
 }
 # Get-TargetResource 'test.domain.com' -CAServerFQDN 'dc01.test.net' -CARootName 'test-dc01-ca'
-
 
 function Set-TargetResource
 {
@@ -52,15 +53,11 @@ function Set-TargetResource
 
         [parameter(Mandatory = $false)]
         [System.String]
-        $TemplateName,
+        $KeyLength = '1024',
 
         [parameter(Mandatory = $false)]
-        [System.String]
-        $KeyKength = '1024',
-
-        [parameter(Mandatory = $false)]
-        [System.String]
-        $Exportable = 'TRUE',
+        [System.Boolean]
+        $Exportable = $true,
 
         [parameter(Mandatory = $false)]
         [System.String]
@@ -68,11 +65,15 @@ function Set-TargetResource
 
         [parameter(Mandatory = $false)]
         [System.String]
-        $OID,
+        $OID = '1.3.6.1.5.5.7.3.1',
 
         [parameter(Mandatory = $false)]
         [System.String]
-        $KeyUsage,
+        $KeyUsage = '0xa0',
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
 
         [System.Management.Automation.PSCredential]
         $Credential,
@@ -88,7 +89,10 @@ if (($Subject.split('=').count) -eq 1)
 
 # If we should look for renewals, check for existing certs
 if ($AutoRenew) {
-    $Cert = Get-Childitem Cert:\LocalMachine\My | ? {$_.Subject -eq $Subject -and $_.Issuer.split(',')[0] -eq "CN=$CARootName" -and $_.NotAfter -lt (get-date).AddDays(-30)}
+    $Cert = Get-Childitem Cert:\LocalMachine\My | ?`
+                {$_.Subject -eq $Subject -and `
+                $_.Issuer.split(',')[0] -eq "CN=$CARootName" -and `
+                $_.NotAfter -lt (get-date).AddDays(-30)}
         
     # If multiple certs have the same subject and were issued by the CA and are 30 days from expiration, return the newest
     $Thumprint = $Cert | Sort-Object NotBefore -Descending | Select -first 1 | foreach {$_.Thumbprint}
@@ -105,9 +109,6 @@ if ($AutoRenew) {
 [System.String]$UseExistingKeySet     = 'FALSE'
 [System.String]$ProviderType          = '12'
 [System.String]$RequestType           = 'CMC'
-[System.String]$KeyUsage              = '0xa0'
-[System.String]$OID                   = '1.3.6.1.5.5.7.3.1'
-[System.String]$CertificateTemplate   = 'WebServer'
 
 # A unique identifier for temporary files that will be used when interacting with the command line utility
 [system.guid]$GUID = [system.guid]::NewGuid().guid
@@ -125,7 +126,7 @@ $requestDetails = @"
 Subject              = $Subject
 KeySpec              = $KeySpec
 KeyLength            = $KeyLength
-Exportable           = $Exportable
+Exportable           = $($Exportable.ToString().ToUpper())
 MachineKeySet        = $MachineKeySet
 SMIME                = $SMIME
 PrivateKeyArchive    = $PrivateKeyArchive
@@ -174,7 +175,7 @@ if (test-path $CER) {
     $acceptRequest = C:\windows\system32\certreq.exe -accept -machine -q $CER
     }
 
-Write-Verbose -Message 'Cleaning up files'
+#Write-Verbose -Message 'Cleaning up files'
 #foreach ($file in @($INF,$REQ,$CER,$RSP)) {if (test-path $file) {Remove-Item $file -force}}
 
 # Syntax: https://technet.microsoft.com/en-us/library/cc736326.aspx
@@ -202,6 +203,30 @@ function Test-TargetResource
         [System.String]
         $CARootName,
 
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $KeyLength = '1024',
+
+        [parameter(Mandatory = $false)]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider""',
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [parameter(Mandatory = $false)]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
         [System.Management.Automation.PSCredential]
         $Credential,
 
@@ -215,7 +240,8 @@ function Test-TargetResource
         [System.String]$Subject = "CN=$Subject"
     }
 
-    $Cert = Get-Childitem Cert:\LocalMachine\My | ? {$_.Subject -eq $Subject -and $_.Issuer.split(',')[0] -eq "CN=$CARootName"}
+    $Cert = Get-Childitem Cert:\LocalMachine\My | ? `
+                {$_.Subject -eq $Subject -and $_.Issuer.split(',')[0] -eq "CN=$CARootName"}
     
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $Cert = $Cert | Sort-Object NotBefore -Descending | Select -first 1
