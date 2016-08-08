@@ -18,13 +18,13 @@ ModuleVersion = '2.1.0.0'
 GUID = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
 
 # Author of this module
-Author = 'PowerShell DSC'
+Author = 'Microsoft Corporation'
 
 # Company or vendor of this module
 CompanyName = 'Microsoft Corporation'
 
 # Copyright statement for this module
-Copyright = '2015'
+Copyright = '(c) 2015 Microsoft Corporation. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'This module includes DSC resources that simplify administration of certificates on a Windows Server'
@@ -104,8 +104,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = '* Fixed xCertReq to support CA Root Name with spaces
-'
+        ReleaseNotes = '* Fixed xCertReq to support CA Root Name with spaces'
 
     } # End of PSData hashtable
 
