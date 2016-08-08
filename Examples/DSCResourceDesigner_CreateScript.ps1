@@ -90,7 +90,7 @@ choice
  -    MOF class name (ex: MSFT\_xResource becomes Contoso\_cResource)
  -    Filename for the <resource\>.schema.mof (ex: MSFT\_xResource.schema.mof becomes Contoso\_cResource.schema.mof)
 
-2. Update module and metadata information in the module manifest  
+2. Update module and metadata information in the module manifest
 3. Update any configuration that use these resources
 
 We reserve resource and module names without prefixes ("x" or "c") for future use (e.g. "MSFT_Resource"). If the next version of Windows Server ships with a "WindowsEventForwarding" resource, we don't want to break any configurations that use any community modifications. Please keep a prefix such as "c" on all community modifications.
@@ -117,9 +117,9 @@ Examples
     configuration SSL
     {
         param (
-            [Parameter(Mandatory=$true)] 
-            [ValidateNotNullorEmpty()] 
-            [PsCredential] $Credential 
+            [Parameter(Mandatory=$true)]
+            [ValidateNotNullorEmpty()]
+            [PsCredential] $Credential
             )
         Import-DscResource -ModuleName xCertificate
         Node 'localhost'
@@ -147,5 +147,5 @@ Examples
 
     # Validate results
     Get-ChildItem Cert:\LocalMachine\My
-'@ 
+'@
 $MD | Out-File "$modules\$modulename\Resources\ReadMe.md"
