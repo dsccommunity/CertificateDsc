@@ -476,6 +476,3 @@ function Test-TargetResource
         ) -join '' )
     return $false
 } # end function Test-TargetResource
-
-Export-ModuleMember -Function *-TargetResource
->>>>>>> refs/remotes/IAG-NZ/dev
