@@ -121,7 +121,7 @@ function Set-TargetResource
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider""',
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -131,7 +131,7 @@ function Set-TargetResource
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $KeyUsage = '0xa0'
+        $KeyUsage = '0xa0',
         
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
