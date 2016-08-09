@@ -110,7 +110,7 @@ function Set-TargetResource
         $CARootName,
 
         [parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
@@ -363,7 +363,7 @@ function Test-TargetResource
         $CARootName,
 
         [parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
