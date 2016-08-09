@@ -131,13 +131,13 @@ function Set-TargetResource
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $KeyUsage = '0xa0',
-
+        $KeyUsage = '0xa0'
+        
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
-
+        
         [System.Management.Automation.PSCredential]
         $Credential,
 
@@ -250,7 +250,7 @@ RenewalCert = $Thumbprint
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
                 $($LocalizedData.SubmittingRequestCertificateMessage -f $ReqPath,$CerPath,$CA)
-           	    ) -join '' )
+                ) -join '' )
 
         if ($Credential)
         {
