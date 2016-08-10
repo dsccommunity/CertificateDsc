@@ -21,8 +21,14 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` Subject**: Provide the text string to use as the subject of the certificate. Key.
 - **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Required.
 - **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Required.
+- **`[String]` KeyLength**: The bit length of the encryption key to be used. Optional. { *1024* | 2048 | 4096 | 8192 }. 
+- **`[Boolean]` Exportable**: The option to allow the certificate to be exportable, by default it will be true. Optional. Defaults to `$true`.
+- **`[String]` ProviderName**: The selection of provider for the type of encryption to be used. Optional. Defaults to `"Microsoft RSA SChannel Cryptographic Provider"`.
+- **`[String]` OID**: The Object Identifier that is used to name the object. Optional. Defaults to `1.3.6.1.5.5.7.3.1`.
+- **`[String]` KeyUsage**: The Keyusage is a restriction method that determines what a certificate can be used for. Optional. Defaults to `0xa0`
+- **`[String]` CertificateTemplate** The template used for the definiton of the certificate. Optional. Defaults to `WebServer`   
 - **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
-- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
+- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional. 
 
 ### xPfxImport
 
@@ -127,6 +133,12 @@ configuration xCertReq_RequestSSL
             CARootName                = 'test-dc01-ca'
             CAServerFQDN              = 'dc01.test.pha'
             Subject                   = 'foodomain.test.net'
+            KeyLength                 = '1024'
+            Exportable                = $true
+            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                       = '1.3.6.1.5.5.7.3.1'
+            KeyUsage                  = '0xa0'
+            CertificateTemplate       = 'WebServer'
             AutoRenew                 = $true
             Credential                = $Credential
         }

@@ -44,6 +44,35 @@ function Get-TargetResource
         [System.String]
         $CARootName,
 
+        [parameter(Mandatory = $false)]
+        [ValidateSet("1024","2048","4096","8192")]
+        [System.String]
+        $KeyLength = '1024',
+
+        [parameter(Mandatory = $false)]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+        
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
         [System.Management.Automation.PSCredential]
         $Credential,
 
@@ -76,9 +105,15 @@ function Get-TargetResource
             ) -join '' )
 
         $returnValue = @{
-            Subject      = $Cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN = '' # This value can't be determined from the cert
-            CARootName   = $Cert.Issuer.split(',')[0].replace('CN=','')
+            Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
+            CAServerFQDN         = '' # This value can't be determined from the cert
+            CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
+            KeyLength            = $Cert.Publickey.Key.KeySize
+            Exportable           = '' # This value can't be determined from the cert I think.
+            ProviderName         = '' # This value can't be determined from the cert
+            OID                  = '' # This value can't be determined from the cert 
+            KeyUsage             = '' # This value can't be determined from the cert
+            CertificateTemplate  = '' # This value can't be determined from the cert
         }
     }
     else
@@ -219,6 +254,7 @@ OID = $OID
     if ($Thumbprint)
     {
         $requestDetails += @"
+
 RenewalCert = $Thumbprint
 "@
     }
@@ -374,7 +410,7 @@ function Test-TargetResource
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider""',
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
