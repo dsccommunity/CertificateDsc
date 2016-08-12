@@ -67,7 +67,7 @@ function Get-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
-        
+
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -109,9 +109,9 @@ function Get-TargetResource
             CAServerFQDN         = '' # This value can't be determined from the cert
             CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
             KeyLength            = $Cert.Publickey.Key.KeySize
-            Exportable           = '' # This value can't be determined from the cert I think.
+            Exportable           = '' # This value can't be determined from the cert 
             ProviderName         = '' # This value can't be determined from the cert
-            OID                  = '' # This value can't be determined from the cert 
+            OID                  = '' # This value can't be determined from the cert
             KeyUsage             = '' # This value can't be determined from the cert
             CertificateTemplate  = '' # This value can't be determined from the cert
         }
@@ -167,12 +167,12 @@ function Set-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
-        
+
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
-        
+
         [System.Management.Automation.PSCredential]
         $Credential,
 

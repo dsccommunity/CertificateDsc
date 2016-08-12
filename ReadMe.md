@@ -89,6 +89,9 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Modified to meet 100 characters or less line length where possible.
     - Split message and error strings into localization string files.
 
+### 2.2.0.0
+* Added additional parameters to xCertReq 
+
 ### 2.1.0.0
 * Fixed xCertReq to support CA Root Name with spaces
 

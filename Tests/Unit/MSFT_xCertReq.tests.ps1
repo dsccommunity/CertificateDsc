@@ -237,13 +237,13 @@ CertificateTemplate = $CertificateTemplate
 OID = $OID
 "@ 
            
-        $CertInfKey = $CertInf -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096' #Added 4:07pm
+        $CertInfKey = $CertInf -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
         $CertInfRenew = $Certinf
         $CertInfRenew += @"
 
 RenewalCert = $validThumbprint
 "@
-        $CertInfKeyRenew = $CertInfRenew -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096' #Added 4:07pm
+        $CertInfKeyRenew = $CertInfRenew -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
 
         # region Get-TargetResource
         Describe "$($script:DSCResourceName)\Get-TargetResource" {
@@ -257,12 +257,12 @@ RenewalCert = $validThumbprint
                 $result.Subject              | Should BeExactly $validSubject
                 $result.CAServerFQDN         | Should BeNullOrEmpty
                 $result.CARootName           | Should BeExactly $CARootName
-                $result.KeyLength            | Should BeNullOrEmpty # to change
-                $result.Exportable           | Should BeNullOrEmpty # to change
-                $result.ProviderName         | Should BeNullOrEmpty # to change
-                $result.OID                  | Should BeNullOrEmpty # to change
-                $result.KeyUsage             | Should BeNullOrEmpty # to change
-                $result.CertificateTemplate  | Should BeNullOrEmpty # to change
+                $result.KeyLength            | Should BeNullOrEmpty 
+                $result.Exportable           | Should BeNullOrEmpty 
+                $result.ProviderName         | Should BeNullOrEmpty 
+                $result.OID                  | Should BeNullOrEmpty 
+                $result.KeyUsage             | Should BeNullOrEmpty 
+                $result.CertificateTemplate  | Should BeNullOrEmpty 
             }
         }
         # endregion
