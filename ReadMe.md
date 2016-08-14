@@ -90,7 +90,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Split message and error strings into localization string files.
 
 ### 2.2.0.0
-* Added additional parameters to xCertReq 
+* Added additional parameters to xCertReq - (KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate)
 
 ### 2.1.0.0
 * Fixed xCertReq to support CA Root Name with spaces
