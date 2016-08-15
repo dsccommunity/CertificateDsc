@@ -44,6 +44,35 @@ function Get-TargetResource
         [System.String]
         $CARootName,
 
+        [parameter(Mandatory = $false)]
+        [ValidateSet("1024","2048","4096","8192")]
+        [System.String]
+        $KeyLength = '1024',
+
+        [parameter(Mandatory = $false)]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
         [System.Management.Automation.PSCredential]
         $Credential,
 
@@ -76,9 +105,15 @@ function Get-TargetResource
             ) -join '' )
 
         $returnValue = @{
-            Subject      = $Cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN = '' # This value can't be determined from the cert
-            CARootName   = $Cert.Issuer.split(',')[0].replace('CN=','')
+            Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
+            CAServerFQDN         = '' # This value can't be determined from the cert
+            CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
+            KeyLength            = $Cert.Publickey.Key.KeySize
+            Exportable           = '' # This value can't be determined from the cert 
+            ProviderName         = '' # This value can't be determined from the cert
+            OID                  = '' # This value can't be determined from the cert
+            KeyUsage             = '' # This value can't be determined from the cert
+            CertificateTemplate  = '' # This value can't be determined from the cert
         }
     }
     else
@@ -108,6 +143,35 @@ function Set-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CARootName,
+
+        [parameter(Mandatory = $false)]
+        [ValidateSet("1024","2048","4096","8192")]
+        [System.String]
+        $KeyLength = '1024',
+
+        [parameter(Mandatory = $false)]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
 
         [System.Management.Automation.PSCredential]
         $Credential,
@@ -150,19 +214,13 @@ function Set-TargetResource
     # In future versions, select variables from the list below could be moved to parameters!
     [System.String] $Subject             = "`"$Subject`""
     [System.String] $KeySpec             = '1'
-    [System.String] $KeyLength           = '1024'
-    [System.String] $Exportable          = 'TRUE'
     [System.String] $MachineKeySet       = 'TRUE'
     [System.String] $SMIME               = 'FALSE'
     [System.String] $PrivateKeyArchive   = 'FALSE'
     [System.String] $UserProtected       = 'FALSE'
     [System.String] $UseExistingKeySet   = 'FALSE'
-    [System.String] $ProviderName        = '"Microsoft RSA SChannel Cryptographic Provider"'
     [System.String] $ProviderType        = '12'
     [System.String] $RequestType         = 'CMC'
-    [System.String] $KeyUsage            = '0xa0'
-    [System.String] $OID                 = '1.3.6.1.5.5.7.3.1'
-    [System.String] $CertificateTemplate = 'WebServer'
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     [system.guid] $GUID = [system.guid]::NewGuid().guid
@@ -178,7 +236,7 @@ function Set-TargetResource
 Subject = $Subject
 KeySpec = $KeySpec
 KeyLength = $KeyLength
-Exportable = $Exportable
+Exportable = $($Exportable.ToString().ToUpper())
 MachineKeySet = $MachineKeySet
 SMIME = $SMIME
 PrivateKeyArchive = $PrivateKeyArchive
@@ -196,6 +254,7 @@ OID = $OID
     if ($Thumbprint)
     {
         $requestDetails += @"
+
 RenewalCert = $Thumbprint
 "@
     }
@@ -227,7 +286,7 @@ RenewalCert = $Thumbprint
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
                 $($LocalizedData.SubmittingRequestCertificateMessage -f $ReqPath,$CerPath,$CA)
-            ) -join '' )
+                ) -join '' )
 
         if ($Credential)
         {
@@ -339,6 +398,35 @@ function Test-TargetResource
         [System.String]
         $CARootName,
 
+        [parameter(Mandatory = $false)]
+        [ValidateSet("1024","2048","4096","8192")]
+        [System.String]
+        $KeyLength = '1024',
+
+        [parameter(Mandatory = $false)]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
         [System.Management.Automation.PSCredential]
         $Credential,
 
@@ -424,5 +512,3 @@ function Test-TargetResource
         ) -join '' )
     return $false
 } # end function Test-TargetResource
-
-Export-ModuleMember -Function *-TargetResource

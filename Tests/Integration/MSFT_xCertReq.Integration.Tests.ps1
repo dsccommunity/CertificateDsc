@@ -82,7 +82,7 @@ try
                 }
             $CertificateNew.Subject                        | Should Be "CN=$($TestCertReq.Subject)"
             $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($TestCertReq.CARootName)"
-
+            $CertificateNew.Publickey.Key.KeySize          | Should Be "CN=$($TestCertReq.KeyLength)"
             # Cleanup
             Remove-Item -Path $CertificateNew.PSPath -Force
         }
