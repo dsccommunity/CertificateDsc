@@ -244,9 +244,6 @@ RenewalCert = $validThumbprint
                 It 'does not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'xCertReq-Test.inf content is expected' {
-                    $Global:CertInfContent | Should Be $CertInf
-                }
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
@@ -270,9 +267,6 @@ RenewalCert = $validThumbprint
 
                 It 'does not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
-                }
-                It 'xCertReq-Test.inf content is expected' {
-                    $Global:CertInfContent | Should Be $CertInf
                 }
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
