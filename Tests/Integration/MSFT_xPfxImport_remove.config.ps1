@@ -1,5 +1,6 @@
 Configuration MSFT_xPfxImport_Remove_Config {
-    param (
+    param
+    (
         $Thumbprint,
         $Path
     )

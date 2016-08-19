@@ -14,13 +14,14 @@ Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:DSCModuleName `
     -DSCResourceName $script:DSCResourceName `
-    -TestType Unit 
+    -TestType Unit
 #endregion
 
 # Begin Testing
 try
 {
     InModuleScope $script:DSCResourceName {
+        $DSCResourceName = 'MSFT_xCertificateCommon'
         $invalidThumbprint = 'Zebra'
         $validThumbprint = (
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
@@ -38,7 +39,7 @@ try
         $invalidPath = 'TestDrive:'
         $validPath = "TestDrive:\$testFile"
 
-        Describe "$($script:DSCResourceName)\Test-CertificatePath" {
+        Describe "$DSCResourceName\Test-CertificatePath" {
 
             $null | Set-Content -Path $validPath
 
@@ -83,7 +84,7 @@ try
                 }
             }
         }
-        Describe "$($script:DSCResourceName)\Test-Thumbprint" {
+        Describe "$DSCResourceName\Test-Thumbprint" {
 
             Context 'a single valid thumbrpint by parameter' {
                 $result = Test-Thumbprint -Thumbprint $validThumbprint

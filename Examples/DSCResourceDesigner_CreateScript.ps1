@@ -116,11 +116,12 @@ Examples
 
     configuration SSL
     {
-        param (
+        param
+        (
             [Parameter(Mandatory=$true)]
             [ValidateNotNullorEmpty()]
             [PsCredential] $Credential
-            )
+        )
         Import-DscResource -ModuleName xCertificate
         Node 'localhost'
         {

@@ -1,3 +1,4 @@
+# Import public key certificate into Trusted Root store.
 Configuration Sample_xCertificateImport_MinimalUsage
 {
     Import-DscResource -ModuleName xCertificate

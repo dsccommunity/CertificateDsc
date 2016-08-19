@@ -1,4 +1,6 @@
 <#
+ Request and Accept a certificate from an Active Directory Root Certificate Authority.
+
  This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword to $true.
  Storing passwords in plain text is not a good practice and is presented only for simplicity and demonstration purposes.
  To learn how to securely store credentials through the use of certificates,
@@ -6,11 +8,13 @@
 #>
 configuration Sample_xCertReq_RequestSSL
 {
-    param (
+    param
+    (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullorEmpty()]
-        [PsCredential] $Credential
-        )
+        [PSCredential] $Credential
+    )
+
     Import-DscResource -ModuleName xCertificate
     Node 'localhost'
     {

@@ -1,5 +1,6 @@
 Configuration MSFT_xCertificateImport_Add_Config {
-    param (
+    param
+    (
         $Thumbprint,
         $Path
     )

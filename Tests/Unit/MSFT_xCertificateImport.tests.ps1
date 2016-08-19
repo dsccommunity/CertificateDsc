@@ -14,13 +14,14 @@ Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:DSCModuleName `
     -DSCResourceName $script:DSCResourceName `
-    -TestType Unit 
+    -TestType Unit
 #endregion
 
 # Begin Testing
 try
 {
     InModuleScope $script:DSCResourceName {
+        $DSCResourceName = 'MSFT_xCertificateImport'
         $validThumbprint = (
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
@@ -53,7 +54,7 @@ try
             Store      = 'My'
         }
 
-        Describe "$($script:DSCResourceName)\Get-TargetResource" {
+        Describe "$DSCResourceName\Get-TargetResource" {
             $null | Set-Content -Path $validPath
 
             $result = Get-TargetResource @PresentParams
@@ -65,7 +66,7 @@ try
                 $result.Path | Should BeExactly $validPath
             }
         }
-        Describe "$($script:DSCResourceName)\Test-TargetResource" {
+        Describe "$DSCResourceName\Test-TargetResource" {
             $null | Set-Content -Path $validPath
 
             It 'should return a bool' {
@@ -112,7 +113,7 @@ try
                 Test-TargetResource @AbsentParams | Should Be $false
             }
         }
-        Describe "$($script:DSCResourceName)\Set-TargetResource" {
+        Describe "$DSCResourceName\Set-TargetResource" {
             $null | Set-Content -Path $validPath
 
             Mock Import-Certificate
