@@ -32,6 +32,20 @@ Import-Module -Name ( Join-Path `
     The FQDN of the Active Directory Certificate Authority on the local area network.
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
+    .PARAMETER KeyLength
+    The bit length of the encryption key to be used.
+    .PARAMETER Exportable
+    The option to allow the certificate to be exportable, by default it will be true.
+    .PARAMETER ProviderName
+    The selection of provider for the type of encryption to be used.
+    .PARAMETER OID
+    The Object Identifier that is used to name the object.
+    .PARAMETER KeyUsage
+    The Keyusage is a restriction method that determines what a certificate can be used for.
+    .PARAMETER CertificateTemplate
+    The template used for the definiton of the certificate.
+    .PARAMETER SubjectAltName
+    The subject alternative name used to createthe certificate.
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
     .PARAMETER AutoRenew
@@ -87,6 +101,11 @@ function Get-TargetResource
         [System.String]
         $CertificateTemplate = 'WebServer',
 
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SubjectAltName,
+
         [System.Management.Automation.PSCredential]
         $Credential,
 
@@ -122,14 +141,15 @@ function Get-TargetResource
 
         $returnValue = @{
             Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN         = '' # This value can't be determined from the cert
+            CAServerFQDN         = $null # This value can't be determined from the cert
             CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
             KeyLength            = $Cert.Publickey.Key.KeySize
-            Exportable           = '' # This value can't be determined from the cert
-            ProviderName         = '' # This value can't be determined from the cert
-            OID                  = '' # This value can't be determined from the cert
-            KeyUsage             = '' # This value can't be determined from the cert
-            CertificateTemplate  = '' # This value can't be determined from the cert
+            Exportable           = $null # This value can't be determined from the cert
+            ProviderName         = $null # This value can't be determined from the cert
+            OID                  = $null # This value can't be determined from the cert
+            KeyUsage             = $null # This value can't be determined from the cert
+            CertificateTemplate  = $null # This value can't be determined from the cert
+            SubjectAltName       = $null # This value can't be determined from the cert
         }
     }
     else
@@ -149,6 +169,20 @@ function Get-TargetResource
     The FQDN of the Active Directory Certificate Authority on the local area network.
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
+    .PARAMETER KeyLength
+    The bit length of the encryption key to be used.
+    .PARAMETER Exportable
+    The option to allow the certificate to be exportable, by default it will be true.
+    .PARAMETER ProviderName
+    The selection of provider for the type of encryption to be used.
+    .PARAMETER OID
+    The Object Identifier that is used to name the object.
+    .PARAMETER KeyUsage
+    The Keyusage is a restriction method that determines what a certificate can be used for.
+    .PARAMETER CertificateTemplate
+    The template used for the definiton of the certificate.
+    .PARAMETER SubjectAltName
+    The subject alternative name used to createthe certificate.
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
     .PARAMETER AutoRenew
@@ -202,6 +236,11 @@ function Set-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SubjectAltName,
 
         [System.Management.Automation.PSCredential]
         $Credential,
@@ -283,6 +322,15 @@ CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
+    if ($PSBoundParameters.ContainsKey('SubjectAltName'))
+    {
+        # If a Subject Alt Name was specified, add it.
+        $requestDetails += @"
+
+[Extensions]
+2.5.29.17 = `"{text}$SubjectAltName`"
+"@
+    }
     if ($thumbprint)
     {
         $requestDetails += @"
@@ -417,6 +465,20 @@ RenewalCert = $Thumbprint
     The FQDN of the Active Directory Certificate Authority on the local area network.
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
+    .PARAMETER KeyLength
+    The bit length of the encryption key to be used.
+    .PARAMETER Exportable
+    The option to allow the certificate to be exportable, by default it will be true.
+    .PARAMETER ProviderName
+    The selection of provider for the type of encryption to be used.
+    .PARAMETER OID
+    The Object Identifier that is used to name the object.
+    .PARAMETER KeyUsage
+    The Keyusage is a restriction method that determines what a certificate can be used for.
+    .PARAMETER CertificateTemplate
+    The template used for the definiton of the certificate.
+    .PARAMETER SubjectAltName
+    The subject alternative name used to createthe certificate.
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
     .PARAMETER AutoRenew
@@ -471,6 +533,11 @@ function Test-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
+
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SubjectAltName,
 
         [System.Management.Automation.PSCredential]
         $Credential,

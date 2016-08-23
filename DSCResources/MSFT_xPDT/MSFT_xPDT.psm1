@@ -550,7 +550,7 @@ function Start-Win32Process
             {
                 try
                 {
-                    Start-PInvoke
+                    Initialize-PInvoke
                     [Source.NativeMethods]::CreateProcessAsUser(`
                         ("$Path " + $Arguments),`
                         $Credential.GetNetworkCredential().Domain,`

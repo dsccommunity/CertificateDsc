@@ -8,6 +8,7 @@ $ProviderName         = '"Microsoft RSA SChannel Cryptographic Provider"'
 $OID                  = '1.3.6.1.5.5.7.3.1'
 $KeyUsage             = '0xa0'
 $CertificateTemplate  = 'WebServer'
+$SubjectAltName       = 'dns=contoso.com&dns=fabrikam.com'
 
 # If automated testing with a real CA can be performed then the credentials should be
 # obtained non-interactively way - do not do this in a production environment.
@@ -23,6 +24,7 @@ $TestCertReq = [PSObject]@{
     OID                 = $OID
     KeyUsage            = $KeyUsage
     CertificateTemplate = $CertificateTemplate
+    SubjectAltName      = $SubjectAltName
 }
 
 Configuration MSFT_xCertReq_Config {
@@ -39,6 +41,7 @@ Configuration MSFT_xCertReq_Config {
             OID                 = $TestCertReq.OID
             KeyUsage            = $TestCertReq.KeyUsage
             CertificateTemplate = $TestCertReq.CertificateTemplate
+            SubjectAltName      = $TestCertReq.SubjectAltName
         }
     }
 }
