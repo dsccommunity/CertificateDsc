@@ -265,7 +265,7 @@ RenewalCert = $validThumbprint
                 $result.CertificateTemplate  | Should BeNullOrEmpty
             }
         }
-        # endregion
+        #endregion
 
         #region Set-TargetResource
         Describe "$DSCResourceName\Set-TargetResource" {
@@ -523,7 +523,7 @@ RenewalCert = $validThumbprint
                 }
             }
         }
-        # endregion
+        #endregion
 
         Describe "$DSCResourceName\Test-TargetResource" {
             It 'should return a bool' {
