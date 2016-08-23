@@ -84,16 +84,24 @@ try
             $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($TestCertReq.CARootName)"
             $CertificateNew.Publickey.Key.KeySize          | Should Be $TestCertReq.KeyLength
         }
-    }
+
+        AfterAll {
+            # Cleanup
+            $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
+                Where-Object -FilterScript {
+                    $_.Subject -eq "CN=$($TestCertReq.Subject)" -and `
+                    $_.Issuer.split(',')[0] -eq "CN=$($TestCertReq.CARootName)"
+                }
+
+            Remove-Item -Path $CertificateNew.PSPath `
+                -Force `
+                -ErrorAction SilentlyContinue
+        }
+   }
     #endregion
 }
 finally
 {
-    # Cleanup
-    Remove-Item -Path $CertificateNew.PSPath `
-        -Force `
-        -ErrorAction SilentlyContinue
-
     #region FOOTER
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
     #endregion
