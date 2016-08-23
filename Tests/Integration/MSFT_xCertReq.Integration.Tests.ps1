@@ -3,7 +3,7 @@
  Running these tests requires access to a AD CS Certificate Authority.
  These integration tests are configured to use credentials to connect to the CA.
  Therefore, automation of these tests shouldn't be performed using a production CA.
-#> 
+#>
 
 $script:DSCModuleName   = 'xCertificate'
 $script:DSCResourceName = 'MSFT_xCertReq'
@@ -82,15 +82,18 @@ try
                 }
             $CertificateNew.Subject                        | Should Be "CN=$($TestCertReq.Subject)"
             $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($TestCertReq.CARootName)"
-            $CertificateNew.Publickey.Key.KeySize          | Should Be "CN=$($TestCertReq.KeyLength)"
-            # Cleanup
-            Remove-Item -Path $CertificateNew.PSPath -Force
+            $CertificateNew.Publickey.Key.KeySize          | Should Be $TestCertReq.KeyLength
         }
     }
     #endregion
 }
 finally
 {
+    # Cleanup
+    Remove-Item -Path $CertificateNew.PSPath `
+        -Force `
+        -ErrorAction SilentlyContinue
+
     #region FOOTER
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
     #endregion

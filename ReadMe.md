@@ -21,14 +21,15 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` Subject**: Provide the text string to use as the subject of the certificate. Key.
 - **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Required.
 - **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Required.
-- **`[String]` KeyLength**: The bit length of the encryption key to be used. Optional. { *1024* | 2048 | 4096 | 8192 }. 
+- **`[String]` KeyLength**: The bit length of the encryption key to be used. Optional. { *1024* | 2048 | 4096 | 8192 }.
 - **`[Boolean]` Exportable**: The option to allow the certificate to be exportable, by default it will be true. Optional. Defaults to `$true`.
 - **`[String]` ProviderName**: The selection of provider for the type of encryption to be used. Optional. Defaults to `"Microsoft RSA SChannel Cryptographic Provider"`.
 - **`[String]` OID**: The Object Identifier that is used to name the object. Optional. Defaults to `1.3.6.1.5.5.7.3.1`.
 - **`[String]` KeyUsage**: The Keyusage is a restriction method that determines what a certificate can be used for. Optional. Defaults to `0xa0`
-- **`[String]` CertificateTemplate** The template used for the definiton of the certificate. Optional. Defaults to `WebServer`   
+- **`[String]` CertificateTemplate** The template used for the definiton of the certificate. Optional. Defaults to `WebServer`
+- **`[String]` SubjectAltName** The subject alternative name used to createthe certificate. Optional.
 - **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
-- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional. 
+- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
 
 ### xPfxImport
 
@@ -88,6 +89,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Created unit tests and integration tests.
     - Improved logging output to enable easier debugging.
     - Added help to all functions.
+    - Added additional parameters KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate, SubjectAltName
 * xPDT:
     - Renamed to match standard module name format (MSFT_x).
     - Modified to meet 100 characters or less line length where possible.
@@ -95,9 +97,6 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Removed unused functions.
     - Renamed functions to standard verb-noun form.
     - Added help to all functions.
-
-### 2.2.0.0
-* Added additional parameters to xCertReq - (KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate)
 
 ### 2.1.0.0
 * Fixed xCertReq to support CA Root Name with spaces
@@ -124,6 +123,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Examples
 
 ### xCertReq
+
+#### Request an SSL Certificate
 
 Request and Accept a certificate from an Active Directory Root Certificate Authority.
 
@@ -169,6 +170,59 @@ xCertReq_RequestSSL `
     -Credential (Get-Credential) `
     -OutputPath 'c:\xCertReq_RequestSSL'
 Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\xCertReq_RequestSSL'
+
+# Validate results
+Get-ChildItem Cert:\LocalMachine\My
+```
+
+#### Request an SSL Certificate with alternative DNS names
+
+Request and Accept a certificate from an Active Directory Root Certificate Authority.
+This certificate is issued using an subject alternate name with multiple DNS addresses.
+
+```powershell
+configuration Sample_xCertReq_RequestAltSSL
+{
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullorEmpty()]
+        [PSCredential] $Credential
+    )
+
+    Import-DscResource -ModuleName xCertificate
+    Node 'localhost'
+    {
+        xCertReq SSLCert
+        {
+            CARootName                = 'test-dc01-ca'
+            CAServerFQDN              = 'dc01.test.pha'
+            Subject                   = 'contoso.com'
+            KeyLength                 = '1024'
+            Exportable                = $true
+            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                       = '1.3.6.1.5.5.7.3.1'
+            KeyUsage                  = '0xa0'
+            CertificateTemplate       = 'WebServer'
+            SubjectAltName            = 'dns=fabrikam.com&dns=contoso.com'
+            AutoRenew                 = $true
+            Credential                = $Credential
+        }
+    }
+}
+$configData = @{
+    AllNodes = @(
+        @{
+            NodeName                    = 'localhost';
+            PSDscAllowPlainTextPassword = $true
+            }
+        )
+    }
+Sample_xCertReq_RequestSSL `
+    -ConfigurationData $configData `
+    -Credential (Get-Credential) `
+    -OutputPath 'c:\Sample_xCertReq_RequestAltSSL'
+Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xCertReq_RequestAltSSL'
 
 # Validate results
 Get-ChildItem Cert:\LocalMachine\My
