@@ -261,11 +261,10 @@ RenewalCert = $validThumbprint
 "@
         $CertInfKeyRenew = $CertInfRenew -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
         $CertInfSubjectAltName = $Certinf
-        $CertInfSubjectAltName = @"
+        $CertInfSubjectAltName += @"
 
 [Extensions]
 2.5.29.17 = "{text}$SubjectAltName"
-    }
 "@
 
         Describe "$DSCResourceName\Get-TargetResource" {
