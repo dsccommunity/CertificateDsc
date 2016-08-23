@@ -1,8 +1,9 @@
+# Import a PFX into the WebHosting store and bind it to an IIS Web Site.
 Configuration Sample_xPfxImport_IIS_WebSite
 {
-    param(
-        [PSCredential]
-        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+    param
+    (
+        [PSCredential] $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
     )
 
     Import-DscResource -ModuleName xCertificate

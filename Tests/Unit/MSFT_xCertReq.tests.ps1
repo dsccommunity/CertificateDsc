@@ -1,5 +1,5 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
-param()
+param ()
 
 $script:DSCModuleName      = 'xCertificate'
 $script:DSCResourceName    = 'MSFT_xCertReq'
@@ -17,14 +17,15 @@ Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:DSCModuleName `
     -DSCResourceName $script:DSCResourceName `
-    -TestType Unit 
+    -TestType Unit
 #endregion
 
 # Begin Testing
 try
 {
     InModuleScope $script:DSCResourceName {
-        function New-InvalidOperationError
+        $DSCResourceName = 'MSFT_xCertReq'
+        function Get-InvalidOperationError
         {
             [CmdletBinding()]
             param
@@ -41,14 +42,14 @@ try
             )
 
             $exception = New-Object -TypeName System.InvalidOperationException `
-                -ArgumentList $ErrorMessage;
-            $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation;
+                -ArgumentList $ErrorMessage
+            $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
             $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord `
-                -ArgumentList $exception, $ErrorId, $errorCategory, $null;
-            return $errorRecord;
-        } # end function New-InvalidOperationError
+                -ArgumentList $exception, $ErrorId, $errorCategory, $null
+            return $errorRecord
+        } # end function Get-InvalidOperationError
 
-        function New-InvalidArgumentError
+        function Get-InvalidArgumentError
         {
             [CmdletBinding()]
             param
@@ -65,12 +66,12 @@ try
             )
 
             $exception = New-Object -TypeName System.ArgumentException `
-                -ArgumentList $ErrorMessage;
-            $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidArgument;
+                -ArgumentList $ErrorMessage
+            $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidArgument
             $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord `
-                -ArgumentList $exception, $ErrorId, $errorCategory, $null;
-            return $errorRecord;
-        } # end function New-InvalidArgumentError
+                -ArgumentList $exception, $ErrorId, $errorCategory, $null
+            return $errorRecord
+        } # end function Get-InvalidArgumentError
 
         $validThumbprint = (
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
@@ -245,8 +246,12 @@ RenewalCert = $validThumbprint
 "@
         $CertInfKeyRenew = $CertInfRenew -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
 
+<<<<<<< HEAD
         # region Get-TargetResource
         Describe "$($script:DSCResourceName)\Get-TargetResource" {
+=======
+        Describe "$DSCResourceName\Get-TargetResource" {
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
             Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                 -Mockwith { $validCert }
             $result = Get-TargetResource @Params
@@ -267,8 +272,13 @@ RenewalCert = $validThumbprint
         }
         # endregion
 
+<<<<<<< HEAD
         # region Set-TargetResource
         Describe "$($script:DSCResourceName)\Set-TargetResource" {
+=======
+        #region Set-TargetResource
+        Describe "$DSCResourceName\Set-TargetResource" {
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
             Mock -CommandName Join-Path -MockWith { 'xCertReq-Test' } `
                 -ParameterFilter { $Path -eq $ENV:Temp }
             Mock -CommandName Test-Path -MockWith { $true } `
@@ -276,17 +286,20 @@ RenewalCert = $validThumbprint
             Mock -CommandName Test-Path -MockWith { $true } `
                 -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
             Mock -CommandName CertReq.exe
+            Mock -CommandName Set-Content `
+                -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInf
+                }
 
             Context 'autorenew is false, credentials not passed' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
-                    -MockWith { $Global:CertInfContent = $Value }
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'does not throw' {
                     { Set-TargetResource @ParamsNoCred } | Should Not Throw
                 }
+<<<<<<< HEAD
                 It 'xCertReq-Test.inf content is expected' {
                     $Global:CertInfContent | Should Be $Certinf
                 }
@@ -314,6 +327,8 @@ RenewalCert = $validThumbprint
                 It 'xCertReq-Test.inf content is expected' {
                     $Global:CertInfContent | Should Be $CertinfKey
                 }
+=======
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
@@ -321,24 +336,27 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
             }
 
             Context 'autorenew is true, credentials not passed and certificate does not exist' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
-                    -MockWith { $Global:CertInfContent = $Value }
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'does not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
+<<<<<<< HEAD
                 It 'xCertReq-Test.inf content is expected' {
                     $Global:CertInfContent | Should Be $Certinf
                 }
+=======
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
@@ -348,24 +366,21 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
             }
 
             Context 'autorenew is true, credentials not passed and valid certificate exists' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
-                    -MockWith { $Global:CertInfContent = $Value }
                 Mock -CommandName Get-ChildItem -Mockwith { $validCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'does not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'xCertReq-Test.inf content is expected' {
-                    $Global:CertInfContent | Should Be $CertInf
-                }
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
@@ -375,11 +390,15 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
             }
 
+<<<<<<< HEAD
             Context 'autorenew is true, credentials not passed, keylength modified and valid certificate exists' {
                 Mock -CommandName Set-Content `
                     -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
@@ -406,19 +425,20 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
             }
+=======
+            Mock -CommandName Set-Content `
+                -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInfRenew
+                }
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
 
             Context 'autorenew is true, credentials not passed and expiring certificate exists' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
-                    -MockWith { $Global:CertInfContent = $Value }
                 Mock -CommandName Get-ChildItem -Mockwith { $expiringCert } `
-                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } 
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'does not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
-                }
-                It 'xCertReq-Test.inf content is expected' {
-                    $Global:CertInfContent | Should Be $CertInfRenew
                 }
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
@@ -429,12 +449,16 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInfRenew
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
             }
 
             Context 'autorenew is true, credentials not passed and expired certificate exists' {
+<<<<<<< HEAD
                 Mock -CommandName Set-Content `
                     -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
                     -MockWith { $Global:CertInfContent = $Value }
@@ -466,14 +490,13 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Set-Content `
                     -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
                     -MockWith { $Global:CertInfContent = $Value }
+=======
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
                 Mock -CommandName Get-ChildItem -Mockwith { $expiringCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'does not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
-                }
-                It 'xCertReq-Test.inf content is expected' {
-                    $Global:CertInfContent | Should Be $CertInfRenew
                 }
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
@@ -484,28 +507,34 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInfRenew
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
             }
 
             Mock -CommandName Test-Path -MockWith { $false } `
                 -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+            Mock -CommandName Set-Content `
+                -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInf
+                }
 
             Context 'autorenew is false, credentials not passed, certificate request creation failed' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
-                    -MockWith { $Global:CertInfContent = $Value }
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                $errorRecord = New-InvalidArgumentError `
+                $errorRecord = Get-InvalidArgumentError `
                     -ErrorId 'CertificateReqNotFoundError' `
                     -ErrorMessage ($LocalizedData.CertificateReqNotFoundError -f 'xCertReq-Test.req')
 
                 It 'throws CertificateReqNotFoundError exception' {
                     { Set-TargetResource @ParamsNoCred } | Should Throw $errorRecord
                 }
+<<<<<<< HEAD
                 It 'xCertReq-Test.inf content is expected' {
                     $Global:CertInfContent | Should Be $Certinf
                 }
@@ -537,6 +566,8 @@ RenewalCert = $validThumbprint
                 It 'xCertReq-Test.inf content is expected' {
                     $Global:CertInfContent | Should Be $CertInfKey
                 }
+=======
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
@@ -544,7 +575,10 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Test-Path -Exactly 0 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 1
                 }
             }
@@ -555,22 +589,22 @@ RenewalCert = $validThumbprint
                 -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
 
             Context 'autorenew is false, credentials not passed, certificate creation failed' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
-                    -MockWith { $Global:CertInfContent = $Value }
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                $errorRecord = New-InvalidArgumentError `
+                $errorRecord = Get-InvalidArgumentError `
                     -ErrorId 'CertificateCerNotFoundError' `
                     -ErrorMessage ($LocalizedData.CertificateCerNotFoundError -f 'xCertReq-Test.cer')
 
                 It 'throws CertificateCerNotFoundError exception' {
                     { Set-TargetResource @ParamsNoCred } | Should Throw $errorRecord
                 }
+<<<<<<< HEAD
                 It 'xCertReq-Test.inf content is expected' {
                     $Global:CertInfContent | Should Be $Certinf
                 }
+=======
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
@@ -578,7 +612,10 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
                 }
             }
@@ -591,9 +628,6 @@ RenewalCert = $validThumbprint
                 -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
 
             Context 'autorenew is false, credentials passed' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.inf' } `
-                    -MockWith { $Global:CertInfContent = $Value }
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
                 Mock -CommandName Get-Content -Mockwith { 'Output' } `
@@ -602,18 +636,21 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
                 Mock -CommandName Import-Module
 
-                function StartWin32Process { param ( $Path,$Arguments,$Credential ) }
-                function WaitForWin32ProcessEnd { param ( $Path,$Arguments,$Credential ) }
+                function Start-Win32Process { param ( $Path,$Arguments,$Credential ) }
+                function Wait-Win32ProcessEnd { param ( $Path,$Arguments,$Credential ) }
 
-                Mock -CommandName StartWin32Process -ModuleName MSFT_xCertReq
-                Mock -CommandName WaitForWin32ProcessEnd -ModuleName MSFT_xCertReq
+                Mock -CommandName Start-Win32Process -ModuleName MSFT_xCertReq
+                Mock -CommandName Wait-Win32ProcessEnd -ModuleName MSFT_xCertReq
 
                 It 'does not throw' {
                     { Set-TargetResource @Params } | Should Not Throw
                 }
+<<<<<<< HEAD
                 It 'xCertReq-Test.inf content is expected' {
                     $Global:CertInfContent | Should Be $Certinf
                 }
+=======
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
                 It 'calls expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
@@ -621,10 +658,13 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
-                    Assert-MockCalled -CommandName StartWin32Process -ModuleName MSFT_xCertReq -Exactly 1
-                    Assert-MockCalled -CommandName WaitForWin32ProcessEnd -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessEnd -ModuleName MSFT_xCertReq -Exactly 1
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
                     Assert-MockCalled -CommandName Get-Content -Exactly 1 `
@@ -636,8 +676,12 @@ RenewalCert = $validThumbprint
         }
         # endregion
 
+<<<<<<< HEAD
         # region Test-TargetResource
         Describe "$($script:DSCResourceName)\Test-TargetResource" {
+=======
+        Describe "$DSCResourceName\Test-TargetResource" {
+>>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
             It 'should return a bool' {
                 Test-TargetResource @Params | Should BeOfType Boolean
             }

@@ -23,11 +23,30 @@ Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
     -ChildPath '\MSFT_xCertificateCommon\MSFT_xCertificateCommon.psm1' )
 
+<#
+    .SYNOPSIS
+    Returns the current state of the PFX Certificte file that should be imported.
+    .PARAMETER Thumbprint
+    The thumbprint (unique identifier) of the PFX file you're importing.
+    .PARAMETER Path
+    The Windows Certificate Store Location to import the PFX file to.
+    .PARAMETER Location
+    The Windows Certificate Store Location to import the PFX file to.
+    .PARAMETER Store
+    The Windows Certificate Store Name to import the PFX file to.
+    .PARAMETER Exportable
+    Determines whether the private key is exportable from the machine after it has been imported.
+    .PARAMETER Credential
+    A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    .PARAMETER Ensure
+    Specifies whether the PFX file should be present or absent.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([Hashtable])]
-    param(
+    param
+    (
         [Parameter(Mandatory)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
@@ -62,28 +81,28 @@ function Get-TargetResource
         $Ensure = 'Present'
     )
 
-    $CertificateStore = 'Cert:' |
+    $certificateStore = 'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingPfxStatusMessage -f $Thumbprint,$CertificateStore)
+            $($LocalizedData.GettingPfxStatusMessage -f $Thumbprint,$certificateStore)
         ) -join '' )
 
-    if ((Test-Path $CertificateStore) -eq $false)
+    if ((Test-Path $certificateStore) -eq $false)
     {
-        ThrowInvalidArgumentError `
+        New-InvalidArgumentError `
             -ErrorId 'CertificateStoreNotFound' `
-            -ErrorMessage ($LocalizedData.CertificateStoreNotFoundError -f $CertificateStore)
+            -ErrorMessage ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore)
     }
 
-    $CheckEnsure = [Bool](
-        $CertificateStore |
+    $checkEnsure = [Bool](
+        $certificateStore |
         Get-ChildItem |
         Where-Object -FilterScript {$_.Thumbprint -ieq $Thumbprint}
     )
-    if ($CheckEnsure)
+    if ($checkEnsure)
     {
         $Ensure = 'Present'
     }
@@ -102,11 +121,30 @@ function Get-TargetResource
     }
 } # end function Get-TargetResource
 
+<#
+    .SYNOPSIS
+    Tests if the PFX Certificate file needs to be imported or removed.
+    .PARAMETER Thumbprint
+    The thumbprint (unique identifier) of the PFX file you're importing.
+    .PARAMETER Path
+    The Windows Certificate Store Location to import the PFX file to.
+    .PARAMETER Location
+    The Windows Certificate Store Location to import the PFX file to.
+    .PARAMETER Store
+    The Windows Certificate Store Name to import the PFX file to.
+    .PARAMETER Exportable
+    Determines whether the private key is exportable from the machine after it has been imported.
+    .PARAMETER Credential
+    A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    .PARAMETER Ensure
+    Specifies whether the PFX file should be present or absent.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([Boolean])]
-    param(
+    param
+    (
         [Parameter(Mandatory)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
@@ -143,13 +181,13 @@ function Test-TargetResource
 
     $result = @(Get-TargetResource @PSBoundParameters)
 
-    $CertificateStore = 'Cert:' |
+    $certificateStore = 'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.TestingPfxStatusMessage -f $Thumbprint,$CertificateStore)
+            $($LocalizedData.TestingPfxStatusMessage -f $Thumbprint,$certificateStore)
         ) -join '' )
 
 
@@ -160,10 +198,29 @@ function Test-TargetResource
     return $true
 } # end function Test-TargetResource
 
+<#
+    .SYNOPSIS
+    Imports or removes the specified PFX Certifiicate file.
+    .PARAMETER Thumbprint
+    The thumbprint (unique identifier) of the PFX file you're importing.
+    .PARAMETER Path
+    The Windows Certificate Store Location to import the PFX file to.
+    .PARAMETER Location
+    The Windows Certificate Store Location to import the PFX file to.
+    .PARAMETER Store
+    The Windows Certificate Store Name to import the PFX file to.
+    .PARAMETER Exportable
+    Determines whether the private key is exportable from the machine after it has been imported.
+    .PARAMETER Credential
+    A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    .PARAMETER Ensure
+    Specifies whether the PFX file should be present or absent.
+#>
 function Set-TargetResource
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param(
+    param
+    (
         [Parameter(Mandatory)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
@@ -198,28 +255,29 @@ function Set-TargetResource
         $Ensure = 'Present'
     )
 
-    $CertificateStore = 'Cert:' |
+    $certificateStore = 'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.SettingPfxStatusMessage -f $Thumbprint,$CertificateStore)
+            $($LocalizedData.SettingPfxStatusMessage -f $Thumbprint,$certificateStore)
         ) -join '' )
 
     if ($Ensure -ieq 'Present')
     {
         if ($PSCmdlet.ShouldProcess(($LocalizedData.ImportingPfxShould `
-            -f $Path,$CertificateStore)))
+            -f $Path,$certificateStore)))
         {
+            # Import the certificate into the Store
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.ImportingPfxMessage -f $Path,$CertificateStore)
+                    $($LocalizedData.ImportingPfxMessage -f $Path,$certificateStore)
                 ) -join '' )
 
             $param = @{
                 Exportable        = $Exportable
-                CertStoreLocation = $CertificateStore
+                CertStoreLocation = $certificateStore
                 FilePath          = $Path
             }
             if ($Credential)
@@ -231,12 +289,13 @@ function Set-TargetResource
     }
     elseif ($Ensure -ieq 'Absent')
     {
+        # Remove the certificate from the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.RemovingPfxMessage -f $Thumbprint,$CertificateStore)
+                $($LocalizedData.RemovingPfxMessage -f $Thumbprint,$certificateStore)
             ) -join '' )
 
-        Get-ChildItem -Path $CertificateStore |
+        Get-ChildItem -Path $certificateStore |
             Where-Object { $_.Thumbprint -ieq $thumbprint } |
             Remove-Item -Force
     }
