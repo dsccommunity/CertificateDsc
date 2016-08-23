@@ -246,19 +246,13 @@ function Set-TargetResource
     # In future versions, select variables from the list below could be moved to parameters!
     $Subject             = "`"$Subject`""
     $keySpec             = '1'
-    $keyLength           = '1024'
-    $exportable          = 'TRUE'
     $machineKeySet       = 'TRUE'
     $smime               = 'FALSE'
     $privateKeyArchive   = 'FALSE'
     $userProtected       = 'FALSE'
     $useExistingKeySet   = 'FALSE'
-    $providerName        = '"Microsoft RSA SChannel Cryptographic Provider"'
     $providerType        = '12'
     $requestType         = 'CMC'
-    $keyUsage            = '0xa0'
-    $oid                 = '1.3.6.1.5.5.7.3.1'
-    $certificateTemplate = 'WebServer'
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
@@ -272,22 +266,22 @@ function Set-TargetResource
     $requestDetails = @"
 [NewRequest]
 Subject = $Subject
-KeySpec = $KeySpec
+KeySpec = $keySpec
 KeyLength = $KeyLength
 Exportable = $($Exportable.ToString().ToUpper())
 MachineKeySet = $MachineKeySet
-SMIME = $SMIME
-PrivateKeyArchive = $PrivateKeyArchive
-UserProtected = $UserProtected
-UseExistingKeySet = $UseExistingKeySet
+SMIME = $smime
+PrivateKeyArchive = $privateKeyArchive
+UserProtected = $userProtected
+UseExistingKeySet = $useExistingKeySet
 ProviderName = $ProviderName
-ProviderType = $ProviderType
-RequestType = $RequestType
+ProviderType = $providerType
+RequestType = $requestType
 KeyUsage = $KeyUsage
 [RequestAttributes]
-CertificateTemplate = $certificateTemplate
+CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
-OID = $oid
+OID = $OID
 "@
     if ($thumbprint)
     {
