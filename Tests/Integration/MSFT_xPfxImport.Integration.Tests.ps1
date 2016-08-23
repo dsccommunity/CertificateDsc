@@ -1,5 +1,5 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
-param()
+param ()
 
 $script:DSCModuleName   = 'xCertificate'
 $script:DSCResourceName = 'MSFT_xPfxImport'

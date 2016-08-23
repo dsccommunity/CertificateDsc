@@ -43,11 +43,9 @@ else
 function Test-CertificatePath
 {
     [CmdletBinding()]
-    param(
-        [Parameter(
-            Mandatory,
-            ValueFromPipeline
-        )]
+    param
+    (
+        [Parameter(Mandatory,ValueFromPipeline)]
         [String[]]
         $Path,
 
@@ -58,9 +56,9 @@ function Test-CertificatePath
 
     Process
     {
-        foreach ($p in $Path)
+        foreach ($pathNode in $Path)
         {
-            if ($p | Test-Path -PathType Leaf)
+            if ($pathNode | Test-Path -PathType Leaf)
             {
                 $true
             }
@@ -70,9 +68,9 @@ function Test-CertificatePath
             }
             else
             {
-                ThrowInvalidArgumentError `
+                New-InvalidArgumentError `
                     -ErrorId 'CannotFindRootedPath' `
-                    -ErrorMessage ($LocalizedData.FileNotFoundError -f $p)
+                    -ErrorMessage ($LocalizedData.FileNotFoundError -f $pathNode)
             }
         }
     }
@@ -107,11 +105,9 @@ function Test-CertificatePath
 function Test-Thumbprint
 {
     [CmdletBinding()]
-    param(
-        [Parameter(
-            Mandatory,
-            ValueFromPipeline
-        )]
+    param
+    (
+        [Parameter(Mandatory,ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [String[]]
         $Thumbprint,
@@ -123,21 +119,27 @@ function Test-Thumbprint
 
     Begin
     {
-        # Get a list of all Valid Hash types and lengths into an array
-        $validHashes = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
+        # Get a list of Hash Providers
+        $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
             Where-Object -FilterScript {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            } |
-            ForEach-Object -Process {
-                New-Object -TypeName PSObject -Property @{
-                    Hash    = $_.BaseType.Name
-                    BitSize = ( New-Object -TypeName $_).HashSize
-                } |
-                    Add-Member -MemberType ScriptProperty -Name HexLength -Value {
-                        $this.BitSize / 4
-                    } -PassThru
             }
+
+        # Get a list of all Valid Hash types and lengths into an array
+        $validHashes = @()
+        foreach ($hashProvider in $hashProviders)
+        {
+            $bitSize = ( New-Object -TypeName $hashProvider ).HashSize
+            $validHash = New-Object `
+                -TypeName PSObject `
+                -Property @{
+                    Hash      = $hashProvider.BaseType.Name
+                    BitSize   = $bitSize
+                    HexLength = $bitSize / 4
+                }
+            $validHashes += @( $validHash )
+        }
     }
 
     Process
@@ -162,7 +164,7 @@ function Test-Thumbprint
             }
             else
             {
-                ThrowInvalidArgumentError `
+                New-InvalidArgumentError `
                     -ErrorId 'CannotFindRootedPath' `
                     -ErrorMessage ($LocalizedData.InvalidHashError -f $hash)
             }
@@ -170,7 +172,17 @@ function Test-Thumbprint
     }
 } # end function Test-Thumbprint
 
-function ThrowInvalidOperationError
+<#
+.SYNOPSIS
+  Throws an InvalidOperation custom exception.
+
+.PARAMETER ErrorId
+ The error Id of the exception.
+
+.PARAMETER ErrorMessage
+ The error message text to set in the exception.
+#>
+function New-InvalidOperationError
 {
     [CmdletBinding()]
     param
@@ -187,14 +199,24 @@ function ThrowInvalidOperationError
     )
 
     $exception = New-Object -TypeName System.InvalidOperationException `
-        -ArgumentList $ErrorMessage;
-    $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation;
+        -ArgumentList $ErrorMessage
+    $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
     $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord `
-        -ArgumentList $exception, $ErrorId, $errorCategory, $null;
-    throw $errorRecord;
-} # end function ThrowInvalidOperationError
+        -ArgumentList $exception, $ErrorId, $errorCategory, $null
+    throw $errorRecord
+} # end function New-InvalidOperationError
 
-function ThrowInvalidArgumentError
+<#
+.SYNOPSIS
+  Throws an InvalidArgument custom exception.
+
+.PARAMETER ErrorId
+ The error Id of the exception.
+
+.PARAMETER ErrorMessage
+ The error message text to set in the exception.
+#>
+function New-InvalidArgumentError
 {
     [CmdletBinding()]
     param
@@ -211,9 +233,9 @@ function ThrowInvalidArgumentError
     )
 
     $exception = New-Object -TypeName System.ArgumentException `
-        -ArgumentList $ErrorMessage;
-    $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidArgument;
+        -ArgumentList $ErrorMessage
+    $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidArgument
     $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord `
-        -ArgumentList $exception, $ErrorId, $errorCategory, $null;
-    throw $errorRecord;
-} # end function ThrowInvalidArgumentError
+        -ArgumentList $exception, $ErrorId, $errorCategory, $null
+    throw $errorRecord
+} # end function New-InvalidArgumentError

@@ -23,11 +23,26 @@ Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
     -ChildPath '\MSFT_xCertificateCommon\MSFT_xCertificateCommon.psm1' )
 
+<#
+    .SYNOPSIS
+    Returns the current state of the CER Certificte file that should be imported.
+    .PARAMETER Thumbprint
+    The thumbprint (unique identifier) of the certificate you're importing.
+    .PARAMETER Path
+    The path to the CER file you want to import.
+    .PARAMETER Location
+    The Windows Certificate Store Location to import the certificate to.
+    .PARAMETER Store
+    The Windows Certificate Store Name to import the certificate to.
+    .PARAMETER Ensure
+    Specifies whether the certificate should be present or absent.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([Hashtable])]
-    param(
+    param
+    (
         [Parameter(Mandatory)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
@@ -54,28 +69,28 @@ function Get-TargetResource
         $Ensure = 'Present'
     )
 
-    $CertificateStore = 'Cert:' |
+    $certificateStore = 'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingCertificateStatusMessage -f $Thumbprint,$CertificateStore)
+            $($LocalizedData.GettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
         ) -join '' )
 
-    if ((Test-Path $CertificateStore) -eq $false)
+    if ((Test-Path $certificateStore) -eq $false)
     {
-        ThrowInvalidArgumentError `
+        New-InvalidArgumentError `
             -ErrorId 'CertificateStoreNotFound' `
-            -ErrorMessage ($LocalizedData.CertificateStoreNotFoundError -f $CertificateStore)
+            -ErrorMessage ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore)
     }
 
-    $CheckEnsure = [Bool] (
-        $CertificateStore |
+    $checkEnsure = [Bool] (
+        $certificateStore |
         Get-ChildItem |
         Where-Object -FilterScript { $_.Thumbprint -ieq $Thumbprint }
     )
-    if ($CheckEnsure)
+    if ($checkEnsure)
     {
         $Ensure = 'Present'
     }
@@ -93,11 +108,26 @@ function Get-TargetResource
     }
 } # end function Get-TargetResource
 
+<#
+    .SYNOPSIS
+    Tests if the CER Certificate file needs to be imported or removed.
+    .PARAMETER Thumbprint
+    The thumbprint (unique identifier) of the certificate you're importing.
+    .PARAMETER Path
+    The path to the CER file you want to import.
+    .PARAMETER Location
+    The Windows Certificate Store Location to import the certificate to.
+    .PARAMETER Store
+    The Windows Certificate Store Name to import the certificate to.
+    .PARAMETER Ensure
+    Specifies whether the certificate should be present or absent.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([Boolean])]
-    param(
+    param
+    (
         [Parameter(Mandatory)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
@@ -126,7 +156,7 @@ function Test-TargetResource
 
     $result = @(Get-TargetResource @PSBoundParameters)
 
-    $CertificateStore = 'Cert:' |
+    $certificateStore = 'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
 
@@ -135,7 +165,6 @@ function Test-TargetResource
             $($LocalizedData.TestingCertificateStatusMessage -f $Thumbprint,$CertificateStore)
         ) -join '' )
 
-
     if ($Ensure -ne $result.Ensure)
     {
         return $false
@@ -143,10 +172,25 @@ function Test-TargetResource
     return $true
 } # end function Test-TargetResource
 
+<#
+    .SYNOPSIS
+    Imports or removes the specified CER Certifiicate file.
+    .PARAMETER Thumbprint
+    The thumbprint (unique identifier) of the certificate you're importing.
+    .PARAMETER Path
+    The path to the CER file you want to import.
+    .PARAMETER Location
+    The Windows Certificate Store Location to import the certificate to.
+    .PARAMETER Store
+    The Windows Certificate Store Name to import the certificate to.
+    .PARAMETER Ensure
+    Specifies whether the certificate should be present or absent.
+#>
 function Set-TargetResource
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param(
+    param
+    (
         [Parameter(Mandatory)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
@@ -173,27 +217,28 @@ function Set-TargetResource
         $Ensure = 'Present'
     )
 
-    $CertificateStore = 'Cert:' |
+    $certificateStore = 'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.SettingCertificateStatusMessage -f $Thumbprint,$CertificateStore)
+            $($LocalizedData.SettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
         ) -join '' )
 
     if ($Ensure -ieq 'Present')
     {
         if ($PSCmdlet.ShouldProcess(($LocalizedData.ImportingCertificateShould `
-            -f $Path,$CertificateStore)))
+            -f $Path,$certificateStore)))
         {
+            # Import the certificate into the Store
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.ImportingCertficateMessage -f $Path,$CertificateStore)
+                    $($LocalizedData.ImportingCertficateMessage -f $Path,$certificateStore)
                 ) -join '' )
 
             $param = @{
-                CertStoreLocation = $CertificateStore
+                CertStoreLocation = $certificateStore
                 FilePath          = $Path
                 Verbose           = $VerbosePreference
             }
@@ -203,13 +248,14 @@ function Set-TargetResource
     }
     elseif ($Ensure -ieq 'Absent')
     {
+        # Remove the certificate from the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.RemovingCertficateMessage -f $Thumbprint,$CertificateStore)
+                $($LocalizedData.RemovingCertficateMessage -f $Thumbprint,$certificateStore)
             ) -join '' )
 
-        Get-ChildItem -Path $CertificateStore |
-            Where-Object { $_.Thumbprint -ieq $thumbprint } |
+        Get-ChildItem -Path $certificateStore |
+            Where-Object { $_.Thumbprint -ieq $Thumbprint } |
             Remove-Item -Force
     }
 }  # end function Test-TargetResource

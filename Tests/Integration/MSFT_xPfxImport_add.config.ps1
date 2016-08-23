@@ -1,5 +1,6 @@
 Configuration MSFT_xPfxImport_Add_Config {
-    param (
+    param
+    (
         $Thumbprint,
         $Path,
         $Credential

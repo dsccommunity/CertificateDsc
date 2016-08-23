@@ -61,6 +61,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Moved common code into new module MSFT_xCertificateCommon.
     - Added standard exception code.
     - Renamed common functions Validate-* to use acceptable verb Test-*.
+    - Added help to all functions.
 * xCertificateImport:
     - Fixed bug with Test-TargetResource incorrectly detecting change required.
     - Reworked unit tests for improved code coverage to meet HQRM standards.
@@ -69,6 +70,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Removed default parameter values for parameters that are required or keys.
     - Added verbose messages.
     - Split message and error strings into localization string files.
+    - Added help to all functions.
 * xPfxImport:
     - Fixed bug with Test-TargetResource incorrectly detecting change required.
     - Reworked unit tests for improved code coverage to meet HQRM standards.
@@ -77,6 +79,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Removed default parameter values for parameters that are required or keys.
     - Added verbose messages.
     - Split message and error strings into localization string files.
+    - Added help to all functions.
 * xCertReq:
     - Cleaned up descriptions in MOF file.
     - Fixed bugs generating certificate when credentials are specified.
@@ -84,10 +87,14 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Split message and error strings into localization string files.
     - Created unit tests and integration tests.
     - Improved logging output to enable easier debugging.
+    - Added help to all functions.
 * xPDT:
     - Renamed to match standard module name format (MSFT_x).
     - Modified to meet 100 characters or less line length where possible.
     - Split message and error strings into localization string files.
+    - Removed unused functions.
+    - Renamed functions to standard verb-noun form.
+    - Added help to all functions.
 
 ### 2.2.0.0
 * Added additional parameters to xCertReq - (KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate)
@@ -116,18 +123,20 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ## Examples
 
-## xCertReq
+### xCertReq
 
-**Example 1**:  Request and Accept a certificate from an Active Directory Root Certificate Authority.
+Request and Accept a certificate from an Active Directory Root Certificate Authority.
 
 ```powershell
 configuration xCertReq_RequestSSL
 {
-    param (
+    param
+    (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullorEmpty()]
         [PsCredential] $Credential
-        )
+    )
+
     Import-DscResource -ModuleName xCertificate
     Node 'localhost'
     {
@@ -165,16 +174,18 @@ Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\xCertReq_RequestSSL'
 Get-ChildItem Cert:\LocalMachine\My
 ```
 
-## xPfxImport
+### xPfxImport
 
-### Simple Usage
+#### Simple Usage
+
+Import a PFX into the My store.
 
 ```powershell
 Configuration Sample_xPfxImport_MinimalUsage
 {
-    param(
-        [PSCredential]
-        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+    param
+    (
+        [PSCredential] $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
     )
 
     Import-DscResource -ModuleName xCertificate
@@ -197,14 +208,16 @@ Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xPfxImport_Minimal
 Get-ChildItem Cert:\LocalMachine\My
 ```
 
-### Used with xWebAdministration Resources
+#### Used with xWebAdministration Resources
+
+Import a PFX into the WebHosting store and bind it to an IIS Web Site.
 
 ```powershell
 Configuration Sample_xPfxImport_IIS_WebSite
 {
-    param(
-        [PSCredential]
-        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+    param
+    (
+        [PSCredential] $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
     )
 
     Import-DscResource -ModuleName xCertificate
@@ -251,9 +264,9 @@ Sample_xPfxImport_IIS_WebSite `
 Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xPfxImport_IIS_WebSite'
 ```
 
-## xCertificateImport
+### xCertificateImport
 
-**Example 1**: Import public key certificate into Trusted Root store
+Import public key certificate into Trusted Root store.
 
 ```powershell
 Configuration Sample_xCertificateImport_MinimalUsage
