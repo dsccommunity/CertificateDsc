@@ -121,21 +121,15 @@ function Get-TargetResource
             ) -join '' )
 
         $returnValue = @{
-<<<<<<< HEAD
             Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
             CAServerFQDN         = '' # This value can't be determined from the cert
             CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
             KeyLength            = $Cert.Publickey.Key.KeySize
-            Exportable           = '' # This value can't be determined from the cert 
+            Exportable           = '' # This value can't be determined from the cert
             ProviderName         = '' # This value can't be determined from the cert
             OID                  = '' # This value can't be determined from the cert
             KeyUsage             = '' # This value can't be determined from the cert
             CertificateTemplate  = '' # This value can't be determined from the cert
-=======
-            Subject      = $cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN = '' # This value can't be determined from the cert
-            CARootName   = $cert.Issuer.split(',')[0].replace('CN=','')
->>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
         }
     }
     else
@@ -250,17 +244,6 @@ function Set-TargetResource
 
     # Information that will be used in the INF file to generate the certificate request
     # In future versions, select variables from the list below could be moved to parameters!
-<<<<<<< HEAD
-    [System.String] $Subject             = "`"$Subject`""
-    [System.String] $KeySpec             = '1'
-    [System.String] $MachineKeySet       = 'TRUE'
-    [System.String] $SMIME               = 'FALSE'
-    [System.String] $PrivateKeyArchive   = 'FALSE'
-    [System.String] $UserProtected       = 'FALSE'
-    [System.String] $UseExistingKeySet   = 'FALSE'
-    [System.String] $ProviderType        = '12'
-    [System.String] $RequestType         = 'CMC'
-=======
     $Subject             = "`"$Subject`""
     $keySpec             = '1'
     $keyLength           = '1024'
@@ -276,7 +259,6 @@ function Set-TargetResource
     $keyUsage            = '0xa0'
     $oid                 = '1.3.6.1.5.5.7.3.1'
     $certificateTemplate = 'WebServer'
->>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
@@ -290,7 +272,6 @@ function Set-TargetResource
     $requestDetails = @"
 [NewRequest]
 Subject = $Subject
-<<<<<<< HEAD
 KeySpec = $KeySpec
 KeyLength = $KeyLength
 Exportable = $($Exportable.ToString().ToUpper())
@@ -303,20 +284,6 @@ ProviderName = $ProviderName
 ProviderType = $ProviderType
 RequestType = $RequestType
 KeyUsage = $KeyUsage
-=======
-KeySpec = $keySpec
-KeyLength = $keyLength
-Exportable = $exportable
-MachineKeySet = $machineKeySet
-SMIME = $smime
-PrivateKeyArchive = $privateKeyArchive
-UserProtected = $userProtected
-UseExistingKeySet = $useExistingKeySet
-ProviderName = $providerName
-ProviderType = $providerType
-RequestType = $requestType
-KeyUsage = $keyUsage
->>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
 [RequestAttributes]
 CertificateTemplate = $certificateTemplate
 [EnhancedKeyUsageExtension]
@@ -326,11 +293,7 @@ OID = $oid
     {
         $requestDetails += @"
 
-<<<<<<< HEAD
 RenewalCert = $Thumbprint
-=======
-RenewalCert = $thumbprint
->>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
 "@
     }
     Set-Content -Path $infPath -Value $requestDetails
@@ -360,13 +323,8 @@ RenewalCert = $thumbprint
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-<<<<<<< HEAD
-                $($LocalizedData.SubmittingRequestCertificateMessage -f $ReqPath,$CerPath,$CA)
-                ) -join '' )
-=======
                 $($LocalizedData.SubmittingRequestCertificateMessage -f $reqPath,$cerPath,$ca)
             ) -join '' )
->>>>>>> 76d3978a9b37a313e346e6a5d862c5b18c672368
 
         if ($Credential)
         {
