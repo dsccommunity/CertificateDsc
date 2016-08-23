@@ -93,7 +93,7 @@ function Get-TargetResource
 
         $returnValue = @{
             Subject      = $cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN = '' # This value can't be determined from the cert
+            CAServerFQDN = $null # This value can't be determined from the cert
             CARootName   = $cert.Issuer.split(',')[0].replace('CN=','')
         }
     }
