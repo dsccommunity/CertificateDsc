@@ -125,16 +125,6 @@ try
         Add-Member -InputObject $expiredCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
-        $invalidCert      = New-Object -TypeName PSObject -Property @{
-            Thumbprint  = $validThumbprint
-            Subject     = "CN=$validSubject"
-            Issuer      = $validIssuer
-            NotBefore   = (Get-Date).AddDays(-30) # Issued on
-            NotAfter    = (Get-Date).AddDays(31) # Expires after
-        }
-        Add-Member -InputObject $invalidCert -MemberType ScriptMethod -Name Verify -Value {
-            return $false
-        }
 
         $testUsername   = 'DummyUsername'
         $testPassword   = 'DummyPassword'
@@ -626,16 +616,6 @@ RenewalCert = $validThumbprint
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $expiringCert }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true
-            }
-            It 'returns true when a valid certificate already exists and is about to expire and autorenew set' {
-                Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
-                    -Mockwith { $expiringCert }
-                Test-TargetResource @ParamsAutoRenew | Should Be $true
-            }
-            It 'returns false when a valid certificate already exists and is about to expire and autorenew not set' {
-                Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
-                    -Mockwith { $invalidCert }
-                Test-TargetResource @Params | Should Be $false
             }
         }
     }

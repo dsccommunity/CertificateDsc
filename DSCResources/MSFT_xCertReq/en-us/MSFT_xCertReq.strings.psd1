@@ -14,7 +14,7 @@ ConvertFrom-StringData @'
     ExpiringCertificateMessage = The certificate found with subject '{0}' issued by {1} with thumbprint '{2}' is about to expire.
     NoValidCertificateMessage = No valid certificate found with subject '{0}' issued by {1}.
     ExpiredCertificateMessage = The certificate found with subject '{0}' issued by {1} with thumbprint '{2}' has expired.
-    InvalidCertificateMessage = Teh certificate found with subject '{0}' issued by {1} with thumbprint '{2}' is inavlid.
+    InvalidCertificateMessage = The certificate found with subject '{0}' issued by {1} with thumbprint '{2}' is inavlid.
     ValidCertificateExistsMessage = Valid certificate '{2}' found with subject '{0}' issued by {1}.
     CertificateReqNotFoundError = Certificate Request file '{0}' not found.
     CertificateCerNotFoundError = Certificate file '{0}' not found.
