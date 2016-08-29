@@ -448,15 +448,6 @@ function Test-TargetResource
             } # if
         } # if
 
-        if (-not $cert.Verify())
-        {
-            Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.InvalidCertificateMessage -f $Subject,$ca,$cert.Thumbprint)
-                ) -join '' )
-            return $false
-        } # if
-
         # The certificate was found and is OK - so no change required.
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
