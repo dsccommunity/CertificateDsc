@@ -97,6 +97,9 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
     - Removed unused functions.
     - Renamed functions to standard verb-noun form.
     - Added help to all functions.
+    - Fixed bug in Wait-Win32ProcessEnd that prevented waiting for process to end.
+    - Added Wait-Win32ProcessStop to wait for a process to stop.
+    - Removed unused and broken scheduled task code.
 
 ### 2.1.0.0
 * Fixed xCertReq to support CA Root Name with spaces

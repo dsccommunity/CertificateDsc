@@ -496,15 +496,13 @@ function Get-Win32ProcessArgumentsFromCommandLine
 
 <#
     .SYNOPSIS
-    Starts a Win32 Process using PInvoke or a scheduled task.
+    Starts a Win32 Process using PInvoke.
     .PARAMETER Path
     The full path to the executable to start the process with.
     .PARAMETER Arguments
     The arguments to pass to the executable when starting the process.
     .PARAMETER Credential
     The user account to start the process under.
-    .PARAMETER AsTask
-    This switch triggers the process to be started by a task.
 #>
 function Start-Win32Process
 {
@@ -516,9 +514,7 @@ function Start-Win32Process
 
         [String] $Arguments,
 
-        [PSCredential] $Credential,
-
-        [Switch] $AsTask
+        [PSCredential] $Credential
     )
 
     $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
@@ -527,26 +523,16 @@ function Start-Win32Process
     {
         if($PSBoundParameters.ContainsKey("Credential"))
         {
-            if($AsTask)
+            try
             {
-                $actionArguments = Get-Arguments $PSBoundParameters `
-                        ("Path",    "Arguments") `
-                        ("Execute", "Argument")
-                if([string]::IsNullOrEmpty($Arguments))
-                {
-                    $null = $AactionArguments.Remove("Argument")
-                }
-                $taskGuid = [guid]::NewGuid().ToString()
-                $action = New-ScheduledTaskAction @ActionArguments
-                $null = Register-ScheduledTask `
-                    -TaskName "xPDT $taskGuid" `
-                    -Action $action `
-                    -User $Credential.UserName `
-                    -Password $Credential.GetNetworkCredential().Password `
-                    -RunLevel Highest
-                $err = Start-ScheduledTask -TaskName "xPDT $taskGuid"
+                Initialize-PInvoke
+                [Source.NativeMethods]::CreateProcessAsUser(`
+                    ("$Path " + $Arguments),`
+                    $Credential.GetNetworkCredential().Domain,`
+                    $Credential.GetNetworkCredential().UserName,`
+                    $Credential.GetNetworkCredential().Password)
             }
-            else
+            catch
             {
                 try
                 {
@@ -600,8 +586,8 @@ function Start-Win32Process
     The arguments passed to the executable of the process to wait for.
     .PARAMETER Credential
     The user account the process will be running under.
-    .PARAMETER Delay
-    The amount of time to wait for the process.
+    .PARAMETER Timeout
+    The milliseconds to wait for the process to start.
 #>
 function Wait-Win32ProcessStart
 {
@@ -616,28 +602,71 @@ function Wait-Win32ProcessStart
 
         [PSCredential] $Credential,
 
-        [Int] $Delay = 1000
+        [Int] $Timeout = 5000
     )
 
     $start = [DateTime]::Now
     $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
-    do
+    $started = (@(Get-Win32Process @GetArguments).Count -ge 1)
+    While (-not $started -and ([DateTime]::Now - $start).TotalMilliseconds -lt $Timeout)
     {
-        $value = @(Get-Win32Process @GetArguments).Count -ge 1
-    } while(!$value -and ([DateTime]::Now - $start).TotalMilliseconds -lt $Delay)
-
-    return $value
+        Start-Sleep -Seconds 1
+        $started = @(Get-Win32Process @GetArguments).Count -ge 1
+    }
+    return $started
 } # end function Wait-Win32ProcessStart
 
 <#
     .SYNOPSIS
-    Wait for a Win32 process to end.
+    Wait for a Win32 process to stop. This assumes the process was aleady confirmed to have been started by first
+    calling Wait-Win32ProcessStart.
     .PARAMETER Path
     The full path to the executable of the process to wait for.
     .PARAMETER Arguments
     The arguments passed to the executable of the process to wait for.
     .PARAMETER Credential
     The user account the process will be running under.
+    .PARAMETER Timeout
+    The milliseconds to wait for the process to stop.
+#>
+function Wait-Win32ProcessStop
+{
+    [CmdletBinding()]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Path,
+
+        [String] $Arguments,
+
+        [PSCredential] $Credential,
+
+        [Int] $Timeout = 30000
+    )
+
+    $start = [DateTime]::Now
+    $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
+    $stopped = (@(Get-Win32Process @GetArguments).Count -eq 0)
+    While (-not $stopped -and ([DateTime]::Now - $start).TotalMilliseconds -lt $Timeout)
+    {
+        Start-Sleep -Seconds 1
+        $stopped = (@(Get-Win32Process @GetArguments).Count -eq 0)
+    }
+    return $stopped
+} # end function Wait-Win32ProcessStop
+
+<#
+    .SYNOPSIS
+    Wait for a Win32 process to complete.
+    .PARAMETER Path
+    The full path to the executable of the process to wait for.
+    .PARAMETER Arguments
+    The arguments passed to the executable of the process to wait for.
+    .PARAMETER Credential
+    The user account the process will be running under.
+    .PARAMETER Timeout
+    The amount of time to wait for the process to end.
 #>
 function Wait-Win32ProcessEnd
 {
@@ -654,22 +683,20 @@ function Wait-Win32ProcessEnd
     )
 
     $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
-    While (Wait-Win32ProcessStart @getArguments -Delay 1000)
+    # Wait for the process to start
+    if (-not (Wait-Win32ProcessStart @getArguments))
     {
-        Start-Sleep -Seconds 1
+        New-InvalidOperationError `
+            -ErrorId 'ProcessFailedToStartError' `
+            -ErrorMessage ($LocalizedData.ProcessFailedToStartError -f $Path,$Arguments)
     }
-    # Unregister the task if there is one
-    $Tasks = Get-ScheduledTask |
-        Where-Object -FilterScript {
-            ($_.TaskName.Length -ge 4) -and `
-            ($_.TaskName.Substring(0,4) -eq "xPDT") -and `
-            ($_.Actions.Execute -eq $Path) -and `
-            ($_.Actions.Arguments -eq $Arguments)
-        }
-    $Tasks = $Tasks | Where-Object -FilterScript {
-            $_ -ne $null
-        }
-    $Tasks | Unregister-ScheduledTask -Confirm:$false
+    if (-not (Wait-Win32ProcessStop @getArguments))
+    {
+        # The process did not stop.
+        New-InvalidOperationError `
+            -ErrorId 'ProcessFailedToStopError' `
+            -ErrorMessage ($LocalizedData.ProcessFailedToStopError -f $Path,$Arguments)
+    }
 } # end function Wait-Win32ProcessEnd
 
-Export-ModuleMember Start-Win32Process,Wait-Win32ProcessStart,Wait-Win32ProcessEnd
+Export-ModuleMember Start-Win32Process,Wait-Win32ProcessStart,Wait-Win32ProcessStop,Wait-Win32ProcessEnd
