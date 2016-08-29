@@ -93,7 +93,8 @@ try
                     $_.Issuer.split(',')[0] -eq "CN=$($TestCertReq.CARootName)"
                 }
 
-            Remove-Item -Path $CertificateNew.PSPath `
+            Remove-Item `
+                -Path $CertificateNew.PSPath `
                 -Force `
                 -ErrorAction SilentlyContinue
         }
