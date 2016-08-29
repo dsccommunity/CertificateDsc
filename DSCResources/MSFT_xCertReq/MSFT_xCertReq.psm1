@@ -288,7 +288,7 @@ RenewalCert = $thumbprint
             ) -join '' )
 
             Wait-Win32ProcessEnd `
-                -Path "$ENV:SystemRoot\system32\certreq.exe" `
+                -Path $command `
                 -Arguments $arguments `
                 -Credential $Credential
 
