@@ -21,23 +21,30 @@ else
 # Import the common certificate functions
 Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath '\MSFT_xCertificateCommon\MSFT_xCertificateCommon.psm1' )
+    -ChildPath CertificateCommon.psm1 )
 
 <#
     .SYNOPSIS
     Returns the current state of the PFX Certificte file that should be imported.
+
     .PARAMETER Thumbprint
     The thumbprint (unique identifier) of the PFX file you're importing.
+
     .PARAMETER Path
     The Windows Certificate Store Location to import the PFX file to.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
+
     .PARAMETER Store
     The Windows Certificate Store Name to import the PFX file to.
+
     .PARAMETER Exportable
     Determines whether the private key is exportable from the machine after it has been imported.
+
     .PARAMETER Credential
     A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
 #>
@@ -124,18 +131,25 @@ function Get-TargetResource
 <#
     .SYNOPSIS
     Tests if the PFX Certificate file needs to be imported or removed.
+
     .PARAMETER Thumbprint
     The thumbprint (unique identifier) of the PFX file you're importing.
+
     .PARAMETER Path
     The Windows Certificate Store Location to import the PFX file to.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
+
     .PARAMETER Store
     The Windows Certificate Store Name to import the PFX file to.
+
     .PARAMETER Exportable
     Determines whether the private key is exportable from the machine after it has been imported.
+
     .PARAMETER Credential
     A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
 #>
@@ -201,18 +215,25 @@ function Test-TargetResource
 <#
     .SYNOPSIS
     Imports or removes the specified PFX Certifiicate file.
+
     .PARAMETER Thumbprint
     The thumbprint (unique identifier) of the PFX file you're importing.
+
     .PARAMETER Path
     The Windows Certificate Store Location to import the PFX file to.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
+
     .PARAMETER Store
     The Windows Certificate Store Name to import the PFX file to.
+
     .PARAMETER Exportable
     Determines whether the private key is exportable from the machine after it has been imported.
+
     .PARAMETER Credential
     A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
 #>

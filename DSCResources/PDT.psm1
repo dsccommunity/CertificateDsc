@@ -3,7 +3,7 @@ if (Test-Path "${PSScriptRoot}\${PSUICulture}")
 {
     Import-LocalizedData `
         -BindingVariable LocalizedData `
-        -Filename MSFT_xPDT.strings.psd1 `
+        -Filename PDT.strings.psd1 `
         -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
 }
 else
@@ -11,7 +11,7 @@ else
     #fallback to en-US
     Import-LocalizedData `
         -BindingVariable LocalizedData `
-        -Filename MSFT_xPDT.strings.psd1 `
+        -Filename PDT.strings.psd1 `
         -BaseDirectory "${PSScriptRoot}\en-US"
 }
 #endregion
@@ -19,16 +19,19 @@ else
 # Import the common certificate functions
 Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath '\MSFT_xCertificateCommon\MSFT_xCertificateCommon.psm1' )
+    -ChildPath CertificateCommon.psm1 )
 
 <#
     .SYNOPSIS
     Extracts an array of arguments that were found in the Arguments list passed in.
     It also optionally maps the arguments to a new name.
+
     .PARAMETER FunctionBoundParameters
     The parameters that were passed to the calling function.
+
     .PARAMETER ArgumentNames
     The array of arguments that should be extracted.
+
     .PARAMETER NewArgumentNames
     An array of argument names to rename each argument to.
 #>
@@ -369,10 +372,13 @@ namespace Source
 <#
     .SYNOPSIS
     Gets a Win32 process that matches the path, arguments and is user.
+
     .PARAMETER Path
     The path to the executable running the process.
+
     .PARAMETER Arguments
     The arguments of the running process to find.
+
     .PARAMETER Credential
     The credentials of the account that the process is running under.
 #>
@@ -427,6 +433,7 @@ function Get-Win32Process
 <#
     .SYNOPSIS
     Returns the Owner of a Win32 Process.
+
     .PARAMETER Process
     The Win32 WMI process to get the owner for.
 #>
@@ -459,6 +466,7 @@ function Get-Win32ProcessOwner
 <#
     .SYNOPSIS
     Extracts the arguments from a complete command line
+
     .PARAMETER CommandLine
     The complete command line to extract the arguments from.
 #>
@@ -497,10 +505,13 @@ function Get-Win32ProcessArgumentsFromCommandLine
 <#
     .SYNOPSIS
     Starts a Win32 Process using PInvoke.
+
     .PARAMETER Path
     The full path to the executable to start the process with.
+
     .PARAMETER Arguments
     The arguments to pass to the executable when starting the process.
+
     .PARAMETER Credential
     The user account to start the process under.
 #>
@@ -568,12 +579,16 @@ function Start-Win32Process
 <#
     .SYNOPSIS
     Wait for a Win32 process to start.
+
     .PARAMETER Path
     The full path to the executable of the process to wait for.
+
     .PARAMETER Arguments
     The arguments passed to the executable of the process to wait for.
+
     .PARAMETER Credential
     The user account the process will be running under.
+
     .PARAMETER Timeout
     The milliseconds to wait for the process to start.
 #>
@@ -608,12 +623,16 @@ function Wait-Win32ProcessStart
     .SYNOPSIS
     Wait for a Win32 process to stop. This assumes the process was aleady confirmed to have been started by first
     calling Wait-Win32ProcessStart.
+
     .PARAMETER Path
     The full path to the executable of the process to wait for.
+
     .PARAMETER Arguments
     The arguments passed to the executable of the process to wait for.
+
     .PARAMETER Credential
     The user account the process will be running under.
+
     .PARAMETER Timeout
     The milliseconds to wait for the process to stop.
 #>
@@ -647,12 +666,16 @@ function Wait-Win32ProcessStop
 <#
     .SYNOPSIS
     Wait for a Win32 process to complete.
+
     .PARAMETER Path
     The full path to the executable of the process to wait for.
+
     .PARAMETER Arguments
     The arguments passed to the executable of the process to wait for.
+
     .PARAMETER Credential
     The user account the process will be running under.
+
     .PARAMETER Timeout
     The amount of time to wait for the process to end.
 #>

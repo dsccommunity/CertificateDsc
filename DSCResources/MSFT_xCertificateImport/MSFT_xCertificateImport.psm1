@@ -21,19 +21,24 @@ else
 # Import the common certificate functions
 Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath '\MSFT_xCertificateCommon\MSFT_xCertificateCommon.psm1' )
+    -ChildPath CertificateCommon.psm1 )
 
 <#
     .SYNOPSIS
     Returns the current state of the CER Certificte file that should be imported.
+
     .PARAMETER Thumbprint
     The thumbprint (unique identifier) of the certificate you're importing.
+
     .PARAMETER Path
     The path to the CER file you want to import.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
+
     .PARAMETER Store
     The Windows Certificate Store Name to import the certificate to.
+
     .PARAMETER Ensure
     Specifies whether the certificate should be present or absent.
 #>
@@ -111,14 +116,19 @@ function Get-TargetResource
 <#
     .SYNOPSIS
     Tests if the CER Certificate file needs to be imported or removed.
+
     .PARAMETER Thumbprint
     The thumbprint (unique identifier) of the certificate you're importing.
+
     .PARAMETER Path
     The path to the CER file you want to import.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
+
     .PARAMETER Store
     The Windows Certificate Store Name to import the certificate to.
+
     .PARAMETER Ensure
     Specifies whether the certificate should be present or absent.
 #>
@@ -175,14 +185,19 @@ function Test-TargetResource
 <#
     .SYNOPSIS
     Imports or removes the specified CER Certifiicate file.
+
     .PARAMETER Thumbprint
     The thumbprint (unique identifier) of the certificate you're importing.
+
     .PARAMETER Path
     The path to the CER file you want to import.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
+
     .PARAMETER Store
     The Windows Certificate Store Name to import the certificate to.
+
     .PARAMETER Ensure
     Specifies whether the certificate should be present or absent.
 #>

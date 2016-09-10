@@ -18,29 +18,29 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### xCertReq
 
-- **`[String]` Subject**: Provide the text string to use as the subject of the certificate. Key.
-- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Required.
-- **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Required.
-- **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
-- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
+- **`[String]` Subject** (_Key_): Provide the text string to use as the subject of the certificate.
+- **`[String]` CAServerFQDN** (_Required_): The FQDN of the Active Directory Certificate Authority on the local area network.
+- **`[String]` CARootName** (_Required_): The name of the certificate authority, by default this will be in format domain-servername-ca.
+- **`[PSCredential]` Credential** (_Write_): The credentials that will be used to access the template in the Certificate Authority.
+- **`[Boolean]` AutoRenew** (_Write_): Determines if the resource will also renew a certificate within 7 days of expiration.
 
 ### xPfxImport
 
-- **`[String]` Thumbprint**: The thumbprint (unique identifier) of the PFX file you're importing. Key.
-- **`[String]` Path**: The path to the PFX file you want to import. Required.
-- **`[String]` Location**: The Windows Certificate Store Location to import the PFX file to. Key. { LocalMachine | CurrentUser }
-- **`[String]` Store**: The Windows Certificate Store Name to import the PFX file to. Key.
-- **`[Boolean]` Exportable**: Determines whether the private key is exportable from the machine after it has been imported. Optional. Defaults to `$false`.
-- **`[PSCredential]` Credential**: A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid. Optional.
-- **`[String]` Ensure**: Specifies whether the PFX file should be present or absent. Optional. { *Present* | Absent }.
+- **`[String]` Thumbprint** (_Key_): The thumbprint (unique identifier) of the PFX file you're importing.
+- **`[String]` Path** (_Required_): The path to the PFX file you want to import.
+- **`[String]` Location** (_Key_): The Windows Certificate Store Location to import the PFX file to. { LocalMachine | CurrentUser }
+- **`[String]` Store** (_Key_): The Windows Certificate Store Name to import the PFX file to.
+- **`[Boolean]` Exportable** (_Write_): Determines whether the private key is exportable from the machine after it has been imported. Defaults to `$false`.
+- **`[PSCredential]` Credential** (_Write_): A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+- **`[String]` Ensure** (_Write_): Specifies whether the PFX file should be present or absent. { *Present* | Absent }.
 
 ### xCertificateImport
 
-- **`[String]` Thumbprint**: The thumbprint (unique identifier) of the certificate you're importing. Key.
-- **`[String]` Path**: The path to the CER file you want to import. Required.
-- **`[String]` Location**: The Windows Certificate Store Location to import the certificate to. Key. { LocalMachine | CurrentUser }
-- **`[String]` Store**: The Windows Certificate Store Name to import the certificate to. Key.
-- **`[String]` Ensure**: Specifies whether the certificate should be present or absent. Optional. { *Present* | Absent }.
+- **`[String]` Thumbprint** (_Key_): The thumbprint (unique identifier) of the certificate you're importing.
+- **`[String]` Path** (_Required_): The path to the CER file you want to import.
+- **`[String]` Location** (_Key_): The Windows Certificate Store Location to import the certificate to. { LocalMachine | CurrentUser }
+- **`[String]` Store** (_Key_): The Windows Certificate Store Name to import the certificate to.
+- **`[String]` Ensure** (_Write_): Specifies whether the certificate should be present or absent. { *Present* | Absent }.
 
 ## Versions
 
@@ -52,7 +52,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * Added .gitignore file
 * Added .gitattributes file to force line endings to CRLF to allow unit tests to work.
 * xCertificateCommon:
-    - Moved common code into new module MSFT_xCertificateCommon.
+    - Moved common code into new module CertificateCommon.psm1
     - Added standard exception code.
     - Renamed common functions Validate-* to use acceptable verb Test-*.
     - Added help to all functions.
@@ -173,7 +173,8 @@ Configuration Sample_xPfxImport_MinimalUsage
 {
     param
     (
-        [PSCredential] $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+        [PSCredential]
+        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
     )
 
     Import-DscResource -ModuleName xCertificate

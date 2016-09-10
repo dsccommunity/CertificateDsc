@@ -1,5 +1,5 @@
 $script:DSCModuleName      = 'xCertificate'
-$script:DSCResourceName    = 'MSFT_xCertificateCommon'
+$script:DSCResourceName    = 'CertificateCommon'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0
@@ -21,7 +21,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 try
 {
     InModuleScope $script:DSCResourceName {
-        $DSCResourceName = 'MSFT_xCertificateCommon'
+        $DSCResourceName = 'CertificateCommon'
         $invalidThumbprint = 'Zebra'
         $validThumbprint = (
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {

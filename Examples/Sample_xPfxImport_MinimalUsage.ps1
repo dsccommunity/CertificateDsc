@@ -3,7 +3,8 @@ Configuration Sample_xPfxImport_MinimalUsage
 {
     param
     (
-        [PSCredential] $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+        [PSCredential]
+        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
     )
 
     Import-DscResource -ModuleName xCertificate
