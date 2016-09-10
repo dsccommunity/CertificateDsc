@@ -21,7 +21,7 @@ else
 # Import the common certificate functions
 Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath CertificateCommon.psm1 )
+    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
 
 <#
     .SYNOPSIS

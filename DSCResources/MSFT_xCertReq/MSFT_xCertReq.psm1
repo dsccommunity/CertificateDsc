@@ -21,7 +21,7 @@ else
 # Import the common certificate functions
 Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath CertificateCommon.psm1 )
+    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
 
 <#
     .SYNOPSIS
@@ -274,7 +274,7 @@ RenewalCert = $thumbprint
 
         if ($Credential)
         {
-            Import-Module -Name $PSScriptRoot\..\PDT.psm1 -Force
+            Import-Module -Name $PSScriptRoot\..\PDT\PDT.psm1 -Force
 
             # Assemble the command and arguments to pass to the powershell process that
             # will request the certificate
