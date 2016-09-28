@@ -279,7 +279,7 @@ RenewalCert = $thumbprint
             # Assemble the command and arguments to pass to the powershell process that
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
-            $command = "$ENV:SystemRoot\System32\WindowsPowerShell\v1.0\PowerShell.exe"
+            $command = "$PSHOME\PowerShell.exe"
             $arguments = "-Command ""& $ENV:SystemRoot\system32\certreq.exe" + `
                 " @('-submit','-q','-config',$ca,'$reqPath','$cerPath')" + `
                 " | Set-Content -Path '$certReqOutPath'"""
