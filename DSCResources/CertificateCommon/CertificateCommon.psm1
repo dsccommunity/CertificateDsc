@@ -3,7 +3,7 @@ if (Test-Path "${PSScriptRoot}\${PSUICulture}")
 {
     Import-LocalizedData `
         -BindingVariable LocalizedData `
-        -Filename MSFT_xCertificateCommon.strings.psd1 `
+        -Filename CertificateCommon.strings.psd1 `
         -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
 }
 else
@@ -11,34 +11,34 @@ else
     #fallback to en-US
     Import-LocalizedData `
         -BindingVariable LocalizedData `
-        -Filename MSFT_xCertificateCommon.strings.psd1 `
+        -Filename CertificateCommon.strings.psd1 `
         -BaseDirectory "${PSScriptRoot}\en-US"
 }
 #endregion
 
 <#
-.SYNOPSIS
- Validates the existence of a file at a specific path.
+    .SYNOPSIS
+    Validates the existence of a file at a specific path.
 
-.PARAMETER Path
- The location of the file. Supports any path that Test-Path supports.
+    .PARAMETER Path
+    The location of the file. Supports any path that Test-Path supports.
 
-.PARAMETER Quiet
- Returns $false if the file does not exist. By default this function throws an exception if the
- file is missing.
+    .PARAMETER Quiet
+    Returns $false if the file does not exist. By default this function throws an exception if the
+    file is missing.
 
-.EXAMPLE
- Test-CertificatePath -Path '\\server\share\Certificates\mycert.cer'
+    .EXAMPLE
+    Test-CertificatePath -Path '\\server\share\Certificates\mycert.cer'
 
-.EXAMPLE
- Test-CertificatePath -Path 'C:\certs\my_missing.cer' -Quiet
+    .EXAMPLE
+    Test-CertificatePath -Path 'C:\certs\my_missing.cer' -Quiet
 
-.EXAMPLE
- 'D:\CertRepo\a_cert.cer' | Test-CertificatePath
+    .EXAMPLE
+    'D:\CertRepo\a_cert.cer' | Test-CertificatePath
 
-.EXAMPLE
- Get-ChildItem -Path D:\CertRepo\*.cer |
-    Test-CertificatePath
+    .EXAMPLE
+    Get-ChildItem -Path D:\CertRepo\*.cer |
+        Test-CertificatePath
 #>
 function Test-CertificatePath
 {
@@ -77,30 +77,30 @@ function Test-CertificatePath
 } # end function Test-CertificatePath
 
 <#
-.SYNOPSIS
-  Validates whether a given certificate is valid based on the hash algoritms available on the
-  system.
+    .SYNOPSIS
+    Validates whether a given certificate is valid based on the hash algoritms available on the
+    system.
 
-.PARAMETER Thumbprint
- One or more thumbprints to Test.
+    .PARAMETER Thumbprint
+    One or more thumbprints to Test.
 
-.PARAMETER Quiet
- Returns $false if the thumbprint is not valid. By default this function throws an exception if
- validation fails.
+    .PARAMETER Quiet
+    Returns $false if the thumbprint is not valid. By default this function throws an exception if
+    validation fails.
 
-.EXAMPLE
- Test-Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
+    .EXAMPLE
+    Test-Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
 
-.EXAMPLE
- Test-Thumbprint `
-    -Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de,0000e3a5a7991cb6ed3cd5dd01045edf7e220000 `
-    -Quiet
+    .EXAMPLE
+    Test-Thumbprint `
+        -Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de,0000e3a5a7991cb6ed3cd5dd01045edf7e220000 `
+        -Quiet
 
-.EXAMPLE
- Get-ChildItem -Path Cert:\LocalMachine -Recurse |
-    Where-Object -FilterScript { $_.Thumbprint } |
-    Select-Object -Expression Thumbprint |
-    Test-Thumbprint -Verbose
+    .EXAMPLE
+    Get-ChildItem -Path Cert:\LocalMachine -Recurse |
+        Where-Object -FilterScript { $_.Thumbprint } |
+        Select-Object -Expression Thumbprint |
+        Test-Thumbprint -Verbose
 #>
 function Test-Thumbprint
 {
@@ -173,14 +173,14 @@ function Test-Thumbprint
 } # end function Test-Thumbprint
 
 <#
-.SYNOPSIS
-  Throws an InvalidOperation custom exception.
+    .SYNOPSIS
+    Throws an InvalidOperation custom exception.
 
-.PARAMETER ErrorId
- The error Id of the exception.
+    .PARAMETER ErrorId
+    The error Id of the exception.
 
-.PARAMETER ErrorMessage
- The error message text to set in the exception.
+    .PARAMETER ErrorMessage
+    The error message text to set in the exception.
 #>
 function New-InvalidOperationError
 {
@@ -207,14 +207,14 @@ function New-InvalidOperationError
 } # end function New-InvalidOperationError
 
 <#
-.SYNOPSIS
-  Throws an InvalidArgument custom exception.
+    .SYNOPSIS
+    Throws an InvalidArgument custom exception.
 
-.PARAMETER ErrorId
- The error Id of the exception.
+    .PARAMETER ErrorId
+    The error Id of the exception.
 
-.PARAMETER ErrorMessage
- The error message text to set in the exception.
+    .PARAMETER ErrorMessage
+    The error message text to set in the exception.
 #>
 function New-InvalidArgumentError
 {

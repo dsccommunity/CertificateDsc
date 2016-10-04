@@ -21,33 +21,45 @@ else
 # Import the common certificate functions
 Import-Module -Name ( Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath '\MSFT_xCertificateCommon\MSFT_xCertificateCommon.psm1' )
+    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
 
 <#
     .SYNOPSIS
     Returns the current state of the certificate that may need to be requested.
+
     .PARAMETER Subject
     Provide the text string to use as the subject of the certificate.
+
     .PARAMETER CAServerFQDN
     The FQDN of the Active Directory Certificate Authority on the local area network.
+
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
+
     .PARAMETER KeyLength
     The bit length of the encryption key to be used.
+
     .PARAMETER Exportable
     The option to allow the certificate to be exportable, by default it will be true.
+
     .PARAMETER ProviderName
     The selection of provider for the type of encryption to be used.
+
     .PARAMETER OID
     The Object Identifier that is used to name the object.
+
     .PARAMETER KeyUsage
     The Keyusage is a restriction method that determines what a certificate can be used for.
+
     .PARAMETER CertificateTemplate
     The template used for the definiton of the certificate.
+
     .PARAMETER SubjectAltName
     The subject alternative name used to createthe certificate.
+
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
+
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
 #>
@@ -163,28 +175,40 @@ function Get-TargetResource
 <#
     .SYNOPSIS
     Requests a new certificate based on the parameters provided.
+
     .PARAMETER Subject
     Provide the text string to use as the subject of the certificate.
+
     .PARAMETER CAServerFQDN
     The FQDN of the Active Directory Certificate Authority on the local area network.
+
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
+
     .PARAMETER KeyLength
     The bit length of the encryption key to be used.
+
     .PARAMETER Exportable
     The option to allow the certificate to be exportable, by default it will be true.
+
     .PARAMETER ProviderName
     The selection of provider for the type of encryption to be used.
+
     .PARAMETER OID
     The Object Identifier that is used to name the object.
+
     .PARAMETER KeyUsage
     The Keyusage is a restriction method that determines what a certificate can be used for.
+
     .PARAMETER CertificateTemplate
     The template used for the definiton of the certificate.
+
     .PARAMETER SubjectAltName
     The subject alternative name used to createthe certificate.
+
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
+
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
 #>
@@ -370,20 +394,20 @@ RenewalCert = $Thumbprint
 
         if ($Credential)
         {
-            Import-Module -Name $PSScriptRoot\..\MSFT_xPDT\MSFT_xPDT.psm1 -Force
+            Import-Module -Name $PSScriptRoot\..\PDT\PDT.psm1 -Force
 
             # Assemble the command and arguments to pass to the powershell process that
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
-            $command = "$ENV:SystemRoot\System32\WindowsPowerShell\v1.0\PowerShell.exe"
+            $command = "$PSHOME\PowerShell.exe"
             $arguments = "-Command ""& $ENV:SystemRoot\system32\certreq.exe" + `
                 " @('-submit','-q','-config',$ca,'$reqPath','$cerPath')" + `
                 " | Set-Content -Path '$certReqOutPath'"""
 
             # This may output a win32-process object, but it often does not because of
-            # a timing issue in MSFT_xPDT (the process has often completed before the
+            # a timing issue in PDT (the process has often completed before the
             # process can be read in).
-            Start-Win32Process `
+            $null = Start-Win32Process `
                 -Path $command `
                 -Arguments $arguments `
                 -Credential $Credential
@@ -393,7 +417,7 @@ RenewalCert = $Thumbprint
                 $($LocalizedData.SubmittingRequestProcessCertificateMessage)
             ) -join '' )
 
-            Wait-Win32ProcessEnd `
+            $null = Wait-Win32ProcessEnd `
                 -Path $command `
                 -Arguments $arguments `
                 -Credential $Credential
@@ -459,28 +483,40 @@ RenewalCert = $Thumbprint
 <#
     .SYNOPSIS
     Tests if a new certificate should be requested.
+
     .PARAMETER Subject
     Provide the text string to use as the subject of the certificate.
+
     .PARAMETER CAServerFQDN
     The FQDN of the Active Directory Certificate Authority on the local area network.
+
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
+
     .PARAMETER KeyLength
     The bit length of the encryption key to be used.
+
     .PARAMETER Exportable
     The option to allow the certificate to be exportable, by default it will be true.
+
     .PARAMETER ProviderName
     The selection of provider for the type of encryption to be used.
+
     .PARAMETER OID
     The Object Identifier that is used to name the object.
+
     .PARAMETER KeyUsage
     The Keyusage is a restriction method that determines what a certificate can be used for.
+
     .PARAMETER CertificateTemplate
     The template used for the definiton of the certificate.
+
     .PARAMETER SubjectAltName
     The subject alternative name used to createthe certificate.
+
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
+
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
 #>
