@@ -45,6 +45,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+
+### 2.2.0.0
 * Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
 * Moved unit tests to correct folder structure.
 * Changed unit tests to use standard test templates.

@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '2.1.0.0'
+ModuleVersion = '2.2.0.0'
 
 # ID used to uniquely identify this module
 GUID = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -104,7 +104,55 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = '* Fixed xCertReq to support CA Root Name with spaces'
+        ReleaseNotes = '* Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
+* Moved unit tests to correct folder structure.
+* Changed unit tests to use standard test templates.
+* Updated all resources to meet HQRM standards and style guidelines.
+* Added .gitignore file
+* Added .gitattributes file to force line endings to CRLF to allow unit tests to work.
+* xCertificateCommon:
+    - Moved common code into new module CertificateCommon.psm1
+    - Added standard exception code.
+    - Renamed common functions Validate-* to use acceptable verb Test-*.
+    - Added help to all functions.
+* xCertificateImport:
+    - Fixed bug with Test-TargetResource incorrectly detecting change required.
+    - Reworked unit tests for improved code coverage to meet HQRM standards.
+    - Created Integration tests for both importing and removing an imported certificate.
+    - Added descriptions to MOF file.
+    - Removed default parameter values for parameters that are required or keys.
+    - Added verbose messages.
+    - Split message and error strings into localization string files.
+    - Added help to all functions.
+* xPfxImport:
+    - Fixed bug with Test-TargetResource incorrectly detecting change required.
+    - Reworked unit tests for improved code coverage to meet HQRM standards.
+    - Created Integration tests for both importing and removing an imported certificate.
+    - Added descriptions to MOF file.
+    - Removed default parameter values for parameters that are required or keys.
+    - Added verbose messages.
+    - Split message and error strings into localization string files.
+    - Added help to all functions.
+* xCertReq:
+    - Cleaned up descriptions in MOF file.
+    - Fixed bugs generating certificate when credentials are specified.
+    - Allowed output of certificate request when credentials are specified.
+    - Split message and error strings into localization string files.
+    - Created unit tests and integration tests.
+    - Improved logging output to enable easier debugging.
+    - Added help to all functions.
+* xPDT:
+    - Renamed to match standard module name format (MSFT_x).
+    - Modified to meet 100 characters or less line length where possible.
+    - Split message and error strings into localization string files.
+    - Removed unused functions.
+    - Renamed functions to standard verb-noun form.
+    - Added help to all functions.
+    - Fixed bug in Wait-Win32ProcessEnd that prevented waiting for process to end.
+    - Added Wait-Win32ProcessStop to wait for a process to stop.
+    - Removed unused and broken scheduled task code.
+
+'
 
     } # End of PSData hashtable
 
@@ -117,4 +165,5 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
