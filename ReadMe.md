@@ -1,17 +1,20 @@
+# xCertificate
+
 [![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xcertificate/branch/master)
 
-# xCertificate
 The **xCertificate** module is a part of the Windows PowerShell Desired State Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This module includes DSC resources that simplify administration of certificates on a Windows Server, with simple declarative language.
 
 The **xCertificate** module contains the following resources:
-* **xCertReq**
-* **xPfxImport**
-* **xCertificateImport**
+
+- **xCertReq**
+- **xPfxImport**
+- **xCertificateImport**
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Contributing
+
 Please check out common DSC Resources [contributing guidelines](https://github.com/PowerShell/DscResource.Kit/blob/master/CONTRIBUTING.md).
 
 ## Resources
@@ -53,77 +56,85 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 
+- xCertReq:
+  - Added additional parameters KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate, SubjectAltName
+- Fixed most markdown errors in Readme.md.
+- Corrected Parameter decoration format to be consistent with guidelines.
+
 ### 2.2.0.0
-* Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
-* Moved unit tests to correct folder structure.
-* Changed unit tests to use standard test templates.
-* Updated all resources to meet HQRM standards and style guidelines.
-* Added .gitignore file
-* Added .gitattributes file to force line endings to CRLF to allow unit tests to work.
-* xCertificateCommon:
-    - Moved common code into new module CertificateCommon.psm1
-    - Added standard exception code.
-    - Renamed common functions Validate-* to use acceptable verb Test-*.
-    - Added help to all functions.
-* xCertificateImport:
-    - Fixed bug with Test-TargetResource incorrectly detecting change required.
-    - Reworked unit tests for improved code coverage to meet HQRM standards.
-    - Created Integration tests for both importing and removing an imported certificate.
-    - Added descriptions to MOF file.
-    - Removed default parameter values for parameters that are required or keys.
-    - Added verbose messages.
-    - Split message and error strings into localization string files.
-    - Added help to all functions.
-* xPfxImport:
-    - Fixed bug with Test-TargetResource incorrectly detecting change required.
-    - Reworked unit tests for improved code coverage to meet HQRM standards.
-    - Created Integration tests for both importing and removing an imported certificate.
-    - Added descriptions to MOF file.
-    - Removed default parameter values for parameters that are required or keys.
-    - Added verbose messages.
-    - Split message and error strings into localization string files.
-    - Added help to all functions.
-* xCertReq:
-    - Cleaned up descriptions in MOF file.
-    - Fixed bugs generating certificate when credentials are specified.
-    - Allowed output of certificate request when credentials are specified.
-    - Split message and error strings into localization string files.
-    - Created unit tests and integration tests.
-    - Improved logging output to enable easier debugging.
-    - Added help to all functions.
-    - Added additional parameters KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate, SubjectAltName
-* xPDT:
-    - Renamed to match standard module name format (MSFT_x).
-    - Modified to meet 100 characters or less line length where possible.
-    - Split message and error strings into localization string files.
-    - Removed unused functions.
-    - Renamed functions to standard verb-noun form.
-    - Added help to all functions.
-    - Fixed bug in Wait-Win32ProcessEnd that prevented waiting for process to end.
-    - Added Wait-Win32ProcessStop to wait for a process to stop.
-    - Removed unused and broken scheduled task code.
+
+- Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
+- Moved unit tests to correct folder structure.
+- Changed unit tests to use standard test templates.
+- Updated all resources to meet HQRM standards and style guidelines.
+- Added .gitignore file
+- Added .gitattributes file to force line endings to CRLF to allow unit tests to work.
+- xCertificateCommon:
+  - Moved common code into new module CertificateCommon.psm1
+  - Added standard exception code.
+  - Renamed common functions Validate-* to use acceptable verb Test-*.
+  - Added help to all functions.
+- xCertificateImport:
+  - Fixed bug with Test-TargetResource incorrectly detecting change required.
+  - Reworked unit tests for improved code coverage to meet HQRM standards.
+  - Created Integration tests for both importing and removing an imported certificate.
+  - Added descriptions to MOF file.
+  - Removed default parameter values for parameters that are required or keys.
+  - Added verbose messages.
+  - Split message and error strings into localization string files.
+  - Added help to all functions.
+- xPfxImport:
+  - Fixed bug with Test-TargetResource incorrectly detecting change required.
+  - Reworked unit tests for improved code coverage to meet HQRM standards.
+  - Created Integration tests for both importing and removing an imported certificate.
+  - Added descriptions to MOF file.
+  - Removed default parameter values for parameters that are required or keys.
+  - Added verbose messages.
+  - Split message and error strings into localization string files.
+  - Added help to all functions.
+- xCertReq:
+  - Cleaned up descriptions in MOF file.
+  - Fixed bugs generating certificate when credentials are specified.
+  - Allowed output of certificate request when credentials are specified.
+  - Split message and error strings into localization string files.
+  - Created unit tests and integration tests.
+  - Improved logging output to enable easier debugging.
+  - Added help to all functions.
+- xPDT:
+  - Renamed to match standard module name format (MSFT_x).
+  - Modified to meet 100 characters or less line length where possible.
+  - Split message and error strings into localization string files.
+  - Removed unused functions.
+  - Renamed functions to standard verb-noun form.
+  - Added help to all functions.
+  - Fixed bug in Wait-Win32ProcessEnd that prevented waiting for process to end.
+  - Added Wait-Win32ProcessStop to wait for a process to stop.
+  - Removed unused and broken scheduled task code.
 
 ### 2.1.0.0
-* Fixed xCertReq to support CA Root Name with spaces
+
+- Fixed xCertReq to support CA Root Name with spaces
 
 ### 2.0.0.0
-* Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
-* Updated xPfxImport with new Ensure support
-* Updated xPfxImport with support for the CurrentUser value
-* Updated xPfxImport with validationset for the Store parameter
-* Added new resource: xCertificateImport
+
+- Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
+- Updated xPfxImport with new Ensure support
+- Updated xPfxImport with support for the CurrentUser value
+- Updated xPfxImport with validationset for the Store parameter
+- Added new resource: xCertificateImport
 
 ### 1.1.0.0
-* Added new resource: xPfxImport
+
+- Added new resource: xPfxImport
 
 ### 1.0.1.0
 
-* Minor documentation updates
+- Minor documentation updates
 
 ### 1.0.0.0
 
-* Initial public release of xCertificate module with following resources
-    * xCertReq
+- Initial public release of xCertificate module with following resources
+  - xCertReq
 
 ## Examples
 

@@ -84,43 +84,45 @@ function Get-TargetResource
         [System.String]
         $CARootName,
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
+        [parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -232,43 +234,45 @@ function Set-TargetResource
         [System.String]
         $CARootName,
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
+        [parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -541,43 +545,45 @@ function Test-TargetResource
         [System.String]
         $CARootName,
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [parameter(Mandatory = $false)]
+        [parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
+        [parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [parameter()]
         [System.Boolean]
         $AutoRenew
     )
