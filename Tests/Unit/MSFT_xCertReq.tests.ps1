@@ -298,11 +298,11 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsNoCred } | Should Not Throw
                 }
 
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -321,11 +321,11 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
 
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -346,10 +346,10 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { $validCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -375,10 +375,10 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { $expiringCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -399,10 +399,10 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { $expiredCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -429,10 +429,10 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { $expiredCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsKeyLength4096AutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -467,11 +467,11 @@ RenewalCert = $validThumbprint
                     -ErrorId 'CertificateReqNotFoundError' `
                     -ErrorMessage ($LocalizedData.CertificateReqNotFoundError -f 'xCertReq-Test.req')
 
-                It 'throws CertificateReqNotFoundError exception' {
+                It 'should throw CertificateReqNotFoundError exception' {
                     { Set-TargetResource @ParamsNoCred } | Should Throw $errorRecord
                 }
 
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -499,11 +499,11 @@ RenewalCert = $validThumbprint
                     -ErrorId 'CertificateCerNotFoundError' `
                     -ErrorMessage ($LocalizedData.CertificateCerNotFoundError -f 'xCertReq-Test.cer')
 
-                It 'throws CertificateCerNotFoundError exception' {
+                It 'should throw CertificateCerNotFoundError exception' {
                     { Set-TargetResource @ParamsNoCred } | Should Throw $errorRecord
                 }
 
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -540,11 +540,11 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Start-Win32Process -ModuleName MSFT_xCertReq
                 Mock -CommandName Wait-Win32ProcessEnd -ModuleName MSFT_xCertReq
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @Params } | Should Not Throw
                 }
 
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -577,11 +577,11 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsSubjectAltNameNoCred } | Should Not Throw
                 }
 
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -602,17 +602,17 @@ RenewalCert = $validThumbprint
             It 'should return a bool' {
                 Test-TargetResource @Params | Should BeOfType Boolean
             }
-            It 'returns false when a valid certificate does not exist' {
+            It 'should return false when a valid certificate does not exist' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { }
                 Test-TargetResource @Params | Should Be $false
             }
-            It 'returns true when a valid certificate already exists and is not about to expire' {
+            It 'should return true when a valid certificate already exists and is not about to expire' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $validCert }
                 Test-TargetResource @Params | Should Be $true
             }
-            It 'returns true when a valid certificate already exists and is about to expire and autorenew set' {
+            It 'should return true when a valid certificate already exists and is about to expire and autorenew set' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $expiringCert }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true

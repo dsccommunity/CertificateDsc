@@ -69,60 +69,60 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Subject,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CARootName,
 
-        [parameter()]
+        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [parameter()]
+        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
-        [parameter()]
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
-        [parameter()]
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -219,60 +219,60 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Subject,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CARootName,
 
-        [parameter()]
+        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [parameter()]
+        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
-        [parameter()]
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
-        [parameter()]
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -530,60 +530,60 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Subject,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CARootName,
 
-        [parameter()]
+        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [parameter()]
+        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [parameter()]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
-        [parameter()]
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
-        [parameter()]
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
