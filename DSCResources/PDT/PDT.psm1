@@ -545,10 +545,22 @@ function Start-Win32Process
             }
             catch
             {
-                $exception = New-Object System.ArgumentException $_
-                $errorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
-                $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord $exception, "Win32Exception", $errorCategory, $null
-                $err = $errorRecord
+                try
+                {
+                    Initialize-PInvoke
+                    [Source.NativeMethods]::CreateProcessAsUser(`
+                        ("$Path " + $Arguments),`
+                        $Credential.GetNetworkCredential().Domain,`
+                        $Credential.GetNetworkCredential().UserName,`
+                        $Credential.GetNetworkCredential().Password)
+                }
+                catch
+                {
+                    $exception = New-Object System.ArgumentException $_
+                    $errorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
+                    $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord $exception, "Win32Exception", $errorCategory, $null
+                    $err = $errorRecord
+                }
             }
         }
         else

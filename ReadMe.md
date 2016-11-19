@@ -1,28 +1,38 @@
+# xCertificate
+
 [![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xcertificate/branch/master)
 
-# xCertificate
 The **xCertificate** module is a part of the Windows PowerShell Desired State Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This module includes DSC resources that simplify administration of certificates on a Windows Server, with simple declarative language.
 
 The **xCertificate** module contains the following resources:
-* **xCertReq**
-* **xPfxImport**
-* **xCertificateImport**
+
+- **xCertReq**
+- **xPfxImport**
+- **xCertificateImport**
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Contributing
+
 Please check out common DSC Resources [contributing guidelines](https://github.com/PowerShell/DscResource.Kit/blob/master/CONTRIBUTING.md).
 
 ## Resources
 
 ### xCertReq
 
-- **`[String]` Subject** (_Key_): Provide the text string to use as the subject of the certificate.
-- **`[String]` CAServerFQDN** (_Required_): The FQDN of the Active Directory Certificate Authority on the local area network.
-- **`[String]` CARootName** (_Required_): The name of the certificate authority, by default this will be in format domain-servername-ca.
-- **`[PSCredential]` Credential** (_Write_): The credentials that will be used to access the template in the Certificate Authority.
-- **`[Boolean]` AutoRenew** (_Write_): Determines if the resource will also renew a certificate within 7 days of expiration.
+- **`[String]` Subject**: Provide the text string to use as the subject of the certificate. Key.
+- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Required.
+- **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Required.
+- **`[String]` KeyLength**: The bit length of the encryption key to be used. Optional. { *1024* | 2048 | 4096 | 8192 }.
+- **`[Boolean]` Exportable**: The option to allow the certificate to be exportable, by default it will be true. Optional. Defaults to `$true`.
+- **`[String]` ProviderName**: The selection of provider for the type of encryption to be used. Optional. Defaults to `"Microsoft RSA SChannel Cryptographic Provider"`.
+- **`[String]` OID**: The Object Identifier that is used to name the object. Optional. Defaults to `1.3.6.1.5.5.7.3.1`.
+- **`[String]` KeyUsage**: The Keyusage is a restriction method that determines what a certificate can be used for. Optional. Defaults to `0xa0`
+- **`[String]` CertificateTemplate** The template used for the definiton of the certificate. Optional. Defaults to `WebServer`
+- **`[String]` SubjectAltName** The subject alternative name used to createthe certificate. Optional.
+- **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
+- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
 
 ### xPfxImport
 
@@ -46,80 +56,91 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 
+- xCertReq:
+  - Added additional parameters KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate, SubjectAltName
+- Fixed most markdown errors in Readme.md.
+- Corrected Parameter decoration format to be consistent with guidelines.
+
 ### 2.2.0.0
-* Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
-* Moved unit tests to correct folder structure.
-* Changed unit tests to use standard test templates.
-* Updated all resources to meet HQRM standards and style guidelines.
-* Added .gitignore file
-* Added .gitattributes file to force line endings to CRLF to allow unit tests to work.
-* xCertificateCommon:
-    - Moved common code into new module CertificateCommon.psm1
-    - Added standard exception code.
-    - Renamed common functions Validate-* to use acceptable verb Test-*.
-    - Added help to all functions.
-* xCertificateImport:
-    - Fixed bug with Test-TargetResource incorrectly detecting change required.
-    - Reworked unit tests for improved code coverage to meet HQRM standards.
-    - Created Integration tests for both importing and removing an imported certificate.
-    - Added descriptions to MOF file.
-    - Removed default parameter values for parameters that are required or keys.
-    - Added verbose messages.
-    - Split message and error strings into localization string files.
-    - Added help to all functions.
-* xPfxImport:
-    - Fixed bug with Test-TargetResource incorrectly detecting change required.
-    - Reworked unit tests for improved code coverage to meet HQRM standards.
-    - Created Integration tests for both importing and removing an imported certificate.
-    - Added descriptions to MOF file.
-    - Removed default parameter values for parameters that are required or keys.
-    - Added verbose messages.
-    - Split message and error strings into localization string files.
-    - Added help to all functions.
-* xCertReq:
-    - Cleaned up descriptions in MOF file.
-    - Fixed bugs generating certificate when credentials are specified.
-    - Allowed output of certificate request when credentials are specified.
-    - Split message and error strings into localization string files.
-    - Created unit tests and integration tests.
-    - Improved logging output to enable easier debugging.
-    - Added help to all functions.
-* xPDT:
-    - Renamed to match standard module name format (MSFT_x).
-    - Modified to meet 100 characters or less line length where possible.
-    - Split message and error strings into localization string files.
-    - Removed unused functions.
-    - Renamed functions to standard verb-noun form.
-    - Added help to all functions.
-    - Fixed bug in Wait-Win32ProcessEnd that prevented waiting for process to end.
-    - Added Wait-Win32ProcessStop to wait for a process to stop.
-    - Removed unused and broken scheduled task code.
+
+- Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
+- Moved unit tests to correct folder structure.
+- Changed unit tests to use standard test templates.
+- Updated all resources to meet HQRM standards and style guidelines.
+- Added .gitignore file
+- Added .gitattributes file to force line endings to CRLF to allow unit tests to work.
+- xCertificateCommon:
+  - Moved common code into new module CertificateCommon.psm1
+  - Added standard exception code.
+  - Renamed common functions Validate-* to use acceptable verb Test-*.
+  - Added help to all functions.
+- xCertificateImport:
+  - Fixed bug with Test-TargetResource incorrectly detecting change required.
+  - Reworked unit tests for improved code coverage to meet HQRM standards.
+  - Created Integration tests for both importing and removing an imported certificate.
+  - Added descriptions to MOF file.
+  - Removed default parameter values for parameters that are required or keys.
+  - Added verbose messages.
+  - Split message and error strings into localization string files.
+  - Added help to all functions.
+- xPfxImport:
+  - Fixed bug with Test-TargetResource incorrectly detecting change required.
+  - Reworked unit tests for improved code coverage to meet HQRM standards.
+  - Created Integration tests for both importing and removing an imported certificate.
+  - Added descriptions to MOF file.
+  - Removed default parameter values for parameters that are required or keys.
+  - Added verbose messages.
+  - Split message and error strings into localization string files.
+  - Added help to all functions.
+- xCertReq:
+  - Cleaned up descriptions in MOF file.
+  - Fixed bugs generating certificate when credentials are specified.
+  - Allowed output of certificate request when credentials are specified.
+  - Split message and error strings into localization string files.
+  - Created unit tests and integration tests.
+  - Improved logging output to enable easier debugging.
+  - Added help to all functions.
+- xPDT:
+  - Renamed to match standard module name format (MSFT_x).
+  - Modified to meet 100 characters or less line length where possible.
+  - Split message and error strings into localization string files.
+  - Removed unused functions.
+  - Renamed functions to standard verb-noun form.
+  - Added help to all functions.
+  - Fixed bug in Wait-Win32ProcessEnd that prevented waiting for process to end.
+  - Added Wait-Win32ProcessStop to wait for a process to stop.
+  - Removed unused and broken scheduled task code.
 
 ### 2.1.0.0
-* Fixed xCertReq to support CA Root Name with spaces
+
+- Fixed xCertReq to support CA Root Name with spaces
 
 ### 2.0.0.0
-* Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
-* Updated xPfxImport with new Ensure support
-* Updated xPfxImport with support for the CurrentUser value
-* Updated xPfxImport with validationset for the Store parameter
-* Added new resource: xCertificateImport
+
+- Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
+- Updated xPfxImport with new Ensure support
+- Updated xPfxImport with support for the CurrentUser value
+- Updated xPfxImport with validationset for the Store parameter
+- Added new resource: xCertificateImport
 
 ### 1.1.0.0
-* Added new resource: xPfxImport
+
+- Added new resource: xPfxImport
 
 ### 1.0.1.0
 
-* Minor documentation updates
+- Minor documentation updates
 
 ### 1.0.0.0
 
-* Initial public release of xCertificate module with following resources
-    * xCertReq
+- Initial public release of xCertificate module with following resources
+  - xCertReq
 
 ## Examples
 
 ### xCertReq
+
+#### Request an SSL Certificate
 
 Request and Accept a certificate from an Active Directory Root Certificate Authority.
 
@@ -141,6 +162,12 @@ configuration xCertReq_RequestSSL
             CARootName                = 'test-dc01-ca'
             CAServerFQDN              = 'dc01.test.pha'
             Subject                   = 'foodomain.test.net'
+            KeyLength                 = '1024'
+            Exportable                = $true
+            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                       = '1.3.6.1.5.5.7.3.1'
+            KeyUsage                  = '0xa0'
+            CertificateTemplate       = 'WebServer'
             AutoRenew                 = $true
             Credential                = $Credential
         }
@@ -159,6 +186,59 @@ xCertReq_RequestSSL `
     -Credential (Get-Credential) `
     -OutputPath 'c:\xCertReq_RequestSSL'
 Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\xCertReq_RequestSSL'
+
+# Validate results
+Get-ChildItem Cert:\LocalMachine\My
+```
+
+#### Request an SSL Certificate with alternative DNS names
+
+Request and Accept a certificate from an Active Directory Root Certificate Authority.
+This certificate is issued using an subject alternate name with multiple DNS addresses.
+
+```powershell
+configuration Sample_xCertReq_RequestAltSSL
+{
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullorEmpty()]
+        [PSCredential] $Credential
+    )
+
+    Import-DscResource -ModuleName xCertificate
+    Node 'localhost'
+    {
+        xCertReq SSLCert
+        {
+            CARootName                = 'test-dc01-ca'
+            CAServerFQDN              = 'dc01.test.pha'
+            Subject                   = 'contoso.com'
+            KeyLength                 = '1024'
+            Exportable                = $true
+            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                       = '1.3.6.1.5.5.7.3.1'
+            KeyUsage                  = '0xa0'
+            CertificateTemplate       = 'WebServer'
+            SubjectAltName            = 'dns=fabrikam.com&dns=contoso.com'
+            AutoRenew                 = $true
+            Credential                = $Credential
+        }
+    }
+}
+$configData = @{
+    AllNodes = @(
+        @{
+            NodeName                    = 'localhost';
+            PSDscAllowPlainTextPassword = $true
+            }
+        )
+    }
+Sample_xCertReq_RequestSSL `
+    -ConfigurationData $configData `
+    -Credential (Get-Credential) `
+    -OutputPath 'c:\Sample_xCertReq_RequestAltSSL'
+Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xCertReq_RequestAltSSL'
 
 # Validate results
 Get-ChildItem Cert:\LocalMachine\My

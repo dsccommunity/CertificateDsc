@@ -82,6 +82,7 @@ try
                 }
             $CertificateNew.Subject                        | Should Be "CN=$($TestCertReq.Subject)"
             $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($TestCertReq.CARootName)"
+            $CertificateNew.Publickey.Key.KeySize          | Should Be $TestCertReq.KeyLength
         }
 
         AfterAll {
@@ -97,7 +98,7 @@ try
                 -Force `
                 -ErrorAction SilentlyContinue
         }
-    }
+   }
     #endregion
 }
 finally

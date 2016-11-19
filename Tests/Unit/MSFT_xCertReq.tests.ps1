@@ -83,10 +83,17 @@ try
                 }
             }
         ) -join ''
-        $CAServerFQDN   = 'rootca.contoso.com'
-        $CARootName     = 'contoso-CA'
-        $validSubject   = 'Test Subject'
-        $validIssuer    = "CN=$CARootName, DC=contoso, DC=com"
+        $CAServerFQDN          = 'rootca.contoso.com'
+        $CARootName            = 'contoso-CA'
+        $validSubject          = 'Test Subject'
+        $validIssuer           = "CN=$CARootName, DC=contoso, DC=com"
+        $KeyLength             = '1024'
+        $Exportable            = $true
+        $ProviderName          = '"Microsoft RSA SChannel Cryptographic Provider"'
+        $OID                   = '1.3.6.1.5.5.7.3.1'
+        $KeyUsage              = '0xa0'
+        $CertificateTemplate   = 'WebServer'
+        $SubjectAltName        = 'dns=contoso.com'
 
         $validCert      = New-Object -TypeName PSObject -Property @{
             Thumbprint  = $validThumbprint
@@ -123,57 +130,131 @@ try
         $testPassword   = 'DummyPassword'
         $testCredential = New-Object System.Management.Automation.PSCredential $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
         $Params = @{
-            Subject      = $validSubject
-            CAServerFQDN = $CAServerFQDN
-            CARootName   = $CARootName
-            Credential   = $testCredential
-            AutoRenew    = $False
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $testCredential
+            AutoRenew             = $False
         }
         $ParamsAutoRenew = @{
-            Subject      = $validSubject
-            CAServerFQDN = $CAServerFQDN
-            CARootName   = $CARootName
-            Credential   = $testCredential
-            AutoRenew    = $True
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $testCredential
+            AutoRenew             = $True
         }
         $ParamsNoCred = @{
-            Subject      = $validSubject
-            CAServerFQDN = $CAServerFQDN
-            CARootName   = $CARootName
-            Credential   = $null
-            AutoRenew    = $False
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $null
+            AutoRenew             = $False
         }
         $ParamsAutoRenewNoCred = @{
-            Subject      = $validSubject
-            CAServerFQDN = $CAServerFQDN
-            CARootName   = $CARootName
-            Credential   = $null
-            AutoRenew    = $True
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $null
+            AutoRenew             = $True
         }
+        $ParamsKeyLength4096NoCred = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = '4096'
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $null
+            AutoRenew             = $False
+        }
+        $ParamsKeyLength4096AutoRenewNoCred = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = '4096'
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $null
+            AutoRenew             = $True
+        }
+        $ParamsSubjectAltNameNoCred = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $null
+            SubjectAltName        = $SubjectAltName
+            AutoRenew             = $False
+        }
+
         $CertInf = @"
 [NewRequest]
 Subject = "CN=$validSubject"
 KeySpec = 1
-KeyLength = 1024
-Exportable = TRUE
+KeyLength = $KeyLength
+Exportable = $($Exportable.ToString().ToUpper())
 MachineKeySet = TRUE
 SMIME = FALSE
 PrivateKeyArchive = FALSE
 UserProtected = FALSE
 UseExistingKeySet = FALSE
-ProviderName = "Microsoft RSA SChannel Cryptographic Provider"
+ProviderName = $ProviderName
 ProviderType = 12
 RequestType = CMC
-KeyUsage = 0xa0
+KeyUsage = $KeyUsage
 [RequestAttributes]
-CertificateTemplate = WebServer
+CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
-OID = 1.3.6.1.5.5.7.3.1
+OID = $OID
 "@
-        $CertInfRenew = $CertInf
+
+        $CertInfKey = $CertInf -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
+        $CertInfRenew = $Certinf
         $CertInfRenew += @"
 
 RenewalCert = $validThumbprint
+"@
+        $CertInfKeyRenew = $CertInfRenew -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
+        $CertInfSubjectAltName = $Certinf
+        $CertInfSubjectAltName += @"
+
+[Extensions]
+2.5.29.17 = "{text}$SubjectAltName"
 "@
 
         Describe "$DSCResourceName\Get-TargetResource" {
@@ -184,11 +265,19 @@ RenewalCert = $validThumbprint
                 ($result -is [hashtable]) | Should Be $true
             }
             It 'should contain the input values' {
-                $result.Subject      | Should BeExactly $validSubject
-                $result.CAServerFQDN | Should BeNullOrEmpty
-                $result.CARootName   | Should BeExactly $CARootName
+                $result.Subject              | Should BeExactly $validSubject
+                $result.CAServerFQDN         | Should BeNullOrEmpty
+                $result.CARootName           | Should BeExactly $CARootName
+                $result.KeyLength            | Should BeNullOrEmpty
+                $result.Exportable           | Should BeNullOrEmpty
+                $result.ProviderName         | Should BeNullOrEmpty
+                $result.OID                  | Should BeNullOrEmpty
+                $result.KeyUsage             | Should BeNullOrEmpty
+                $result.CertificateTemplate  | Should BeNullOrEmpty
+                $result.SubjectAltName       | Should BeNullOrEmpty
             }
         }
+        #endregion
 
         #region Set-TargetResource
         Describe "$DSCResourceName\Set-TargetResource" {
@@ -209,10 +298,11 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -231,10 +321,11 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -255,10 +346,10 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Get-ChildItem -Mockwith { $validCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -280,15 +371,14 @@ RenewalCert = $validThumbprint
                     $Path -eq 'xCertReq-Test.inf' -and `
                     $Value -eq $CertInfRenew
                 }
-
             Context 'autorenew is true, credentials not passed and expiring certificate exists' {
                 Mock -CommandName Get-ChildItem -Mockwith { $expiringCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -306,13 +396,13 @@ RenewalCert = $validThumbprint
             }
 
             Context 'autorenew is true, credentials not passed and expired certificate exists' {
-                Mock -CommandName Get-ChildItem -Mockwith { $expiringCert } `
+                Mock -CommandName Get-ChildItem -Mockwith { $expiredCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @ParamsAutoRenewNoCred } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -326,6 +416,38 @@ RenewalCert = $validThumbprint
                             $Value -eq $CertInfRenew
                         }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
+                }
+            }
+
+            Mock -CommandName Set-Content `
+                -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInfKeyRenew
+                }
+
+            Context 'autorenew is true, credentials not passed, keylength passed and expired certificate exists' {
+                Mock -CommandName Get-ChildItem -Mockwith { $expiredCert } `
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+
+                It 'should not throw' {
+                    { Set-TargetResource @ParamsKeyLength4096AutoRenewNoCred } | Should Not Throw
+                }
+                It 'should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly 3
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInfKeyRenew
+                        }
                 }
             }
 
@@ -345,10 +467,11 @@ RenewalCert = $validThumbprint
                     -ErrorId 'CertificateReqNotFoundError' `
                     -ErrorMessage ($LocalizedData.CertificateReqNotFoundError -f 'xCertReq-Test.req')
 
-                It 'throws CertificateReqNotFoundError exception' {
+                It 'should throw CertificateReqNotFoundError exception' {
                     { Set-TargetResource @ParamsNoCred } | Should Throw $errorRecord
                 }
-                It 'calls expected mocks' {
+
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -376,10 +499,11 @@ RenewalCert = $validThumbprint
                     -ErrorId 'CertificateCerNotFoundError' `
                     -ErrorMessage ($LocalizedData.CertificateCerNotFoundError -f 'xCertReq-Test.cer')
 
-                It 'throws CertificateCerNotFoundError exception' {
+                It 'should throw CertificateCerNotFoundError exception' {
                     { Set-TargetResource @ParamsNoCred } | Should Throw $errorRecord
                 }
-                It 'calls expected mocks' {
+
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -416,10 +540,11 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Start-Win32Process -ModuleName MSFT_xCertReq
                 Mock -CommandName Wait-Win32ProcessEnd -ModuleName MSFT_xCertReq
 
-                It 'does not throw' {
+                It 'should not throw' {
                     { Set-TargetResource @Params } | Should Not Throw
                 }
-                It 'calls expected mocks' {
+
+                It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
@@ -441,6 +566,35 @@ RenewalCert = $validThumbprint
                         -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
                 }
             }
+
+            Mock -CommandName Set-Content `
+                -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInfSubjectAltName
+                }
+
+            Context 'autorenew is false, subject alt name passed, credentials not passed' {
+                Mock -CommandName Get-ChildItem -Mockwith { } `
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+
+                It 'should not throw' {
+                    { Set-TargetResource @ParamsSubjectAltNameNoCred } | Should Not Throw
+                }
+
+                It 'should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInfSubjectAltName
+                        }
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly 3
+                }
+            }
         }
         #endregion
 
@@ -448,17 +602,17 @@ RenewalCert = $validThumbprint
             It 'should return a bool' {
                 Test-TargetResource @Params | Should BeOfType Boolean
             }
-            It 'returns false when a valid certificate does not exist' {
+            It 'should return false when a valid certificate does not exist' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { }
                 Test-TargetResource @Params | Should Be $false
             }
-            It 'returns true when a valid certificate already exists and is not about to expire' {
+            It 'should return true when a valid certificate already exists and is not about to expire' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $validCert }
                 Test-TargetResource @Params | Should Be $true
             }
-            It 'returns true when a valid certificate already exists and is about to expire and autorenew set' {
+            It 'should return true when a valid certificate already exists and is about to expire and autorenew set' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $expiringCert }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true
