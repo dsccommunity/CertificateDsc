@@ -709,14 +709,14 @@ function Wait-Win32ProcessEnd
     # Wait for the process to start
     if (-not (Wait-Win32ProcessStart @getArguments))
     {
-        New-InvalidOperationError `
+        New-InvalidArgumentError `
             -ErrorId 'ProcessFailedToStartError' `
             -ErrorMessage ($LocalizedData.ProcessFailedToStartError -f $Path,$Arguments)
     }
     if (-not (Wait-Win32ProcessStop @getArguments))
     {
         # The process did not stop.
-        New-InvalidOperationError `
+        New-InvalidArgumentError `
             -ErrorId 'ProcessFailedToStopError' `
             -ErrorMessage ($LocalizedData.ProcessFailedToStopError -f $Path,$Arguments)
     }
