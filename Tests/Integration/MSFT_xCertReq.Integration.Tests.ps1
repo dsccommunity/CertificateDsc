@@ -62,9 +62,9 @@ try
                 }
 
                 & "$($script:DSCResourceName)_Config" `
-                    -OutputPath $TestEnvironment.WorkingFolder `
+                    -OutputPath $TestDrive `
                     -ConfigurationData $ConfigData
-                Start-DscConfiguration -Path $TestEnvironment.WorkingFolder -ComputerName localhost -Wait -Verbose -Force
+                Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
             } | Should not throw
         }
 
@@ -82,6 +82,7 @@ try
                 }
             $CertificateNew.Subject                        | Should Be "CN=$($TestCertReq.Subject)"
             $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($TestCertReq.CARootName)"
+            $CertificateNew.Publickey.Key.KeySize          | Should Be $TestCertReq.KeyLength
         }
 
         AfterAll {
@@ -97,7 +98,7 @@ try
                 -Force `
                 -ErrorAction SilentlyContinue
         }
-    }
+   }
     #endregion
 }
 finally

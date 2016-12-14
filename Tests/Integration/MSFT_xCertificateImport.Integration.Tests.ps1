@@ -47,10 +47,10 @@ try
         It 'Should compile without throwing' {
             {
                 & "$($script:DSCResourceName)_Add_Config" `
-                    -OutputPath $TestEnvironment.WorkingFolder `
+                    -OutputPath $TestDrive `
                     -Path $CertificatePath `
                     -Thumbprint $Certificate.Thumbprint
-                Start-DscConfiguration -Path $TestEnvironment.WorkingFolder -ComputerName localhost -Wait -Verbose -Force
+                Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
             } | Should not throw
         }
 
@@ -79,10 +79,10 @@ try
         It 'Should compile without throwing' {
             {
                 & "$($script:DSCResourceName)_Remove_Config" `
-                    -OutputPath $TestEnvironment.WorkingFolder `
+                    -OutputPath $TestDrive `
                     -Path $CertificatePath `
                     -Thumbprint $Certificate.Thumbprint
-                Start-DscConfiguration -Path $TestEnvironment.WorkingFolder -ComputerName localhost -Wait -Verbose -Force
+                Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
             } | Should not throw
         }
 

@@ -54,22 +54,22 @@ function Get-TargetResource
     [OutputType([Hashtable])]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
         $Location,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Store,
@@ -159,22 +159,22 @@ function Test-TargetResource
     [OutputType([Boolean])]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
         $Location,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Store,
@@ -242,22 +242,22 @@ function Set-TargetResource
     [CmdletBinding(SupportsShouldProcess)]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
         $Location,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Store,

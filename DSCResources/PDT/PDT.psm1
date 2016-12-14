@@ -545,10 +545,22 @@ function Start-Win32Process
             }
             catch
             {
-                $exception = New-Object System.ArgumentException $_
-                $errorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
-                $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord $exception, "Win32Exception", $errorCategory, $null
-                $err = $errorRecord
+                try
+                {
+                    Initialize-PInvoke
+                    [Source.NativeMethods]::CreateProcessAsUser(`
+                        ("$Path " + $Arguments),`
+                        $Credential.GetNetworkCredential().Domain,`
+                        $Credential.GetNetworkCredential().UserName,`
+                        $Credential.GetNetworkCredential().Password)
+                }
+                catch
+                {
+                    $exception = New-Object System.ArgumentException $_
+                    $errorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
+                    $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord $exception, "Win32Exception", $errorCategory, $null
+                    $err = $errorRecord
+                }
             }
         }
         else
@@ -697,14 +709,14 @@ function Wait-Win32ProcessEnd
     # Wait for the process to start
     if (-not (Wait-Win32ProcessStart @getArguments))
     {
-        New-InvalidOperationError `
+        New-InvalidArgumentError `
             -ErrorId 'ProcessFailedToStartError' `
             -ErrorMessage ($LocalizedData.ProcessFailedToStartError -f $Path,$Arguments)
     }
     if (-not (Wait-Win32ProcessStop @getArguments))
     {
         # The process did not stop.
-        New-InvalidOperationError `
+        New-InvalidArgumentError `
             -ErrorId 'ProcessFailedToStopError' `
             -ErrorMessage ($LocalizedData.ProcessFailedToStopError -f $Path,$Arguments)
     }

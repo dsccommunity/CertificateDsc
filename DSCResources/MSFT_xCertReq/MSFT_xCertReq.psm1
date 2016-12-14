@@ -36,6 +36,27 @@ Import-Module -Name ( Join-Path `
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
 
+    .PARAMETER KeyLength
+    The bit length of the encryption key to be used.
+
+    .PARAMETER Exportable
+    The option to allow the certificate to be exportable, by default it will be true.
+
+    .PARAMETER ProviderName
+    The selection of provider for the type of encryption to be used.
+
+    .PARAMETER OID
+    The Object Identifier that is used to name the object.
+
+    .PARAMETER KeyUsage
+    The Keyusage is a restriction method that determines what a certificate can be used for.
+
+    .PARAMETER CertificateTemplate
+    The template used for the definiton of the certificate.
+
+    .PARAMETER SubjectAltName
+    The subject alternative name used to createthe certificate.
+
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
 
@@ -48,24 +69,60 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Subject,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CARootName,
 
+        [Parameter()]
+        [ValidateSet("1024","2048","4096","8192")]
+        [System.String]
+        $KeyLength = '1024',
+
+        [Parameter()]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SubjectAltName,
+
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -97,9 +154,16 @@ function Get-TargetResource
             ) -join '' )
 
         $returnValue = @{
-            Subject      = $cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN = $null # This value can't be determined from the cert
-            CARootName   = $cert.Issuer.split(',')[0].replace('CN=','')
+            Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
+            CAServerFQDN         = $null # This value can't be determined from the cert
+            CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
+            KeyLength            = $Cert.Publickey.Key.KeySize
+            Exportable           = $null # This value can't be determined from the cert
+            ProviderName         = $null # This value can't be determined from the cert
+            OID                  = $null # This value can't be determined from the cert
+            KeyUsage             = $null # This value can't be determined from the cert
+            CertificateTemplate  = $null # This value can't be determined from the cert
+            SubjectAltName       = $null # This value can't be determined from the cert
         }
     }
     else
@@ -123,6 +187,27 @@ function Get-TargetResource
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
 
+    .PARAMETER KeyLength
+    The bit length of the encryption key to be used.
+
+    .PARAMETER Exportable
+    The option to allow the certificate to be exportable, by default it will be true.
+
+    .PARAMETER ProviderName
+    The selection of provider for the type of encryption to be used.
+
+    .PARAMETER OID
+    The Object Identifier that is used to name the object.
+
+    .PARAMETER KeyUsage
+    The Keyusage is a restriction method that determines what a certificate can be used for.
+
+    .PARAMETER CertificateTemplate
+    The template used for the definiton of the certificate.
+
+    .PARAMETER SubjectAltName
+    The subject alternative name used to createthe certificate.
+
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
 
@@ -134,24 +219,60 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Subject,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CARootName,
 
+        [Parameter()]
+        [ValidateSet("1024","2048","4096","8192")]
+        [System.String]
+        $KeyLength = '1024',
+
+        [Parameter()]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SubjectAltName,
+
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -192,19 +313,13 @@ function Set-TargetResource
     # In future versions, select variables from the list below could be moved to parameters!
     $Subject             = "`"$Subject`""
     $keySpec             = '1'
-    $keyLength           = '1024'
-    $exportable          = 'TRUE'
     $machineKeySet       = 'TRUE'
     $smime               = 'FALSE'
     $privateKeyArchive   = 'FALSE'
     $userProtected       = 'FALSE'
     $useExistingKeySet   = 'FALSE'
-    $providerName        = '"Microsoft RSA SChannel Cryptographic Provider"'
     $providerType        = '12'
     $requestType         = 'CMC'
-    $keyUsage            = '0xa0'
-    $oid                 = '1.3.6.1.5.5.7.3.1'
-    $certificateTemplate = 'WebServer'
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
@@ -219,27 +334,36 @@ function Set-TargetResource
 [NewRequest]
 Subject = $Subject
 KeySpec = $keySpec
-KeyLength = $keyLength
-Exportable = $exportable
-MachineKeySet = $machineKeySet
+KeyLength = $KeyLength
+Exportable = $($Exportable.ToString().ToUpper())
+MachineKeySet = $MachineKeySet
 SMIME = $smime
 PrivateKeyArchive = $privateKeyArchive
 UserProtected = $userProtected
 UseExistingKeySet = $useExistingKeySet
-ProviderName = $providerName
+ProviderName = $ProviderName
 ProviderType = $providerType
 RequestType = $requestType
-KeyUsage = $keyUsage
+KeyUsage = $KeyUsage
 [RequestAttributes]
-CertificateTemplate = $certificateTemplate
+CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
-OID = $oid
+OID = $OID
 "@
+    if ($PSBoundParameters.ContainsKey('SubjectAltName'))
+    {
+        # If a Subject Alt Name was specified, add it.
+        $requestDetails += @"
+
+[Extensions]
+2.5.29.17 = `"{text}$SubjectAltName`"
+"@
+    }
     if ($thumbprint)
     {
         $requestDetails += @"
 
-RenewalCert = $thumbprint
+RenewalCert = $Thumbprint
 "@
     }
     Set-Content -Path $infPath -Value $requestDetails
@@ -373,6 +497,27 @@ RenewalCert = $thumbprint
     .PARAMETER CARootName
     The name of the certificate authority, by default this will be in format domain-servername-ca.
 
+    .PARAMETER KeyLength
+    The bit length of the encryption key to be used.
+
+    .PARAMETER Exportable
+    The option to allow the certificate to be exportable, by default it will be true.
+
+    .PARAMETER ProviderName
+    The selection of provider for the type of encryption to be used.
+
+    .PARAMETER OID
+    The Object Identifier that is used to name the object.
+
+    .PARAMETER KeyUsage
+    The Keyusage is a restriction method that determines what a certificate can be used for.
+
+    .PARAMETER CertificateTemplate
+    The template used for the definiton of the certificate.
+
+    .PARAMETER SubjectAltName
+    The subject alternative name used to createthe certificate.
+
     .PARAMETER Credential
     The credentials that will be used to access the template in the Certificate Authority.
 
@@ -385,24 +530,60 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Subject,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CARootName,
 
+        [Parameter()]
+        [ValidateSet("1024","2048","4096","8192")]
+        [System.String]
+        $KeyLength = '1024',
+
+        [Parameter()]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SubjectAltName,
+
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -478,5 +659,3 @@ function Test-TargetResource
         ) -join '' )
     return $false
 } # end function Test-TargetResource
-
-Export-ModuleMember -Function *-TargetResource
