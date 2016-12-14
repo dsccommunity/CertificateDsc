@@ -56,6 +56,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 
+### 2.3.0.0
+
 - xCertReq:
   - Added additional parameters KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate, SubjectAltName
 - Fixed most markdown errors in Readme.md.
