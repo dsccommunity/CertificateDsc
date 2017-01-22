@@ -1,25 +1,12 @@
-#region localizeddata
-if (Test-Path "${PSScriptRoot}\${PSUICulture}")
-{
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename PDT.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
-}
-else
-{
-    #fallback to en-US
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename PDT.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\en-US"
-}
-#endregion
+# Import the Networking Resource Helper Module
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
+                               -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
+                                                     -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
 
-# Import the common certificate functions
-Import-Module -Name ( Join-Path `
-    -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
+# Import Localization Strings
+$localizedData = Get-LocalizedData `
+    -ResourceName 'CertificateDsc.PDT' `
+    -ResourcePath $PSScriptRoot
 
 <#
     .SYNOPSIS

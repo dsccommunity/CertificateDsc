@@ -1,9 +1,8 @@
-$script:DSCModuleName      = 'xCertificate'
-$script:DSCResourceName    = 'CertificateCommon'
+$script:ModuleName = 'CertificateDsc.Common'
 
 #region HEADER
-# Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+# Unit Test Template Version: 1.1.0
+[string] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
      (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -11,16 +10,13 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
-$TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:DSCModuleName `
-    -DSCResourceName $script:DSCResourceName `
-    -TestType Unit
-#endregion
+Import-Module (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'Modules' -ChildPath $script:ModuleName)) -ChildPath "$script:ModuleName.psm1") -Force
+#endregion HEADER
 
 # Begin Testing
 try
 {
-    InModuleScope $script:DSCResourceName {
+    InModuleScope $script:ModuleName {
         $DSCResourceName = 'CertificateCommon'
         $invalidThumbprint = 'Zebra'
         $validThumbprint = (
@@ -39,7 +35,7 @@ try
         $invalidPath = 'TestDrive:'
         $validPath = "TestDrive:\$testFile"
 
-        Describe "$DSCResourceName\Test-CertificatePath" {
+        Describe "$($script:ModuleName)\Test-CertificatePath" {
 
             $null | Set-Content -Path $validPath
 
@@ -84,7 +80,7 @@ try
                 }
             }
         }
-        Describe "$DSCResourceName\Test-Thumbprint" {
+        Describe "$($script:ModuleName)\Test-Thumbprint" {
 
             Context 'a single valid thumbrpint by parameter' {
                 $result = Test-Thumbprint -Thumbprint $validThumbprint
@@ -132,6 +128,5 @@ try
 finally
 {
     #region FOOTER
-    Restore-TestEnvironment -TestEnvironment $TestEnvironment
     #endregion
 }

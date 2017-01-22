@@ -1,27 +1,14 @@
 #Requires -Version 4.0
 
-#region localizeddata
-if (Test-Path "${PSScriptRoot}\${PSUICulture}")
-{
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xCertReq.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
-}
-else
-{
-    #fallback to en-US
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xCertReq.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\en-US"
-}
-#endregion
+$script:ResourceRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent)
 
-# Import the common certificate functions
-Import-Module -Name ( Join-Path `
-    -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
+# Import the xNetworking Resource Module (to import the common modules)
+Import-Module -Name (Join-Path -Path $script:ResourceRootPath -ChildPath 'xCertificate.psd1')
+
+# Import Localization Strings
+$localizedData = Get-LocalizedData `
+    -ResourceName 'MSFT_xCertReq' `
+    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
 
 <#
     .SYNOPSIS
@@ -84,45 +71,36 @@ function Get-TargetResource
         [System.String]
         $CARootName,
 
-        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
-        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
-        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -234,45 +212,36 @@ function Set-TargetResource
         [System.String]
         $CARootName,
 
-        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
-        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
-        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -388,7 +357,7 @@ RenewalCert = $Thumbprint
     # SUBMIT: Submit a request to a Certification Authority.
     # DSC runs in the context of LocalSystem, which uses the Computer account in Active Directory
     # to authenticate to network resources
-    # The Credential paramter with xPDT is used to impersonate a user making the request
+    # The Credential paramter with PDT is used to impersonate a user making the request
     if (Test-Path -Path $reqPath)
     {
         Write-Verbose -Message ( @(
@@ -398,8 +367,6 @@ RenewalCert = $Thumbprint
 
         if ($Credential)
         {
-            Import-Module -Name $PSScriptRoot\..\PDT\PDT.psm1 -Force
-
             # Assemble the command and arguments to pass to the powershell process that
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
@@ -545,45 +512,36 @@ function Test-TargetResource
         [System.String]
         $CARootName,
 
-        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
-        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
-        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
-        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )

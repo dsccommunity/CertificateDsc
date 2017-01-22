@@ -1,46 +1,21 @@
 #Requires -Version 4.0
 
-#region localizeddata
-if (Test-Path "${PSScriptRoot}\${PSUICulture}")
-{
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xCertificateImport.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
-}
-else
-{
-    #fallback to en-US
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xCertificateImport.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\en-US"
-}
-#endregion
+$script:ResourceRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent)
 
-# Import the common certificate functions
-Import-Module -Name ( Join-Path `
-    -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
+# Import the xNetworking Resource Module (to import the common modules)
+Import-Module -Name (Join-Path -Path $script:ResourceRootPath -ChildPath 'xCertificate.psd1')
+
+# Import Localization Strings
+$localizedData = Get-LocalizedData `
+    -ResourceName 'MSFT_xCertificateExport' `
+    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
 
 <#
     .SYNOPSIS
-    Returns the current state of the CER Certificte file that should be imported.
-
-    .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the certificate you're importing.
+    Returns the current state of the exported certificate.
 
     .PARAMETER Path
-    The path to the CER file you want to import.
-
-    .PARAMETER Location
-    The Windows Certificate Store Location to import the certificate to.
-
-    .PARAMETER Store
-    The Windows Certificate Store Name to import the certificate to.
-
-    .PARAMETER Ensure
-    Specifies whether the certificate should be present or absent.
+    The path to the file you that will contain the exported certificate.
 #>
 function Get-TargetResource
 {
@@ -49,230 +24,228 @@ function Get-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-Thumbprint } )]
         [System.String]
-        $Thumbprint,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
-        [System.String]
-        $Path,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('CurrentUser', 'LocalMachine')]
-        [System.String]
-        $Location,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Store,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present'
+        $Path
     )
-
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
-
-    Write-Verbose -Message ( @(
-            "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
-        ) -join '' )
-
-    if ((Test-Path $certificateStore) -eq $false)
-    {
-        New-InvalidArgumentError `
-            -ErrorId 'CertificateStoreNotFound' `
-            -ErrorMessage ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore)
-    }
-
-    $checkEnsure = [Bool] (
-        $certificateStore |
-        Get-ChildItem |
-        Where-Object -FilterScript { $_.Thumbprint -ieq $Thumbprint }
-    )
-    if ($checkEnsure)
-    {
-        $Ensure = 'Present'
-    }
-    else
-    {
-        $Ensure = 'Absent'
-    }
-
-    @{
-        Thumbprint = $Thumbprint
-        Path       = $Path
-        Location   = $Location
-        Store      = $Store
-        Ensure     = $Ensure
-    }
 } # end function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Tests if the CER Certificate file needs to be imported or removed.
-
-    .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the certificate you're importing.
+    Exports the certificate.
 
     .PARAMETER Path
-    The path to the CER file you want to import.
+    The path to the file you that will contain the exported certificate.
 
-    .PARAMETER Location
-    The Windows Certificate Store Location to import the certificate to.
+    .PARAMETER Thumbprint
+    The thumbprint of the certificate to export.
+    Certificate selector parameter.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to export.
+    Certificate selector parameter.
+
+    .PARAMETER Subject
+    The subject of the certificate to export.
+    Certificate selector parameter.
+
+    .PARAMETER Issuer
+    The issuer of the certiicate to export.
+    Certificate selector parameter.
+
+    .PARAMETER KeyUsage
+    The key usage of the certificate to export must contain these values.
+    Certificate selector parameter.
+
+    .PARAMETER EnhancedKeyUsage
+    The enhanced key usage of the certificate to export must contain these values.
+    Certificate selector parameter.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the certificate to.
+    The Windows Certificate Store Name to search for the certificate to export from.
+    Certificate selector parameter.
 
-    .PARAMETER Ensure
-    Specifies whether the certificate should be present or absent.
+    .PARAMETER AllowExpired
+    Allow an expired certificate to be exported.
+    Certificate selector parameter.
+
+    .PARAMETER MatchSource
+    Causes an existing exported certificate to be compared with the certificate identified for
+    export and re-exported if it does not match.
+
+    .PARAMETER Type
+    Specifies the type of certificate to export.
+
+    .PARAMETER ChainOption
+    Specifies the options for building a chain when exporting a PFX certificate.
+
+    .PARAMETER Password
+    Specifies the password used to protect an exported PFX file.
+
+    .PARAMETER ProtectTo
+    Specifies an array of strings for the username or group name that can access the private
+    key of an exported PFX file without any password.
 #>
 function Test-TargetResource
 {
     [CmdletBinding()]
-    [OutputType([Boolean])]
+    [OutputType([System.Boolean])]
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-Thumbprint } )]
-        [System.String]
-        $Thumbprint,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
-        $Location,
+        $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName,
+
+        [System.String]
+        $Subject,
+
+        [System.String]
+        $Issuer,
+
+        [System.String[]]
+        $KeyUsage,
+
+        [System.String[]]
+        $EnhancedKeyUsage,
+
         [System.String]
         $Store,
 
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
+        [System.Boolean]
+        $AllowExpired,
+
+        [System.Boolean]
+        $MatchSource,
+
+        [ValidateSet("Cert","P7B","SST","PFX")]
         [System.String]
-        $Ensure = 'Present'
+        $Type = 'Cert',
+
+        [ValidateSet("BuildChain","EndEntityCertOnly")]
+        [System.String]
+        $ChainOption = 'BuildChain',
+
+        [System.Management.Automation.PSCredential]
+        $Password,
+
+        [System.String[]]
+        $ProtectTo
     )
 
-    $result = @(Get-TargetResource @PSBoundParameters)
-
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
-
-    Write-Verbose -Message ( @(
-            "$($MyInvocation.MyCommand): "
-            $($LocalizedData.TestingCertificateStatusMessage -f $Thumbprint,$CertificateStore)
-        ) -join '' )
-
-    if ($Ensure -ne $result.Ensure)
-    {
-        return $false
-    }
-    return $true
 } # end function Test-TargetResource
 
 <#
     .SYNOPSIS
-    Imports or removes the specified CER Certifiicate file.
-
-    .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the certificate you're importing.
+    Tests the state of the currently exported certificate.
 
     .PARAMETER Path
-    The path to the CER file you want to import.
+    The path to the file you that will contain the exported certificate.
 
-    .PARAMETER Location
-    The Windows Certificate Store Location to import the certificate to.
+    .PARAMETER Thumbprint
+    The thumbprint of the certificate to export.
+    Certificate selector parameter.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to export.
+    Certificate selector parameter.
+
+    .PARAMETER Subject
+    The subject of the certificate to export.
+    Certificate selector parameter.
+
+    .PARAMETER Issuer
+    The issuer of the certiicate to export.
+    Certificate selector parameter.
+
+    .PARAMETER KeyUsage
+    The key usage of the certificate to export must contain these values.
+    Certificate selector parameter.
+
+    .PARAMETER EnhancedKeyUsage
+    The enhanced key usage of the certificate to export must contain these values.
+    Certificate selector parameter.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the certificate to.
+    The Windows Certificate Store Name to search for the certificate to export from.
+    Certificate selector parameter.
 
-    .PARAMETER Ensure
-    Specifies whether the certificate should be present or absent.
+    .PARAMETER AllowExpired
+    Allow an expired certificate to be exported.
+    Certificate selector parameter.
+
+    .PARAMETER MatchSource
+    Causes an existing exported certificate to be compared with the certificate identified for
+    export and re-exported if it does not match.
+
+    .PARAMETER Type
+    Specifies the type of certificate to export.
+
+    .PARAMETER ChainOption
+    Specifies the options for building a chain when exporting a PFX certificate.
+
+    .PARAMETER Password
+    Specifies the password used to protect an exported PFX file.
+
+    .PARAMETER ProtectTo
+    Specifies an array of strings for the username or group name that can access the private
+    key of an exported PFX file without any password.
 #>
 function Set-TargetResource
 {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-Thumbprint } )]
-        [System.String]
-        $Thumbprint,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
-        $Location,
+        $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName,
+
+        [System.String]
+        $Subject,
+
+        [System.String]
+        $Issuer,
+
+        [System.String[]]
+        $KeyUsage,
+
+        [System.String[]]
+        $EnhancedKeyUsage,
+
         [System.String]
         $Store,
 
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
+        [System.Boolean]
+        $AllowExpired,
+
+        [System.Boolean]
+        $MatchSource,
+
+        [ValidateSet("Cert","P7B","SST","PFX")]
         [System.String]
-        $Ensure = 'Present'
+        $Type = 'Cert',
+
+        [ValidateSet("BuildChain","EndEntityCertOnly")]
+        [System.String]
+        $ChainOption = 'BuildChain',
+
+        [System.Management.Automation.PSCredential]
+        $Password,
+
+        [System.String[]]
+        $ProtectTo
     )
 
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
-
-    Write-Verbose -Message ( @(
-            "$($MyInvocation.MyCommand): "
-            $($LocalizedData.SettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
-        ) -join '' )
-
-    if ($Ensure -ieq 'Present')
-    {
-        if ($PSCmdlet.ShouldProcess(($LocalizedData.ImportingCertificateShould `
-            -f $Path,$certificateStore)))
-        {
-            # Import the certificate into the Store
-            Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.ImportingCertficateMessage -f $Path,$certificateStore)
-                ) -join '' )
-
-            $param = @{
-                CertStoreLocation = $certificateStore
-                FilePath          = $Path
-                Verbose           = $VerbosePreference
-            }
-
-            Import-Certificate @param
-        }
-    }
-    elseif ($Ensure -ieq 'Absent')
-    {
-        # Remove the certificate from the Store
-        Write-Verbose -Message ( @(
-                "$($MyInvocation.MyCommand): "
-                $($LocalizedData.RemovingCertficateMessage -f $Thumbprint,$certificateStore)
-            ) -join '' )
-
-        Get-ChildItem -Path $certificateStore |
-            Where-Object { $_.Thumbprint -ieq $Thumbprint } |
-            Remove-Item -Force
-    }
 }  # end function Test-TargetResource
 
 Export-ModuleMember -Function *-TargetResource

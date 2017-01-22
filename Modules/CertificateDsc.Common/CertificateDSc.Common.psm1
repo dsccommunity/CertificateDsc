@@ -1,20 +1,12 @@
-﻿#region localizeddata
-if (Test-Path "${PSScriptRoot}\${PSUICulture}")
-{
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename CertificateCommon.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
-}
-else
-{
-    #fallback to en-US
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename CertificateCommon.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\en-US"
-}
-#endregion
+﻿# Import the Networking Resource Helper Module
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
+                               -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
+                                                     -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
+
+# Import Localization Strings
+$localizedData = Get-LocalizedData `
+    -ResourceName 'CertificateDsc.Common' `
+    -ResourcePath $PSScriptRoot
 
 <#
     .SYNOPSIS
@@ -45,7 +37,8 @@ function Test-CertificatePath
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory,ValueFromPipeline)]
+        [Parameter(Mandatory = $true,
+                   ValueFromPipeline)]
         [String[]]
         $Path,
 
@@ -107,7 +100,8 @@ function Test-Thumbprint
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory,ValueFromPipeline)]
+        [Parameter(Mandatory = $true,
+                   ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [String[]]
         $Thumbprint,
@@ -171,6 +165,72 @@ function Test-Thumbprint
         }
     }
 } # end function Test-Thumbprint
+
+<#
+    .SYNOPSIS
+    Locates one or more certificates using the passed certificate selector parameters.
+
+    If more than one certificate is found matching the selector criteria, they will be
+    returned in order of descending expiration date.
+
+    .PARAMETER Thumbprint
+    The thumbprint of the certificate to find.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to find.
+
+    .PARAMETER Subject
+    The subject of the certificate to find.
+
+    .PARAMETER Issuer
+    The issuer of the certiicate to find.
+
+    .PARAMETER KeyUsage
+    The key usage of the certificate to find must contain these values.
+
+    .PARAMETER EnhancedKeyUsage
+    The enhanced key usage of the certificate to find must contain these values.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name to search for the certificate in.
+
+    .PARAMETER AllowExpired
+    Allows expired certificates to be returned.
+
+#>
+function Find-Certificate
+{
+    [CmdletBinding()]
+    [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2[]])]
+    param
+    (
+        [String]
+        $Thumbprint,
+
+        [String]
+        $FriendlyName,
+
+        [String]
+        $Subject,
+
+        [String]
+        $Issuer,
+
+        [String[]]
+        $KeyUsage,
+
+        [String[]]
+        $EnhancedKeyUsage,
+
+        [String]
+        $Store,
+
+        [Boolean]
+        $AllowExpired
+    )
+
+
+} # end function Find-Certificate
 
 <#
     .SYNOPSIS

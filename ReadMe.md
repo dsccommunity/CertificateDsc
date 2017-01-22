@@ -9,6 +9,7 @@ The **xCertificate** module contains the following resources:
 - **xCertReq**
 - **xPfxImport**
 - **xCertificateImport**
+- **xCertificateExport**
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
@@ -52,9 +53,31 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` Store** (_Key_): The Windows Certificate Store Name to import the certificate to.
 - **`[String]` Ensure** (_Write_): Specifies whether the certificate should be present or absent. { *Present* | Absent }.
 
+### xCertificateExport
+
+- **`[String]` Path** (_Key_): The path to the file you that will contain the exported certificate.
+- **`[String]` Thumbprint** (_Write_): The thumbprint of the certificate to export. Certificate selector parameter.
+- **`[String]` FriendlyName** (_Write_): The friendly name of the certificate to export. Certificate selector parameter.
+- **`[String]` Subject** (_Write_): The subject of the certificate to export. Certificate selector parameter.
+- **`[String]` Issuer** (_Write_): The issuer of the certiicate to export. Certificate selector parameter.
+- **`[String[]]` KeyUsage** (_Write_): The key usage of the certificate to export must contain these values. Certificate selector parameter.
+- **`[String[]]` EnhancedKeyUsage** (_Write_): The enhanced key usage of the certificate to export must contain these values. Certificate selector parameter.
+- **`[String]` Store** (_Write_): The Windows Certificate Store Name to search for the certificate to export from. Certificate selector parameter.
+- **`[Boolean]` AllowExpired** (_Write_): Allow an expired certificate to be exported. Certificate selector parameter.
+- **`[Boolean]` MatchSource** (_Write_): Causes an existing exported certificate to be compared with the certificate identified for export and re-exported if it does not match.
+- **`[String]` Type** (_Write_): Specifies the type of certificate to export. { *Cert* | P7B | SST | PFX }
+- **`[String]` ChainOption** (_Write_): Specifies the options for building a chain when exporting a PFX certificate. { *BuildChain* | EndEntityCertOnly }
+- **`[PSCredential]` Password** (_Write_): Specifies the password used to protect an exported PFX file.
+- **`[String[]]` ProtectTo** (_Write_): Specifies an array of strings for the username or group name that can access the private key of an exported PFX file without any password.
+
 ## Versions
 
 ### Unreleased
+
+- Converted AppVeyor build process to use AppVeyor.psm1.
+- Correct Param block to meet guidelines.
+- xCertificateExport:
+  - Added new resource.
 
 ### 2.3.0.0
 
@@ -140,7 +163,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ## Examples
 
-### xCertReq
+### xCertReq Examples
 
 #### Request an SSL Certificate
 
@@ -246,7 +269,7 @@ Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xCertReq_RequestAl
 Get-ChildItem Cert:\LocalMachine\My
 ```
 
-### xPfxImport
+### xPfxImport Examples
 
 #### Simple Usage
 
@@ -338,7 +361,7 @@ Sample_xPfxImport_IIS_WebSite `
 Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xPfxImport_IIS_WebSite'
 ```
 
-### xCertificateImport
+### xCertificateImport Examples
 
 Import public key certificate into Trusted Root store.
 

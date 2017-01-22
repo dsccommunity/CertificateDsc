@@ -1,27 +1,14 @@
 #Requires -Version 4.0
 
-#region localizeddata
-if (Test-Path "${PSScriptRoot}\${PSUICulture}")
-{
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xPfxImport.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
-}
-else
-{
-    #fallback to en-US
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xPfxImport.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\en-US"
-}
-#endregion
+$script:ResourceRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent)
 
-# Import the common certificate functions
-Import-Module -Name ( Join-Path `
-    -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
+# Import the xNetworking Resource Module (to import the common modules)
+Import-Module -Name (Join-Path -Path $script:ResourceRootPath -ChildPath 'xCertificate.psd1')
+
+# Import Localization Strings
+$localizedData = Get-LocalizedData `
+    -ResourceName 'MSFT_xPfxImport' `
+    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
 
 <#
     .SYNOPSIS
@@ -74,15 +61,12 @@ function Get-TargetResource
         [System.String]
         $Store,
 
-        [Parameter()]
         [Boolean]
         $Exportable = $false,
 
-        [Parameter()]
         [PSCredential]
         $Credential,
 
-        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
@@ -179,15 +163,12 @@ function Test-TargetResource
         [System.String]
         $Store,
 
-        [Parameter()]
         [Boolean]
         $Exportable = $false,
 
-        [Parameter()]
         [PSCredential]
         $Credential,
 
-        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
@@ -262,15 +243,12 @@ function Set-TargetResource
         [System.String]
         $Store,
 
-        [Parameter()]
         [Boolean]
         $Exportable = $false,
 
-        [Parameter()]
         [PSCredential]
         $Credential,
 
-        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
