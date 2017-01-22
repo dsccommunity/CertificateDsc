@@ -76,6 +76,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 - Converted AppVeyor build process to use AppVeyor.psm1.
 - Correct Param block to meet guidelines.
+- Moved shared modules into modules folder.
 - xCertificateExport:
   - Added new resource.
 
