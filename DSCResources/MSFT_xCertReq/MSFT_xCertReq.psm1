@@ -128,7 +128,7 @@ function Get-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "$CAServerFQDN\$CARootName"
+    $ca = "'$CAServerFQDN\$CARootName'"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -278,7 +278,7 @@ function Set-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "$CAServerFQDN\$CARootName"
+    $ca = "'$CAServerFQDN\$CARootName'"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -589,7 +589,7 @@ function Test-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "$CAServerFQDN\$CARootName"
+    $ca = "'$CAServerFQDN\$CARootName'"
 
     # If the Subject does not contain a full X500 path, construct just the CN
     if (($Subject.split('=').count) -eq 1)
