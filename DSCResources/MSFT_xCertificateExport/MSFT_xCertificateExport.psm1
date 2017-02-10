@@ -230,6 +230,9 @@ function Set-TargetResource
         $Issuer,
 
         [System.String[]]
+        $DNSName,
+
+        [System.String[]]
         $KeyUsage,
 
         [System.String[]]
