@@ -80,6 +80,7 @@ try
                 }
             }
         }
+
         Describe "$($script:ModuleName)\Test-Thumbprint" {
 
             Context 'a single valid thumbrpint by parameter' {
@@ -120,6 +121,15 @@ try
                 It 'should return false' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $false
+                }
+            }
+        }
+
+        Describe "$($script:ModuleName)\Find-Certificate" {
+
+            Context 'a single valid thumbrpint by parameter' {
+                It 'should exist' {
+
                 }
             }
         }

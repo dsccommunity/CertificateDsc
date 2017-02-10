@@ -182,6 +182,9 @@ function Test-Thumbprint
     .PARAMETER Subject
     The subject of the certificate to find.
 
+    .PARAMETER DNSName
+    The subject alternative name of the certificate to export must contain these values.
+
     .PARAMETER Issuer
     The issuer of the certiicate to find.
 
@@ -193,6 +196,7 @@ function Test-Thumbprint
 
     .PARAMETER Store
     The Windows Certificate Store Name to search for the certificate in.
+    Defaults to 'My'.
 
     .PARAMETER AllowExpired
     Allows expired certificates to be returned.
@@ -213,6 +217,9 @@ function Find-Certificate
         [String]
         $Subject,
 
+        [String[]]
+        $DNSName,
+
         [String]
         $Issuer,
 
@@ -223,13 +230,77 @@ function Find-Certificate
         $EnhancedKeyUsage,
 
         [String]
-        $Store,
+        $Store = 'My',
 
         [Boolean]
-        $AllowExpired
+        $AllowExpired = $false
     )
 
+    $certPath = 'Cert:\LocalMachine'
+    if ($PSBoundParameters.ContainsKey('Store'))
+    {
+        $certPath = Join-Path -Path $certPath -ChildPath $Store
+    } # if
 
+    if (-not (Test-Path -Path $certPath))
+    {
+        # The Certificte Path is not valid
+        New-InvalidArgumentError `
+            -ErrorId 'CannotFindCertificatePath' `
+            -ErrorMessage ($LocalizedData.CertificatePathError -f $certPath)
+    } # if
+
+    # Assemble the filter to use to select the certificate
+    $certFilters = @()
+    if ($PSBoundParameters.ContainsKey('Thumbprint'))
+    {
+        $certFilters += @('($_.Thumbprint -eq $Thumbprint)')
+    } # if
+    if ($PSBoundParameters.ContainsKey('FriendlyName'))
+    {
+        $certFilters += @('($_.FriendlyName -eq $FriendlyName)')
+    } # if
+    if ($PSBoundParameters.ContainsKey('Subject'))
+    {
+        $certFilters += @('($_.Subject -eq $Subject)')
+    } # if
+    if ($PSBoundParameters.ContainsKey('Issuer'))
+    {
+        $certFilters += @('($_.Issuer -eq $Issuer)')
+    } # if
+    if (-not $AllowExpired)
+    {
+        $certFilters += @('(((Get-Date) -le $_.NotAfter) -and ((Get-Date) -ge $_.NotBefore))')
+    } # if
+    if ($PSBoundParameters.ContainsKey('DNSName'))
+    {
+        $certFilters += @('(@(Compare-Object -DifferenceObject $_.DNSNameList.Unicode -ReferenceObject $DNSName).Count -eq 0)')
+    } # if
+    if ($PSBoundParameters.ContainsKey('KeyUsage'))
+    {
+        $certFilters += @('(@(Compare-Object -DifferenceObject ($_.Extensions.KeyUsages -split ", ") -ReferenceObject $KeyUsage).Count -eq 0)')
+    } # if
+    if ($PSBoundParameters.ContainsKey('EnhancedKeyUsage'))
+    {
+        $certFilters += @('(@(Compare-Object -DifferenceObject ($_.EnhancedKeyUsageList.FriendlyName) -ReferenceObject $EnhancedKeyUsage).Count -eq 0)')
+    } # if
+
+    # Join all the filters together
+    $certFilterScript = '(' + ($certFilters -join ' -and ') + ')'
+
+    Write-Verbose -Message ($LocalizedData.SearchingForCertificateUsingFilters `
+        -f $store,$certFilterScript)
+
+    $certs = Get-ChildItem -Path $certPath |
+        Where-Object -FilterScript ([ScriptBlock]::Create($certFilterScript))
+
+    # Sort the certificates
+    if ($certs.count -gt 1)
+    {
+        $certs = $certs | Sort-Object -Descending -Property 'NotAfter'
+    } # if
+
+    return $certs
 } # end function Find-Certificate
 
 <#

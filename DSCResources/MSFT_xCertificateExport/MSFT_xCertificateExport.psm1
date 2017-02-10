@@ -48,6 +48,10 @@ function Get-TargetResource
     The subject of the certificate to export.
     Certificate selector parameter.
 
+    .PARAMETER DNSName
+    The subject alternative name of the certificate to export must contain these values.
+    Certificate selector parameter.
+
     .PARAMETER Issuer
     The issuer of the certiicate to export.
     Certificate selector parameter.
@@ -63,6 +67,7 @@ function Get-TargetResource
     .PARAMETER Store
     The Windows Certificate Store Name to search for the certificate to export from.
     Certificate selector parameter.
+    Defaults to 'My'.
 
     .PARAMETER AllowExpired
     Allow an expired certificate to be exported.
@@ -104,6 +109,9 @@ function Test-TargetResource
         [System.String]
         $Subject,
 
+        [System.String[]]
+        $DNSName,
+
         [System.String]
         $Issuer,
 
@@ -114,7 +122,7 @@ function Test-TargetResource
         $EnhancedKeyUsage,
 
         [System.String]
-        $Store,
+        $Store = 'My',
 
         [System.Boolean]
         $AllowExpired,
@@ -158,6 +166,10 @@ function Test-TargetResource
     The subject of the certificate to export.
     Certificate selector parameter.
 
+    .PARAMETER DNSName
+    The subject alternative name of the certificate to export must contain these values.
+    Certificate selector parameter.
+
     .PARAMETER Issuer
     The issuer of the certiicate to export.
     Certificate selector parameter.
@@ -173,6 +185,7 @@ function Test-TargetResource
     .PARAMETER Store
     The Windows Certificate Store Name to search for the certificate to export from.
     Certificate selector parameter.
+    Defaults to 'My'.
 
     .PARAMETER AllowExpired
     Allow an expired certificate to be exported.
@@ -223,7 +236,7 @@ function Set-TargetResource
         $EnhancedKeyUsage,
 
         [System.String]
-        $Store,
+        $Store = 'My',
 
         [System.Boolean]
         $AllowExpired,
