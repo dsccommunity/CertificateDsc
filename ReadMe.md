@@ -62,7 +62,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` Issuer** (_Write_): The issuer of the certiicate to export. Certificate selector parameter.
 - **`[String[]]` KeyUsage** (_Write_): The key usage of the certificate to export must contain these values. Certificate selector parameter.
 - **`[String[]]` EnhancedKeyUsage** (_Write_): The enhanced key usage of the certificate to export must contain these values. Certificate selector parameter.
-- **`[String]` Store** (_Write_): The Windows Certificate Store Name to search for the certificate to export from. Certificate selector parameter.
+- **`[String]` Store** (_Write_): The Windows Certificate Store Name to search for the certificate to export from. Certificate selector parameter. Defaults to 'My'.
 - **`[Boolean]` AllowExpired** (_Write_): Allow an expired certificate to be exported. Certificate selector parameter.
 - **`[Boolean]` MatchSource** (_Write_): Causes an existing exported certificate to be compared with the certificate identified for export and re-exported if it does not match.
 - **`[String]` Type** (_Write_): Specifies the type of certificate to export. { *Cert* | P7B | SST | PFX }
