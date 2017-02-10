@@ -79,6 +79,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - Moved shared modules into modules folder.
 - xCertificateExport:
   - Added new resource.
+- Cleanup xCertificate.psd1 to remove unneccessary properties.
 
 ### 2.3.0.0
 
