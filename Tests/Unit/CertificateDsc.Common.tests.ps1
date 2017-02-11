@@ -138,13 +138,16 @@ try
             $certKeyUsage = @('DigitalSignature','DataEncipherment')
             $certKeyUsageReverse = @('DataEncipherment','DigitalSignature')
             $certKeyUsageNoMatch = $certKeyUsage + @('KeyEncipherment')
+            $certEKU = @('Server Authentication','Client authentication')
+            $certEKUReverse = @('Client authentication','Server Authentication')
+            $certEKUNoMatch = $certEKU + @('Encrypting File System')
             $certSubject = 'CN=contoso, DC=com'
             $certFriendlyName = 'Contoso Test Cert'
             $validCert = New-SelfSignedCertificateEx `
                 -Subject $certSubject `
                 -KeyUsage $certKeyUsage `
                 -KeySpec 'Exchange' `
-                -EKU 'Server Authentication','Client authentication' `
+                -EKU $certEKU `
                 -SubjectAlternativeName $certDNSNames `
                 -FriendlyName $certFriendlyName `
                 -StoreLocation 'CurrentUser'
@@ -158,7 +161,7 @@ try
                 -Subject $certSubject `
                 -KeyUsage $certKeyUsage `
                 -KeySpec 'Exchange' `
-                -EKU 'Server Authentication','Client authentication' `
+                -EKU $certEKU `
                 -SubjectAlternativeName $certDNSNames `
                 -FriendlyName $certFriendlyName `
                 -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
@@ -369,6 +372,54 @@ try
                 }
             }
 
+            Context 'EnhancedKeyUsage only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'EnhancedKeyUsage only is passed in reversed order and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUReverse } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'EnhancedKeyUsage only is passed with only one matching DNS name and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU[0] } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'EnhancedKeyUsage only is passed but an entry is missing and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUNoMatch } | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
             Mock `
                 -CommandName Get-ChildItem `
                 -ParameterFilter { $Path -eq 'cert:\LocalMachine\CA' } `
@@ -386,6 +437,53 @@ try
                 }
             }
 
+            Mock `
+                -CommandName Get-ChildItem `
+                -MockWith { @( $expiredCert, $validCert ) } `
+                -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                -Verifiable
+
+            Context 'FriendlyName only is passed and both valid and expired certificates exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Mock `
+                -CommandName Get-ChildItem `
+                -MockWith { @( $expiredCert ) } `
+                -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                -Verifiable
+
+            Context 'FriendlyName only is passed and only expired certificates exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'FriendlyName only is passed and only expired certificates exist but allowexpired passed' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName -AllowExpired:$true } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $expiredThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
         }
     }
 }
