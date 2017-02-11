@@ -133,11 +133,16 @@ try
 
             # Generate the Valid certificate for testing but remove it from the store straight away
             $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
+            $certDNSNamesReverse = @('www.contoso.com', 'www.fabrikam.com')
+            $certDNSNamesNoMatch = $certDNSNames + @('www.nothere.com')
+            $certKeyUsage = @('DigitalSignature','DataEncipherment')
+            $certKeyUsageReverse = @('DataEncipherment','DigitalSignature')
+            $certKeyUsageNoMatch = $certKeyUsage + @('KeyEncipherment')
             $certSubject = 'CN=contoso, DC=com'
             $certFriendlyName = 'Contoso Test Cert'
             $validCert = New-SelfSignedCertificateEx `
                 -Subject $certSubject `
-                -KeyUsage 'DigitalSignature','DataEncipherment','KeyEncipherment' `
+                -KeyUsage $certKeyUsage `
                 -KeySpec 'Exchange' `
                 -EKU 'Server Authentication','Client authentication' `
                 -SubjectAlternativeName $certDNSNames `
@@ -151,7 +156,7 @@ try
             # Generate the Expired certificate for testing but remove it from the store straight away
             $expiredCert = New-SelfSignedCertificateEx `
                 -Subject $certSubject `
-                -KeyUsage 'DigitalSignature','DataEncipherment','KeyEncipherment' `
+                -KeyUsage $certKeyUsage `
                 -KeySpec 'Exchange' `
                 -EKU 'Server Authentication','Client authentication' `
                 -SubjectAlternativeName $certDNSNames `
@@ -280,9 +285,9 @@ try
                 }
             }
 
-            Context 'DNSName only is passed and matching certificate exists' {
+            Context 'DNSName only is passed in reversed order and matching certificate exists' {
                 It 'should not throw exception' {
-                    { $script:result = Find-Certificate -DnsName @('www.fabrikam.com', 'www.contoso.com') } | Should Not Throw
+                    { $script:result = Find-Certificate -DnsName $certDNSNamesReverse } | Should Not Throw
                 }
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
@@ -292,9 +297,69 @@ try
                 }
             }
 
-            Context 'DNSNames only is passed and matching certificate does not exist' {
+            Context 'DNSName only is passed with only one matching DNS name and matching certificate exists' {
                 It 'should not throw exception' {
-                    { $script:result = Find-Certificate -DnsName @('www.fabrikam.com') } | Should Not Throw
+                    { $script:result = Find-Certificate -DnsName $certDNSNames[0] } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'DNSName only is passed but an entry is missing and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -DnsName $certDNSNamesNoMatch } | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'KeyUsage only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -KeyUsage $certKeyUsage } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'KeyUsage only is passed in reversed order and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -KeyUsage $certKeyUsageReverse } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'KeyUsage only is passed with only one matching DNS name and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -KeyUsage $certKeyUsage[0] } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'KeyUsage only is passed but an entry is missing and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -KeyUsage $certKeyUsageNoMatch } | Should Not Throw
                 }
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
