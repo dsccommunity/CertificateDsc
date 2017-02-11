@@ -35,6 +35,39 @@ try
         $invalidPath = 'TestDrive:'
         $validPath = "TestDrive:\$testFile"
 
+        # Generate the Valid certificate for testing but remove it from the store straight away
+        $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
+        $certSubject = 'CN=contoso, DC=com'
+        $certFriendlyName = 'Contoso Test Cert'
+        $validCert = New-SelfSignedCertificate `
+            -DnsName $certDNSNames `
+            -Subject $certSubject `
+            -KeyUsage DigitalSignature,DataEncipherment,KeyEncipherment `
+            -KeySpec KeyExchange `
+            -KeyUsageProperty All `
+            -FriendlyName $certFriendlyName `
+            -Type SSLServerAuthentication `
+            -CertStoreLocation 'cert:\CurrentUser\My'
+        Remove-Item -Path $validCert.PSPath -Force
+        $validThumbprint = $validCert.Thumbprint
+
+        # Generate the Expired certificate for testing but remove it from the store straight away
+        $expiredCert = New-SelfSignedCertificate `
+            -DnsName $certDNSNames `
+            -Subject $certSubject `
+            -KeyUsage DigitalSignature,DataEncipherment,KeyEncipherment `
+            -KeySpec KeyExchange `
+            -KeyUsageProperty All `
+            -FriendlyName $certFriendlyName `
+            -Type SSLServerAuthentication `
+            -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
+            -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
+            -CertStoreLocation 'cert:\CurrentUser\My'
+        Remove-Item -Path $expiredCert.PSPath -Force
+        $expiredThumbprint = $expiredCert.Thumbprint
+
+        $nocertThumbprint = '1111111111111111111111111111111111111111'
+
         Describe "$($script:ModuleName)\Test-CertificatePath" {
 
             $null | Set-Content -Path $validPath
@@ -127,11 +160,125 @@ try
 
         Describe "$($script:ModuleName)\Find-Certificate" {
 
-            Context 'a single valid thumbrpint by parameter' {
-                It 'should exist' {
+            Mock `
+                -CommandName Get-ChildItem `
+                -MockWith { @( $validCert ) } `
+                -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                -Verifiable
 
+            Context 'Thumbprint only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -Thumbprint $validThumbprint } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
                 }
             }
+
+            Context 'Thumbprint only is passed and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -Thumbprint $nocertThumbprint } | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'FriendlyName only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'FriendlyName only is passed and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -FriendlyName 'Does Not Exist' } | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Subject only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -Subject $certSubject } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Subject only is passed and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -Subject 'CN=Does Not Exist' } | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Issuer only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -Issuer $certSubject } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Issuer only is passed and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -Issuer 'CN=Does Not Exist' } | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Mock `
+                -CommandName Get-ChildItem `
+                -ParameterFilter { $Path -eq 'cert:\LocalMachine\CA' } `
+                -Verifiable
+
+            Context 'Thumbprint only is passed and matching certificate does not exist in CA store' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -Thumbprint $validThumbprint -Store 'CA'} | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
         }
     }
 }

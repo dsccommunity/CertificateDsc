@@ -236,11 +236,7 @@ function Find-Certificate
         $AllowExpired = $false
     )
 
-    $certPath = 'Cert:\LocalMachine'
-    if ($PSBoundParameters.ContainsKey('Store'))
-    {
-        $certPath = Join-Path -Path $certPath -ChildPath $Store
-    } # if
+    $certPath = Join-Path -Path 'Cert:\LocalMachine' -ChildPath $Store
 
     if (-not (Test-Path -Path $certPath))
     {
