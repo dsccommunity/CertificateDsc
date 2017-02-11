@@ -9,8 +9,9 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
     & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
-Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
-Import-Module (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'Modules' -ChildPath $script:ModuleName)) -ChildPath "$script:ModuleName.psm1") -Force
+Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module -Name (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'Modules' -ChildPath $script:ModuleName)) -ChildPath "$script:ModuleName.psm1") -Force
+Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global
 #endregion HEADER
 
 # Begin Testing
@@ -34,39 +35,6 @@ try
 
         $invalidPath = 'TestDrive:'
         $validPath = "TestDrive:\$testFile"
-
-        # Generate the Valid certificate for testing but remove it from the store straight away
-        $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
-        $certSubject = 'CN=contoso, DC=com'
-        $certFriendlyName = 'Contoso Test Cert'
-        $validCert = New-SelfSignedCertificate `
-            -DnsName $certDNSNames `
-            -Subject $certSubject `
-            -KeyUsage DigitalSignature,DataEncipherment,KeyEncipherment `
-            -KeySpec KeyExchange `
-            -KeyUsageProperty All `
-            -FriendlyName $certFriendlyName `
-            -Type SSLServerAuthentication `
-            -CertStoreLocation 'cert:\CurrentUser\My'
-        Remove-Item -Path $validCert.PSPath -Force
-        $validThumbprint = $validCert.Thumbprint
-
-        # Generate the Expired certificate for testing but remove it from the store straight away
-        $expiredCert = New-SelfSignedCertificate `
-            -DnsName $certDNSNames `
-            -Subject $certSubject `
-            -KeyUsage DigitalSignature,DataEncipherment,KeyEncipherment `
-            -KeySpec KeyExchange `
-            -KeyUsageProperty All `
-            -FriendlyName $certFriendlyName `
-            -Type SSLServerAuthentication `
-            -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
-            -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
-            -CertStoreLocation 'cert:\CurrentUser\My'
-        Remove-Item -Path $expiredCert.PSPath -Force
-        $expiredThumbprint = $expiredCert.Thumbprint
-
-        $nocertThumbprint = '1111111111111111111111111111111111111111'
 
         Describe "$($script:ModuleName)\Test-CertificatePath" {
 
@@ -159,6 +127,44 @@ try
         }
 
         Describe "$($script:ModuleName)\Find-Certificate" {
+
+            # Download and dot source the New-SelfSignedCertificateEx script
+            . (Install-NewSelfSignedCertificateExScript)
+
+            # Generate the Valid certificate for testing but remove it from the store straight away
+            $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
+            $certSubject = 'CN=contoso, DC=com'
+            $certFriendlyName = 'Contoso Test Cert'
+            $validCert = New-SelfSignedCertificateEx `
+                -Subject $certSubject `
+                -KeyUsage 'DigitalSignature','DataEncipherment','KeyEncipherment' `
+                -KeySpec 'Exchange' `
+                -EKU 'Server Authentication','Client authentication' `
+                -SubjectAlternativeName $certDNSNames `
+                -FriendlyName $certFriendlyName `
+                -StoreLocation 'CurrentUser'
+            # Pull the generated certificate from the store so we have the friendlyname
+            $validThumbprint = $validCert.Thumbprint
+            $validCert = Get-Item -Path "cert:\CurrentUser\My\$validThumbprint"
+            Remove-Item -Path $validCert.PSPath -Force
+
+            # Generate the Expired certificate for testing but remove it from the store straight away
+            $expiredCert = New-SelfSignedCertificateEx `
+                -Subject $certSubject `
+                -KeyUsage 'DigitalSignature','DataEncipherment','KeyEncipherment' `
+                -KeySpec 'Exchange' `
+                -EKU 'Server Authentication','Client authentication' `
+                -SubjectAlternativeName $certDNSNames `
+                -FriendlyName $certFriendlyName `
+                -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
+                -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
+                -StoreLocation 'CurrentUser'
+            # Pull the generated certificate from the store so we have the friendlyname
+            $expiredThumbprint = $expiredCert.Thumbprint
+            $expiredCert = Get-Item -Path "cert:\CurrentUser\My\$expiredThumbprint"
+            Remove-Item -Path $expiredCert.PSPath -Force
+
+            $nocertThumbprint = '1111111111111111111111111111111111111111'
 
             Mock `
                 -CommandName Get-ChildItem `
@@ -253,6 +259,42 @@ try
             Context 'Issuer only is passed and matching certificate does not exist' {
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Issuer 'CN=Does Not Exist' } | Should Not Throw
+                }
+                It 'should return null' {
+                    $script:result | Should BeNullOrEmpty
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'DNSName only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -DnsName $certDNSNames } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'DNSName only is passed and matching certificate exists' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -DnsName @('www.fabrikam.com', 'www.contoso.com') } | Should Not Throw
+                }
+                It 'should return expected certificate' {
+                    $script:result.Thumbprint | Should Be $validThumbprint
+                }
+                It 'should call expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'DNSNames only is passed and matching certificate does not exist' {
+                It 'should not throw exception' {
+                    { $script:result = Find-Certificate -DnsName @('www.fabrikam.com') } | Should Not Throw
                 }
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
