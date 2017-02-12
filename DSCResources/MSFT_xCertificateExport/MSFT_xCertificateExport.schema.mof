@@ -16,4 +16,5 @@ class MSFT_xCertificateExport : OMI_BaseResource
     [Write,Description("Specifies the options for building a chain when exporting a PFX certificate."),ValueMap{"BuildChain","EndEntityCertOnly"},Values{"BuildChain","EndEntityCertOnly"}] string ChainOption;
     [Write,Description("Specifies the password used to protect an exported PFX file."),EmbeddedInstance("MSFT_Credential")] String Password;
     [Write,Description("Specifies an array of strings for the username or group name that can access the private key of an exported PFX file without any password.")] string ProtectTo[];
+    [Read,Description("Returns true if the certificate file already exists and therefore has been exported.")] boolean IsExported;
 };

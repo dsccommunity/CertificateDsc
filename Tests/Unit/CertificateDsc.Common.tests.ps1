@@ -150,7 +150,8 @@ try
                 -EKU $certEKU `
                 -SubjectAlternativeName $certDNSNames `
                 -FriendlyName $certFriendlyName `
-                -StoreLocation 'CurrentUser'
+                -StoreLocation 'CurrentUser' `
+                -Exportable
             # Pull the generated certificate from the store so we have the friendlyname
             $validThumbprint = $validCert.Thumbprint
             $validCert = Get-Item -Path "cert:\CurrentUser\My\$validThumbprint"
@@ -166,7 +167,8 @@ try
                 -FriendlyName $certFriendlyName `
                 -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
                 -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
-                -StoreLocation 'CurrentUser'
+                -StoreLocation 'CurrentUser' `
+                -Exportable
             # Pull the generated certificate from the store so we have the friendlyname
             $expiredThumbprint = $expiredCert.Thumbprint
             $expiredCert = Get-Item -Path "cert:\CurrentUser\My\$expiredThumbprint"

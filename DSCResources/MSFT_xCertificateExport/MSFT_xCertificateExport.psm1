@@ -27,6 +27,24 @@ function Get-TargetResource
         [System.String]
         $Path
     )
+
+    Write-Verbose -Message (
+        @(
+            "$($MyInvocation.MyCommand): ",
+            $($LocalizedData.GettingCertificateExportMessage -f $Path)
+        ) -join '' )
+
+    $result = @{
+        Path = $Path
+    }
+    if (Test-Path -Path $Path)
+    {
+        $result = @{
+            IsExported = $true
+        }
+    } # if
+
+    return $result
 } # end function Get-TargetResource
 
 <#
@@ -90,7 +108,7 @@ function Get-TargetResource
     Specifies an array of strings for the username or group name that can access the private
     key of an exported PFX file without any password.
 #>
-function Test-TargetResource
+function Set-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
@@ -139,13 +157,85 @@ function Test-TargetResource
         $ChainOption = 'BuildChain',
 
         [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
         $Password,
 
         [System.String[]]
         $ProtectTo
     )
 
-} # end function Test-TargetResource
+    Write-Verbose -Message (
+        @(
+            "$($MyInvocation.MyCommand): ",
+            $($LocalizedData.SettingCertificateExportMessage -f $Path)
+        ) -join '' )
+
+    $findCertificateParameters = @{} + $PSBoundParameters
+    $null = $findCertificateParameters.Remove('Path')
+    $null = $findCertificateParameters.Remove('MatchSource')
+    $null = $findCertificateParameters.Remove('Type')
+    $null = $findCertificateParameters.Remove('ChainOption')
+    $null = $findCertificateParameters.Remove('Password')
+    $null = $findCertificateParameters.Remove('ProtectTo')
+    $foundCerts = Find-Certificate @findCertificateParameters
+
+    if ($foundCerts.Count -eq 0)
+    {
+        # A certificate matching the specified certificate selector parameters could not be found
+        Write-Verbose -Message (
+            @(
+                "$($MyInvocation.MyCommand): ",
+                $($LocalizedData.CertificateToExportNotFound -f $Path,$Type,$Store)
+            ) -join '' )
+        return $true
+    }
+    else
+    {
+        $certToExport = $foundCerts[0]
+        $exportThumbprint = $certToExport.Thumbprint
+
+        Write-Verbose -Message (
+            @(
+                "$($MyInvocation.MyCommand): ",
+                $($LocalizedData.CertificateToExportFound -f $exportThumbprint,$Path)
+            ) -join '' )
+
+        # Export the certificate
+        $exportParameters = @{
+            FilePath = $Path
+            Cert     = $CertToExport
+            Force    = $True
+        }
+
+        if ($Type -in @('Cert','P7B','SST'))
+        {
+            $exportParameters += @{
+                Type     = $Type
+            }
+            Export-Certificate @exportParameters
+        }
+        elseif ($Type -eq 'PFX')
+        {
+            $exportParameters += @{
+                Password    = $Password.Password
+                ChainOption = $ChainOption
+            }
+            if ($PSBoundParameters.ContainsKey('ProtectTo'))
+            {
+                $exportParameters += @{
+                    ProtectTo = $ProtectTo
+                }
+            }
+            Export-PfxCertificate @exportParameters
+        }
+
+        Write-Verbose -Message (
+            @(
+                "$($MyInvocation.MyCommand): ",
+                $($LocalizedData.CertificateExported -f $exportThumbprint,$Path,$Type)
+            ) -join '' )
+    }
+} # end function Set-TargetResource
 
 <#
     .SYNOPSIS
@@ -208,7 +298,7 @@ function Test-TargetResource
     Specifies an array of strings for the username or group name that can access the private
     key of an exported PFX file without any password.
 #>
-function Set-TargetResource
+function Test-TargetResource
 {
     [CmdletBinding()]
     param
@@ -256,12 +346,96 @@ function Set-TargetResource
         $ChainOption = 'BuildChain',
 
         [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
         $Password,
 
         [System.String[]]
         $ProtectTo
     )
 
+    Write-Verbose -Message (
+        @(
+            "$($MyInvocation.MyCommand): ",
+            $($LocalizedData.TestingCertificateExportMessage -f $Path)
+        ) -join '' )
+
+    $findCertificateParameters = @{} + $PSBoundParameters
+    $null = $findCertificateParameters.Remove('Path')
+    $null = $findCertificateParameters.Remove('MatchSource')
+    $null = $findCertificateParameters.Remove('Type')
+    $null = $findCertificateParameters.Remove('ChainOption')
+    $null = $findCertificateParameters.Remove('Password')
+    $null = $findCertificateParameters.Remove('ProtectTo')
+    $foundCerts = @(Find-Certificate @findCertificateParameters)
+
+    if ($foundCerts.Count -eq 0)
+    {
+        # A certificate matching the specified certificate selector parameters could not be found
+        Write-Verbose -Message (
+            @(
+                "$($MyInvocation.MyCommand): ",
+                $($LocalizedData.CertificateToExportNotFound -f $Path,$Type,$Store)
+            ) -join '' )
+        return $true
+    }
+    else
+    {
+        $certToExport = $foundCerts[0]
+        $exportThumbprint = $certToExport.Thumbprint
+
+        Write-Verbose -Message (
+            @(
+                "$($MyInvocation.MyCommand): ",
+                $($LocalizedData.CertificateToExportFound -f $exportThumbprint,$Path)
+            ) -join '' )
+
+        if (Test-Path -Path $Path)
+        {
+            if (-not $MatchSource)
+            {
+                # This certificate is already exported and we don't want to check it is
+                # the right certificate.
+                Write-Verbose -Message (
+                    @(
+                        "$($MyInvocation.MyCommand): ",
+                        $($LocalizedData.CertificateAlreadyExported -f $exportThumbprint,$Path)
+                    ) -join '' )
+
+                return $true
+            }
+            else
+            {
+                # The certificate has already been exported, but we need to make sure it matches
+                Write-Verbose -Message (
+                    @(
+                        "$($MyInvocation.MyCommand): ",
+                        $($LocalizedData.CertificateAlreadyExportedMatchSource -f $exportThumbprint,$Path)
+                    ) -join '' )
+
+                # Need to now compare the existing exported cert content with the found cert
+                $exportedCert = New-Object -TypeName 'System.Security.Cryptography.X509Certificates.X509Certificate2Collection'
+                if ($Type -in @('Cert','P7B','SST'))
+                {
+                    $exportedCert.Import($Path)
+                }
+                elseif ($Type -eq 'PFX')
+                {
+                    $exportedCert.Import($Path,$Password)
+                }
+            }
+        }
+        else
+        {
+            # The found certificate has not been exported yet
+            Write-Verbose -Message (
+                @(
+                    "$($MyInvocation.MyCommand): ",
+                    $($LocalizedData.CertificateNotExported -f $exportThumbprint,$Path)
+                ) -join '' )
+
+            return $false
+        }
+    }
 }  # end function Test-TargetResource
 
 Export-ModuleMember -Function *-TargetResource

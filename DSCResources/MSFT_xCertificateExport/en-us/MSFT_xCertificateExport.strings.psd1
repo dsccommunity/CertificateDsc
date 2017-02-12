@@ -1,11 +1,11 @@
 ConvertFrom-StringData @'
-    GettingCertificateStatusMessage = Getting Certificate existence '{0}' in '{1}'.
-    TestingCertificateStatusMessage = Testing Certificate '{0}' existence in '{1}'.
-    SettingCertificateStatusMessage = Setting Certificate '{0}' existence in '{1}'.
-    ImportingCertficateMessage = Importing Certificate '{0}' into '{1}'.
-    RemovingCertficateMessage = Removing Certificate '{0}' from '{1}'.
-
-    CertificateStoreNotFoundError = Certificate Store '{0}' not found.
-
-    ImportingCertificateShould = Importing certificate '{0}' into '{1}'
+    GettingCertificateExportMessage       = Getting Certificate export status to '{0}'.
+    SettingCertificateExportMessage       = Setting Certificate export status to '{0}'.
+    TestingCertificateExportMessage       = Testing Certificate export status to '{0}'.
+    CertificateToExportNotFound           = Could not find Certificate to Export to '{0}' as '{1}' in LocalMachine '{2}' store.
+    CertificateToExportFound              = Certificate to export with thumbprint '{0}' found to export to '{1}'.
+    CertificateAlreadyExported            = Certificate to export with thumbprint '{0}' has already been exported to '{1}'. MatchSource set to false so not checking content match. Will not export.
+    CertificateAlreadyExportedMatchSource = Certificate to Export with thumbprint '{0}' has already been exported to '{1}'. MatchSource set to true so checking content match.
+    CertificateNotExported                = Certificate to export with thumbprint '{0}' has not yet been exported to '{1}'. Will export.
+    CertificateExported                   = Certificate to export as '{2}' with thumbprint '{0}' was exported to '{1}'.
 '@

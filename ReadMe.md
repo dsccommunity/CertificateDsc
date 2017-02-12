@@ -59,6 +59,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` Thumbprint** (_Write_): The thumbprint of the certificate to export. Certificate selector parameter.
 - **`[String]` FriendlyName** (_Write_): The friendly name of the certificate to export. Certificate selector parameter.
 - **`[String]` Subject** (_Write_): The subject of the certificate to export. Certificate selector parameter.
+- **`[String]` DNSName** (_Write_): The subject alternative name of the certificate to export must contain these values. Certificate selector parameter.
 - **`[String]` Issuer** (_Write_): The issuer of the certiicate to export. Certificate selector parameter.
 - **`[String[]]` KeyUsage** (_Write_): The key usage of the certificate to export must contain these values. Certificate selector parameter.
 - **`[String[]]` EnhancedKeyUsage** (_Write_): The enhanced key usage of the certificate to export must contain these values. Certificate selector parameter.
