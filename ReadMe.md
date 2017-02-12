@@ -81,6 +81,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - xCertificateExport:
   - Added new resource.
 - Cleanup xCertificate.psd1 to remove unneccessary properties.
+- Examples modified to meet standards for auto documentation generation.
 
 ### 2.3.0.0
 

@@ -1,10 +1,16 @@
-# Import a PFX into the WebHosting store and bind it to an IIS Web Site.
-Configuration Sample_xPfxImport_IIS_WebSite
+<#
+    .EXAMPLE
+    Import a PFX into the WebHosting store and bind it to an IIS Web Site.
+#>
+Configuration Example
 {
     param
     (
-        [PSCredential]
-        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+        [string[]] $NodeName = 'localhost',
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullorEmpty()]
+        [PSCredential] $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
@@ -23,7 +29,7 @@ Configuration Sample_xPfxImport_IIS_WebSite
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
             Store      = 'WebHosting'
-            Credential = $PfxPassword
+            Credential = $Credential
             DependsOn  = '[WindowsFeature]IIS'
         }
 
@@ -46,6 +52,3 @@ Configuration Sample_xPfxImport_IIS_WebSite
         }
     }
 }
-Sample_xPfxImport_IIS_WebSite `
-    -OutputPath 'c:\Sample_xPfxImport_IIS_WebSite'
-Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xPfxImport_IIS_WebSite'
