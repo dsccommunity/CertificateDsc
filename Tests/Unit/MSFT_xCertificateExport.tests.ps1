@@ -86,6 +86,7 @@ try
             AllowExpired     = $False
             MatchSource      = $True
             Password         = $pfxCred
+            ProtectTo        = 'Administrators'
             Type             = 'PFX'
         }
 
