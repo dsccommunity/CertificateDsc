@@ -18,7 +18,7 @@ Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot 
 try
 {
     InModuleScope $script:ModuleName {
-        $DSCResourceName = 'CertificateCommon'
+        $DSCResourceName = 'CertificateDsc.Common'
         $invalidThumbprint = 'Zebra'
         $validThumbprint = (
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
@@ -36,7 +36,7 @@ try
         $invalidPath = 'TestDrive:'
         $validPath = "TestDrive:\$testFile"
 
-        Describe "$($script:ModuleName)\Test-CertificatePath" {
+        Describe "$DSCResourceName\Test-CertificatePath" {
 
             $null | Set-Content -Path $validPath
 
@@ -82,7 +82,7 @@ try
             }
         }
 
-        Describe "$($script:ModuleName)\Test-Thumbprint" {
+        Describe "$DSCResourceName\Test-Thumbprint" {
 
             Context 'a single valid thumbrpint by parameter' {
                 $result = Test-Thumbprint -Thumbprint $validThumbprint
@@ -126,7 +126,7 @@ try
             }
         }
 
-        Describe "$($script:ModuleName)\Find-Certificate" {
+        Describe "$DSCResourceName\Find-Certificate" {
 
             # Download and dot source the New-SelfSignedCertificateEx script
             . (Install-NewSelfSignedCertificateExScript)

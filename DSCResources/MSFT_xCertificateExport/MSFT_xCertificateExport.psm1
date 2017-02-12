@@ -35,14 +35,9 @@ function Get-TargetResource
         ) -join '' )
 
     $result = @{
-        Path = $Path
+        Path       = $Path
+        IsExported = (Test-Path -Path $Path)
     }
-    if (Test-Path -Path $Path)
-    {
-        $result = @{
-            IsExported = $true
-        }
-    } # if
 
     return $result
 } # end function Get-TargetResource
