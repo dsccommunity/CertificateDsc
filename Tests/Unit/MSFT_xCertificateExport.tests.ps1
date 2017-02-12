@@ -64,9 +64,12 @@ try
             EnhancedKeyUsage = $certEKU
             Store            = $certStore
             AllowExpired     = $False
-            MatchSource      = $True
+            MatchSource      = $False
             Type             = 'Cert'
         }
+
+        $validCertMatchSourceParams = @{} + $validCertParams
+        $validCertMatchSourceParams.MatchSource = $True
 
         $pfxPlainTextPassword = 'P@ssword!1'
         $pfxPassword = ConvertTo-SecureString -String $pfxPlainTextPassword -AsPlainText -Force
@@ -84,11 +87,31 @@ try
             EnhancedKeyUsage = $certEKU
             Store            = $certStore
             AllowExpired     = $False
-            MatchSource      = $True
+            MatchSource      = $False
             Password         = $pfxCred
             ProtectTo        = 'Administrators'
             Type             = 'PFX'
         }
+
+        $validPfxMatchSourceParams = @{} + $validPfxParams
+        $validPfxMatchSourceParams.MatchSource = $True
+
+        # This is so we can mock the Import method in Set-TargetResource
+        class X509Certificate2CollectionDummyMatch:System.Object {
+            [String] $Thumbprint = '1111111111111111111111111111111111111111'
+            X509Certificate2CollectionDummyMatch() { }
+            Import($Path) { }
+            Import($Path,$Password,$Flags) { }
+        }
+        class X509Certificate2CollectionDummyNoMatch:System.Object {
+            [String] $Thumbprint = '2222222222222222222222222222222222222222'
+            X509Certificate2CollectionDummyNoMatch() { }
+            Import($Path) { }
+            Import($Path,$Password,$Flags) { }
+        }
+
+        $importedCertMatch = New-Object -Type X509Certificate2CollectionDummyMatch
+        $importedCertNoMatch = New-Object -Type X509Certificate2CollectionDummyNoMatch
 
         Describe "$DSCResourceName\Get-TargetResource" {
             Context 'Certificate has been exported' {
@@ -125,12 +148,12 @@ try
         }
 
         Describe "$DSCResourceName\Set-TargetResource" {
-            Mock `
-                -CommandName Find-Certificate `
-                -MockWith { } `
-                -Verifiable
-
             Context 'Certificate is not found' {
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { Set-TargetResource @validCertParams -Verbose } | Should Not Throw
                 }
@@ -204,10 +227,147 @@ try
                     Assert-MockCalled -CommandName Export-Certificate -Times 0
                 }
             }
-
         }
 
         Describe "$DSCResourceName\Test-TargetResource" {
+            Context 'Certificate is not found' {
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { } `
+                    -Verifiable
+
+                It 'should return true' {
+                    Test-TargetResource @validCertParams -Verbose | Should Be $True
+                }
+                It 'should call the expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Certificate is found and needs to be exported as Cert and has not been exported' {
+                # Needs to be done because Export-Certificate requires a real cert object
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { $validCert } `
+                    -Verifiable
+                Mock `
+                    -CommandName Test-Path `
+                    -MockWith { $False } `
+                    -Verifiable
+
+                It 'should return false' {
+                    Test-TargetResource @validCertParams -Verbose | Should Be $False
+                }
+                It 'should call the expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Certificate is found and needs to be exported as Cert but already exported and MatchSource False' {
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { $validCert } `
+                    -Verifiable
+                Mock `
+                    -CommandName Test-Path `
+                    -MockWith { $True } `
+                    -Verifiable
+
+                It 'should return true' {
+                    Test-TargetResource @validCertParams -Verbose | Should Be $True
+                }
+                It 'should call the expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Certificate is found and needs to be exported as Cert but already exported and MatchSource True and matches' {
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { $validCert } `
+                    -Verifiable
+                Mock `
+                    -CommandName Test-Path `
+                    -MockWith { $True } `
+                    -Verifiable
+                Mock `
+                    -CommandName New-Object `
+                    -MockWith { $importedCertMatch } `
+                    -Verifiable
+
+                It 'should return true' {
+                    Test-TargetResource @validCertMatchSourceParams -Verbose | Should Be $True
+                }
+                It 'should call the expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Certificate is found and needs to be exported as Cert but already exported and MatchSource True but no match' {
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { $validCert } `
+                    -Verifiable
+                Mock `
+                    -CommandName Test-Path `
+                    -MockWith { $True } `
+                    -Verifiable
+                Mock `
+                    -CommandName New-Object `
+                    -MockWith { $importedCertNoMatch } `
+                    -Verifiable
+
+                It 'should return false' {
+                    Test-TargetResource @validCertMatchSourceParams -Verbose | Should Be $False
+                }
+                It 'should call the expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Certificate is found and needs to be exported as Pfx but already exported and MatchSource True and matches' {
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { $validCert } `
+                    -Verifiable
+                Mock `
+                    -CommandName Test-Path `
+                    -MockWith { $True } `
+                    -Verifiable
+                Mock `
+                    -CommandName New-Object `
+                    -MockWith { $importedCertMatch } `
+                    -Verifiable
+
+                It 'should return true' {
+                    Test-TargetResource @validPfxMatchSourceParams -Verbose | Should Be $True
+                }
+                It 'should call the expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
+
+            Context 'Certificate is found and needs to be exported as Pfx but already exported and MatchSource True but no match' {
+                Mock `
+                    -CommandName Find-Certificate `
+                    -MockWith { $validCert } `
+                    -Verifiable
+                Mock `
+                    -CommandName Test-Path `
+                    -MockWith { $True } `
+                    -Verifiable
+                Mock `
+                    -CommandName New-Object `
+                    -MockWith { $importedCertNoMatch } `
+                    -Verifiable
+
+                It 'should return false' {
+                    Test-TargetResource @validPfxMatchSourceParams -Verbose | Should Be $False
+                }
+                It 'should call the expected mocks' {
+                    Assert-VerifiableMocks
+                }
+            }
         }
     }
 }
