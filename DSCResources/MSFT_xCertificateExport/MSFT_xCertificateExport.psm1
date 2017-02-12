@@ -171,7 +171,7 @@ function Set-TargetResource
     $null = $findCertificateParameters.Remove('ChainOption')
     $null = $findCertificateParameters.Remove('Password')
     $null = $findCertificateParameters.Remove('ProtectTo')
-    $foundCerts = Find-Certificate @findCertificateParameters
+    $foundCerts = @(Find-Certificate @findCertificateParameters)
 
     if ($foundCerts.Count -eq 0)
     {
@@ -181,7 +181,6 @@ function Set-TargetResource
                 "$($MyInvocation.MyCommand): ",
                 $($LocalizedData.CertificateToExportNotFound -f $Path,$Type,$Store)
             ) -join '' )
-        return $true
     }
     else
     {
@@ -219,9 +218,9 @@ function Set-TargetResource
                 $exportParameters += @{
                     ProtectTo = $ProtectTo
                 }
-            }
+            } # if
             Export-PfxCertificate @exportParameters
-        }
+        } # if
 
         Write-Verbose -Message (
             @(
