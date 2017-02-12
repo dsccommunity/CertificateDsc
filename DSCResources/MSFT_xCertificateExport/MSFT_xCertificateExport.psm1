@@ -391,19 +391,7 @@ function Test-TargetResource
 
         if (Test-Path -Path $Path)
         {
-            if (-not $MatchSource)
-            {
-                # This certificate is already exported and we don't want to check it is
-                # the right certificate.
-                Write-Verbose -Message (
-                    @(
-                        "$($MyInvocation.MyCommand): ",
-                        $($LocalizedData.CertificateAlreadyExported -f $exportThumbprint,$Path)
-                    ) -join '' )
-
-                return $true
-            }
-            else
+            if ($MatchSource)
             {
                 # The certificate has already been exported, but we need to make sure it matches
                 Write-Verbose -Message (
@@ -422,7 +410,29 @@ function Test-TargetResource
                 {
                     $exportedCert.Import($Path,$Password)
                 }
+                if ($exportThumbprint -notin $exportedCert.Thumbprint)
+                {
+                    Write-Verbose -Message (
+                        @(
+                            "$($MyInvocation.MyCommand): ",
+                            $($LocalizedData.CertificateAlreadyExportedNotMatchSource -f $exportThumbprint,$Path)
+                        ) -join '' )
+
+                    return $false
+                }
             }
+            else
+            {
+                # This certificate is already exported and we don't want to check it is
+                # the right certificate.
+                Write-Verbose -Message (
+                    @(
+                        "$($MyInvocation.MyCommand): ",
+                        $($LocalizedData.CertificateAlreadyExported -f $exportThumbprint,$Path)
+                    ) -join '' )
+
+            }
+            return $true
         }
         else
         {

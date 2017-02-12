@@ -75,6 +75,7 @@ try
                                 Issuer           = $certSubject
                                 KeyUsage         = $certKeyUsage
                                 EnhancedKeyUsage = $certEKU
+                                MatchSource      = $true
                                 Type             = 'CERT'
                             }
                         )
@@ -119,6 +120,7 @@ try
                                 Issuer                      = $certSubject
                                 KeyUsage                    = $certKeyUsage
                                 EnhancedKeyUsage            = $certEKU
+                                MatchSource                 = $true
                                 Type                        = 'PFX'
                                 ChainOption                 = 'BuildChain'
                                 Password                    = $pfxCred
