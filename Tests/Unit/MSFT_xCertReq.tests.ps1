@@ -538,7 +538,7 @@ RenewalCert = $validThumbprint
                 function Wait-Win32ProcessEnd { param ( $Path,$Arguments,$Credential ) }
 
                 Mock -CommandName Start-Win32Process -ModuleName MSFT_xCertReq
-                Mock -CommandName Wait-Win32ProcessEnd -ModuleName MSFT_xCertReq
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq
 
                 It 'should not throw' {
                     { Set-TargetResource @Params } | Should Not Throw
