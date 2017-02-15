@@ -2,7 +2,7 @@
 
 $script:ResourceRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent)
 
-# Import the xNetworking Resource Module (to import the common modules)
+# Import the xCertificate Resource Module (to import the common modules)
 Import-Module -Name (Join-Path -Path $script:ResourceRootPath -ChildPath 'xCertificate.psd1')
 
 # Import Localization Strings

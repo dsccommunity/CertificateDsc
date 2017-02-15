@@ -2,7 +2,7 @@
 
 $script:ResourceRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent)
 
-# Import the xNetworking Resource Module (to import the common modules)
+# Import the xCertificate Resource Module (to import the common modules)
 Import-Module -Name (Join-Path -Path $script:ResourceRootPath -ChildPath 'xCertificate.psd1')
 
 # Import Localization Strings
@@ -71,36 +71,45 @@ function Get-TargetResource
         [System.String]
         $CARootName,
 
+        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
+        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -212,36 +221,45 @@ function Set-TargetResource
         [System.String]
         $CARootName,
 
+        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
+        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )
@@ -512,36 +530,45 @@ function Test-TargetResource
         [System.String]
         $CARootName,
 
+        [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
         $KeyLength = '1024',
 
+        [Parameter()]
         [System.Boolean]
         $Exportable = $true,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $OID = '1.3.6.1.5.5.7.3.1',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $KeyUsage = '0xa0',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CertificateTemplate = 'WebServer',
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $SubjectAltName,
 
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         $Credential,
 
+        [Parameter()]
         [System.Boolean]
         $AutoRenew
     )

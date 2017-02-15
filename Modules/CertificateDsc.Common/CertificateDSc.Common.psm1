@@ -208,30 +208,39 @@ function Find-Certificate
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2[]])]
     param
     (
+        [Parameter()]
         [String]
         $Thumbprint,
 
+        [Parameter()]
         [String]
         $FriendlyName,
 
+        [Parameter()]
         [String]
         $Subject,
 
+        [Parameter()]
         [String[]]
         $DNSName,
 
+        [Parameter()]
         [String]
         $Issuer,
 
+        [Parameter()]
         [String[]]
         $KeyUsage,
 
+        [Parameter()]
         [String[]]
         $EnhancedKeyUsage,
 
+        [Parameter()]
         [String]
         $Store = 'My',
 
+        [Parameter()]
         [Boolean]
         $AllowExpired = $false
     )

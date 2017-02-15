@@ -26,7 +26,9 @@ function Test-Command
 {
     param
     (
-        [String] $Name
+        [Parameter()]
+        [String]
+        $Name
     )
 
     return ($null -ne (Get-Command -Name $Name -ErrorAction Continue 2> $null))
@@ -84,10 +86,12 @@ function New-InvalidOperationException
     [CmdletBinding()]
     param
     (
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [String]
         $Message,
 
+        [Parameter()]
         [ValidateNotNull()]
         [System.Management.Automation.ErrorRecord]
         $ErrorRecord

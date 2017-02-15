@@ -6,7 +6,9 @@ Configuration Example
 {
     param
     (
-        [string[]] $NodeName = 'localhost'
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost'
     )
 
     Import-DscResource -ModuleName xCertificate

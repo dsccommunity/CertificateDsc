@@ -2,7 +2,7 @@
 
 $script:ResourceRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent)
 
-# Import the xNetworking Resource Module (to import the common modules)
+# Import the xCertificate Resource Module (to import the common modules)
 Import-Module -Name (Join-Path -Path $script:ResourceRootPath -ChildPath 'xCertificate.psd1')
 
 # Import Localization Strings
@@ -61,12 +61,15 @@ function Get-TargetResource
         [System.String]
         $Store,
 
+        [Parameter()]
         [Boolean]
         $Exportable = $false,
 
+        [Parameter()]
         [PSCredential]
         $Credential,
 
+        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
@@ -163,12 +166,15 @@ function Test-TargetResource
         [System.String]
         $Store,
 
+        [Parameter()]
         [Boolean]
         $Exportable = $false,
 
+        [Parameter()]
         [PSCredential]
         $Credential,
 
+        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
@@ -243,12 +249,15 @@ function Set-TargetResource
         [System.String]
         $Store,
 
+        [Parameter()]
         [Boolean]
         $Exportable = $false,
 
+        [Parameter()]
         [PSCredential]
         $Credential,
 
+        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'

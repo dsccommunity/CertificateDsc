@@ -11,11 +11,14 @@ configuration Example
 {
     param
     (
-        [string[]] $NodeName = 'localhost',
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential] $Credential
+        [PSCredential]
+        $Credential
     )
 
     Import-DscResource -ModuleName xCertificate

@@ -70,6 +70,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` ChainOption** (_Write_): Specifies the options for building a chain when exporting a PFX certificate. { *BuildChain* | EndEntityCertOnly }
 - **`[PSCredential]` Password** (_Write_): Specifies the password used to protect an exported PFX file.
 - **`[String[]]` ProtectTo** (_Write_): Specifies an array of strings for the username or group name that can access the private key of an exported PFX file without any password.
+- **`[Boolean]` IsExported** (_Read_): Returns true if the certificate file already exists and therefore has been exported.
 
 ## Versions
 
@@ -175,14 +176,24 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 Request and Accept a certificate from an Active Directory Root Certificate Authority.
 
+This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword to $true.
+Storing passwords in plain text is not a good practice and is presented only for simplicity and demonstration purposes.
+To learn how to securely store credentials through the use of certificates,
+please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
+
 ```powershell
-configuration xCertReq_RequestSSL
+configuration Example
 {
     param
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost',
+
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PsCredential] $Credential
+        [PSCredential]
+        $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
@@ -204,37 +215,31 @@ configuration xCertReq_RequestSSL
         }
     }
 }
-$configData = @{
-    AllNodes = @(
-        @{
-            NodeName                    = 'localhost';
-            PSDscAllowPlainTextPassword = $true
-            }
-        )
-    }
-xCertReq_RequestSSL `
-    -ConfigurationData $configData `
-    -Credential (Get-Credential) `
-    -OutputPath 'c:\xCertReq_RequestSSL'
-Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\xCertReq_RequestSSL'
-
-# Validate results
-Get-ChildItem Cert:\LocalMachine\My
 ```
 
 #### Request an SSL Certificate with alternative DNS names
 
-Request and Accept a certificate from an Active Directory Root Certificate Authority.
-This certificate is issued using an subject alternate name with multiple DNS addresses.
+Request and Accept a certificate from an Active Directory Root Certificate Authority. This certificate
+is issued using an subject alternate name with multiple DNS addresses.
+
+This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword to $true.
+Storing passwords in plain text is not a good practice and is presented only for simplicity and demonstration purposes.
+To learn how to securely store credentials through the use of certificates,
+please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
 
 ```powershell
-configuration Sample_xCertReq_RequestAltSSL
+configuration Example
 {
     param
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost',
+
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential] $Credential
+        [PSCredential]
+        $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
@@ -257,22 +262,6 @@ configuration Sample_xCertReq_RequestAltSSL
         }
     }
 }
-$configData = @{
-    AllNodes = @(
-        @{
-            NodeName                    = 'localhost';
-            PSDscAllowPlainTextPassword = $true
-            }
-        )
-    }
-Sample_xCertReq_RequestSSL `
-    -ConfigurationData $configData `
-    -Credential (Get-Credential) `
-    -OutputPath 'c:\Sample_xCertReq_RequestAltSSL'
-Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xCertReq_RequestAltSSL'
-
-# Validate results
-Get-ChildItem Cert:\LocalMachine\My
 ```
 
 ### xPfxImport Examples
@@ -282,12 +271,18 @@ Get-ChildItem Cert:\LocalMachine\My
 Import a PFX into the My store.
 
 ```powershell
-Configuration Sample_xPfxImport_MinimalUsage
+Configuration Example
 {
     param
     (
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost',
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
         [PSCredential]
-        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+        $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
@@ -298,16 +293,10 @@ Configuration Sample_xPfxImport_MinimalUsage
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
-            Credential = $PfxPassword
+            Credential = $Credential
         }
     }
 }
-Sample_xPfxImport_MinimalUsage `
-    -OutputPath 'c:\Sample_xPfxImport_MinimalUsage'
-Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xPfxImport_MinimalUsage'
-
-# Validate results
-Get-ChildItem Cert:\LocalMachine\My
 ```
 
 #### Used with xWebAdministration Resources
@@ -315,12 +304,18 @@ Get-ChildItem Cert:\LocalMachine\My
 Import a PFX into the WebHosting store and bind it to an IIS Web Site.
 
 ```powershell
-Configuration Sample_xPfxImport_IIS_WebSite
+Configuration Example
 {
     param
     (
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost',
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
         [PSCredential]
-        $PfxPassword = (Get-Credential -Message 'Enter PFX extraction password.' -UserName 'Ignore')
+        $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
@@ -339,7 +334,7 @@ Configuration Sample_xPfxImport_IIS_WebSite
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
             Store      = 'WebHosting'
-            Credential = $PfxPassword
+            Credential = $Credential
             DependsOn  = '[WindowsFeature]IIS'
         }
 
@@ -362,9 +357,6 @@ Configuration Sample_xPfxImport_IIS_WebSite
         }
     }
 }
-Sample_xPfxImport_IIS_WebSite `
-    -OutputPath 'c:\Sample_xPfxImport_IIS_WebSite'
-Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xPfxImport_IIS_WebSite'
 ```
 
 ### xCertificateImport Examples
@@ -372,8 +364,15 @@ Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xPfxImport_IIS_Web
 Import public key certificate into Trusted Root store.
 
 ```powershell
-Configuration Sample_xCertificateImport_MinimalUsage
+Configuration Example
 {
+    param
+    (
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost'
+    )
+
     Import-DscResource -ModuleName xCertificate
 
     Node $AllNodes.NodeName
@@ -387,10 +386,64 @@ Configuration Sample_xCertificateImport_MinimalUsage
         }
     }
 }
-Sample_xCertificateImport_MinimalUsage `
-    -OutputPath 'c:\Sample_xCertificateImport_MinimalUsage'
-Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xCertificateImport_MinimalUsage'
+```
 
-# Validate results
-Get-ChildItem Cert:\LocalMachine\My
+### xCertificateExport Examples
+
+Exports a certificate as a CERT using the friendly name to identify it.
+
+```powershell
+Configuration Example
+{
+    param
+    (
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost'
+    )
+
+    Import-DscResource -ModuleName xCertificate
+
+    Node $AllNodes.NodeName
+    {
+        xCertificateExport SSLCert
+        {
+            Type         = 'CERT'
+            FriendlyName = 'Web Site SSL Certificate for www.contoso.com'
+            Path         = 'c:\sslcert.cer'
+        }
+    }
+}
+```
+
+Exports a certificate as a PFX using the friendly name to identify it.
+
+```powershell
+Configuration Example
+{
+    param
+    (
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost',
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
+        [PSCredential]
+        $Credential
+    )
+
+    Import-DscResource -ModuleName xCertificate
+
+    Node $AllNodes.NodeName
+    {
+        xCertificateExport SSLCert
+        {
+            Type         = 'PFX'
+            FriendlyName = 'Web Site SSL Certificate for www.contoso.com'
+            Path         = 'c:\sslcert.cer'
+            Password     = $Credential
+        }
+    }
+}
 ```
