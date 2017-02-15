@@ -405,8 +405,8 @@ RenewalCert = $Thumbprint
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
             $command = "$PSHOME\PowerShell.exe"
             $arguments = "-Command ""& $ENV:SystemRoot\system32\certreq.exe" + `
-                " @('-submit','-q','-config',$ca,'$reqPath','$cerPath')" + `
-                " | Set-Content -Path '$certReqOutPath'"""
+            " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
+            " | Set-Content -Path '$certReqOutPath'"""
 
             # This may output a win32-process object, but it often does not because of
             # a timing issue in PDT (the process has often completed before the
@@ -421,7 +421,7 @@ RenewalCert = $Thumbprint
                 $($LocalizedData.SubmittingRequestProcessCertificateMessage)
             ) -join '' )
 
-            $null = Wait-Win32ProcessEnd `
+            $null = Wait-Win32ProcessStop `
                 -Path $command `
                 -Arguments $arguments `
                 -Credential $Credential
