@@ -310,40 +310,6 @@ function Find-Certificate
 
 <#
     .SYNOPSIS
-    Throws an InvalidOperation custom exception.
-
-    .PARAMETER ErrorId
-    The error Id of the exception.
-
-    .PARAMETER ErrorMessage
-    The error message text to set in the exception.
-#>
-function New-InvalidOperationError
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ErrorId,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ErrorMessage
-    )
-
-    $exception = New-Object -TypeName System.InvalidOperationException `
-        -ArgumentList $ErrorMessage
-    $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
-    $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord `
-        -ArgumentList $exception, $ErrorId, $errorCategory, $null
-    throw $errorRecord
-} # end function New-InvalidOperationError
-
-<#
-    .SYNOPSIS
     Throws an InvalidArgument custom exception.
 
     .PARAMETER ErrorId
