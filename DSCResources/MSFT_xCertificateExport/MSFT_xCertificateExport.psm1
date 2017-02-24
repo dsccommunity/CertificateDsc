@@ -221,7 +221,7 @@ function Set-TargetResource
             $exportCertificateParameters += @{
                 Type     = $Type
             }
-            Export-Certificate @exportParameters
+            Export-Certificate @exportCertificateParameters
         }
         elseif ($Type -eq 'PFX')
         {
@@ -236,7 +236,7 @@ function Set-TargetResource
                     ProtectTo = $ProtectTo
                 }
             } # if
-            Export-PfxCertificate @exportParameters
+            Export-PfxCertificate @exportCertificateParameters
         } # if
 
         Write-Verbose -Message (
