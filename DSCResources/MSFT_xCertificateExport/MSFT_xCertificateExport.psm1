@@ -92,9 +92,11 @@ function Get-TargetResource
 
     .PARAMETER Type
     Specifies the type of certificate to export.
+    Defaults to 'Cert'.
 
     .PARAMETER ChainOption
     Specifies the options for building a chain when exporting a PFX certificate.
+    Defaults to 'BuildChain'.
 
     .PARAMETER Password
     Specifies the password used to protect an exported PFX file.
@@ -112,48 +114,62 @@ function Set-TargetResource
         [System.String]
         $Path,
 
+        [Parameter()]
         [System.String]
         $Thumbprint,
 
+        [Parameter()]
         [System.String]
         $FriendlyName,
 
+        [Parameter()]
         [System.String]
         $Subject,
 
+        [Parameter()]
         [System.String[]]
         $DNSName,
 
+        [Parameter()]
         [System.String]
         $Issuer,
 
+        [Parameter()]
         [System.String[]]
         $KeyUsage,
 
+        [Parameter()]
         [System.String[]]
         $EnhancedKeyUsage,
 
+        [Parameter()]
         [System.String]
         $Store = 'My',
 
+        [Parameter()]
         [System.Boolean]
         $AllowExpired,
 
+        [Parameter()]
         [System.Boolean]
         $MatchSource,
 
+        [Parameter()]
         [ValidateSet("Cert","P7B","SST","PFX")]
         [System.String]
         $Type = 'Cert',
 
+        [Parameter()]
         [ValidateSet("BuildChain","EndEntityCertOnly")]
         [System.String]
         $ChainOption = 'BuildChain',
 
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Password,
 
+        [Parameter()]
         [System.String[]]
         $ProtectTo
     )
@@ -171,9 +187,9 @@ function Set-TargetResource
     $null = $findCertificateParameters.Remove('ChainOption')
     $null = $findCertificateParameters.Remove('Password')
     $null = $findCertificateParameters.Remove('ProtectTo')
-    $foundCerts = @(Find-Certificate @findCertificateParameters)
+    $foundCertificates = @(Find-Certificate @findCertificateParameters)
 
-    if ($foundCerts.Count -eq 0)
+    if ($foundCertificates.Count -eq 0)
     {
         # A certificate matching the specified certificate selector parameters could not be found
         Write-Verbose -Message (
@@ -184,38 +200,39 @@ function Set-TargetResource
     }
     else
     {
-        $certToExport = $foundCerts[0]
-        $exportThumbprint = $certToExport.Thumbprint
+        $certificateToExport = $foundCertificates[0]
+        $certificateThumbprintToExport = $certificateToExport.Thumbprint
 
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateToExportFound -f $exportThumbprint,$Path)
+                $($LocalizedData.CertificateToExportFound -f $certificateThumbprintToExport,$Path)
             ) -join '' )
 
         # Export the certificate
-        $exportParameters = @{
+        $exportCertificateParameters = @{
             FilePath = $Path
-            Cert     = $CertToExport
-            Force    = $True
+            Cert     = $certificateToExport
+            Force    = $true
         }
 
         if ($Type -in @('Cert','P7B','SST'))
         {
-            $exportParameters += @{
+            $exportCertificateParameters += @{
                 Type     = $Type
             }
             Export-Certificate @exportParameters
         }
         elseif ($Type -eq 'PFX')
         {
-            $exportParameters += @{
+            $exportCertificateParameters += @{
                 Password    = $Password.Password
                 ChainOption = $ChainOption
             }
+
             if ($PSBoundParameters.ContainsKey('ProtectTo'))
             {
-                $exportParameters += @{
+                $exportCertificateParameters += @{
                     ProtectTo = $ProtectTo
                 }
             } # if
@@ -225,9 +242,9 @@ function Set-TargetResource
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateExported -f $exportThumbprint,$Path,$Type)
+                $($LocalizedData.CertificateExported -f $certificateThumbprintToExport,$Path,$Type)
             ) -join '' )
-    }
+    } # if
 } # end function Set-TargetResource
 
 <#
@@ -280,9 +297,11 @@ function Set-TargetResource
 
     .PARAMETER Type
     Specifies the type of certificate to export.
+    Defaults to 'Cert'.
 
     .PARAMETER ChainOption
     Specifies the options for building a chain when exporting a PFX certificate.
+    Defaults to 'BuildChain'.
 
     .PARAMETER Password
     Specifies the password used to protect an exported PFX file.
@@ -301,48 +320,62 @@ function Test-TargetResource
         [System.String]
         $Path,
 
+        [Parameter()]
         [System.String]
         $Thumbprint,
 
+        [Parameter()]
         [System.String]
         $FriendlyName,
 
+        [Parameter()]
         [System.String]
         $Subject,
 
+        [Parameter()]
         [System.String]
         $Issuer,
 
+        [Parameter()]
         [System.String[]]
         $DNSName,
 
+        [Parameter()]
         [System.String[]]
         $KeyUsage,
 
+        [Parameter()]
         [System.String[]]
         $EnhancedKeyUsage,
 
+        [Parameter()]
         [System.String]
         $Store = 'My',
 
+        [Parameter()]
         [System.Boolean]
         $AllowExpired,
 
+        [Parameter()]
         [System.Boolean]
         $MatchSource,
 
+        [Parameter()]
         [ValidateSet("Cert","P7B","SST","PFX")]
         [System.String]
         $Type = 'Cert',
 
+        [Parameter()]
         [ValidateSet("BuildChain","EndEntityCertOnly")]
         [System.String]
         $ChainOption = 'BuildChain',
 
+        [Parameter()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Password,
 
+        [Parameter()]
         [System.String[]]
         $ProtectTo
     )
@@ -360,9 +393,9 @@ function Test-TargetResource
     $null = $findCertificateParameters.Remove('ChainOption')
     $null = $findCertificateParameters.Remove('Password')
     $null = $findCertificateParameters.Remove('ProtectTo')
-    $foundCerts = @(Find-Certificate @findCertificateParameters)
+    $foundCertificates = @(Find-Certificate @findCertificateParameters)
 
-    if ($foundCerts.Count -eq 0)
+    if ($foundCertificates.Count -eq 0)
     {
         # A certificate matching the specified certificate selector parameters could not be found
         Write-Verbose -Message (
@@ -370,17 +403,18 @@ function Test-TargetResource
                 "$($MyInvocation.MyCommand): ",
                 $($LocalizedData.CertificateToExportNotFound -f $Path,$Type,$Store)
             ) -join '' )
+
         return $true
     }
     else
     {
-        $certToExport = $foundCerts[0]
-        $exportThumbprint = $certToExport.Thumbprint
+        $certificateToExport = $foundCertificates[0]
+        $certificateThumbprintToExport = $certificateToExport.Thumbprint
 
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateToExportFound -f $exportThumbprint,$Path)
+                $($LocalizedData.CertificateToExportFound -f $certificateThumbprintToExport,$Path)
             ) -join '' )
 
         if (Test-Path -Path $Path)
@@ -391,29 +425,30 @@ function Test-TargetResource
                 Write-Verbose -Message (
                     @(
                         "$($MyInvocation.MyCommand): ",
-                        $($LocalizedData.CertificateAlreadyExportedMatchSource -f $exportThumbprint,$Path)
+                        $($LocalizedData.CertificateAlreadyExportedMatchSource -f $certificateThumbprintToExport,$Path)
                     ) -join '' )
 
                 # Need to now compare the existing exported cert content with the found cert
-                $exportedCert = New-Object -TypeName 'System.Security.Cryptography.X509Certificates.X509Certificate2Collection'
+                $exportedCertificate = New-Object -TypeName 'System.Security.Cryptography.X509Certificates.X509Certificate2Collection'
                 if ($Type -in @('Cert','P7B','SST'))
                 {
-                    $exportedCert.Import($Path)
+                    $exportedCertificate.Import($Path)
                 }
                 elseif ($Type -eq 'PFX')
                 {
-                    $exportedCert.Import($Path,$Password,[System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
-                }
-                if ($exportThumbprint -notin $exportedCert.Thumbprint)
+                    $exportedCertificate.Import($Path,$Password,[System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
+                } # if
+
+                if ($certificateThumbprintToExport -notin $exportedCertificate.Thumbprint)
                 {
                     Write-Verbose -Message (
                         @(
                             "$($MyInvocation.MyCommand): ",
-                            $($LocalizedData.CertificateAlreadyExportedNotMatchSource -f $exportThumbprint,$Path)
+                            $($LocalizedData.CertificateAlreadyExportedNotMatchSource -f $certificateThumbprintToExport,$Path)
                         ) -join '' )
 
                     return $false
-                }
+                } # if
             }
             else
             {
@@ -422,10 +457,10 @@ function Test-TargetResource
                 Write-Verbose -Message (
                     @(
                         "$($MyInvocation.MyCommand): ",
-                        $($LocalizedData.CertificateAlreadyExported -f $exportThumbprint,$Path)
+                        $($LocalizedData.CertificateAlreadyExported -f $certificateThumbprintToExport,$Path)
                     ) -join '' )
+            } # if
 
-            }
             return $true
         }
         else
@@ -434,12 +469,12 @@ function Test-TargetResource
             Write-Verbose -Message (
                 @(
                     "$($MyInvocation.MyCommand): ",
-                    $($LocalizedData.CertificateNotExported -f $exportThumbprint,$Path)
+                    $($LocalizedData.CertificateNotExported -f $certificateThumbprintToExport,$Path)
                 ) -join '' )
 
             return $false
-        }
-    }
+        } # if
+    } # if
 }  # end function Test-TargetResource
 
 Export-ModuleMember -Function *-TargetResource

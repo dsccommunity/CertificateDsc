@@ -47,12 +47,14 @@ try
                     $result | Should Be $true
                 }
             }
+
             Context 'a single missing file by parameter' {
                 It 'should throw an exception' {
                     # directories are not valid
                     { Test-CertificatePath -Path $invalidPath } | Should Throw
                 }
             }
+
             Context 'a single missing file by parameter with -Quiet' {
                 $result = Test-CertificatePath -Path $invalidPath -Quiet
                 It 'should return false' {
@@ -60,6 +62,7 @@ try
                     $result | Should Be $false
                 }
             }
+
             Context 'a single existing file by pipeline' {
                 $result = $validPath | Test-CertificatePath
                 It 'should return true' {
@@ -67,12 +70,14 @@ try
                     $result | Should Be $true
                 }
             }
+
             Context 'a single missing file by pipeline' {
                 It 'should throw an exception' {
                     # directories are not valid
                     { $invalidPath | Test-CertificatePath } | Should Throw
                 }
             }
+
             Context 'a single missing file by pipeline with -Quiet' {
                 $result =  $invalidPath | Test-CertificatePath -Quiet
                 It 'should return false' {
@@ -91,12 +96,14 @@ try
                     $result | Should Be $true
                 }
             }
+
             Context 'a single invalid thumbprint by parameter' {
                 It 'should throw an exception' {
                     # directories are not valid
                     { Test-Thumbprint -Thumbprint $invalidThumbprint } | Should Throw
                 }
             }
+
             Context 'a single invalid thumbprint by parameter with -Quiet' {
                 $result = Test-Thumbprint $invalidThumbprint -Quiet
                 It 'should return false' {
@@ -104,6 +111,7 @@ try
                     $result | Should Be $false
                 }
             }
+
             Context 'a single valid thumbprint by pipeline' {
                 $result = $validThumbprint | Test-Thumbprint
                 It 'should return true' {
@@ -111,12 +119,14 @@ try
                     $result | Should Be $true
                 }
             }
+
             Context 'a single invalid thumborint by pipeline' {
                 It 'should throw an exception' {
                     # directories are not valid
                     { $invalidThumbprint | Test-Thumbprint } | Should Throw
                 }
             }
+
             Context 'a single invalid thumbprint by pipeline with -Quiet' {
                 $result =  $invalidThumbprint | Test-Thumbprint -Quiet
                 It 'should return false' {
@@ -176,312 +186,480 @@ try
 
             $nocertThumbprint = '1111111111111111111111111111111111111111'
 
-            Mock `
-                -CommandName Get-ChildItem `
-                -MockWith { @( $validCert ) } `
-                -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
-                -Verifiable
-
             Context 'Thumbprint only is passed and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Thumbprint $validThumbprint } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'Thumbprint only is passed and matching certificate does not exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Thumbprint $nocertThumbprint } | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'FriendlyName only is passed and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'FriendlyName only is passed and matching certificate does not exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName 'Does Not Exist' } | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'Subject only is passed and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Subject $certSubject } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'Subject only is passed and matching certificate does not exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Subject 'CN=Does Not Exist' } | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'Issuer only is passed and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Issuer $certSubject } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'Issuer only is passed and matching certificate does not exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Issuer 'CN=Does Not Exist' } | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'DNSName only is passed and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNames } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'DNSName only is passed in reversed order and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNamesReverse } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'DNSName only is passed with only one matching DNS name and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNames[0] } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'DNSName only is passed but an entry is missing and matching certificate does not exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNamesNoMatch } | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'KeyUsage only is passed and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsage } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'KeyUsage only is passed in reversed order and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsageReverse } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'KeyUsage only is passed with only one matching DNS name and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsage[0] } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'KeyUsage only is passed but an entry is missing and matching certificate does not exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsageNoMatch } | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed in reversed order and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUReverse } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed with only one matching DNS name and matching certificate exists' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU[0] } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed but an entry is missing and matching certificate does not exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUNoMatch } | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
-            Mock `
-                -CommandName Get-ChildItem `
-                -ParameterFilter { $Path -eq 'cert:\LocalMachine\CA' } `
-                -Verifiable
-
             Context 'Thumbprint only is passed and matching certificate does not exist in CA store' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\CA' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -Thumbprint $validThumbprint -Store 'CA'} | Should Not Throw
                 }
+
                 It 'should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
-            Mock `
-                -CommandName Get-ChildItem `
-                -MockWith { @( $expiredCert, $validCert ) } `
-                -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
-                -Verifiable
-
             Context 'FriendlyName only is passed and both valid and expired certificates exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $expiredCert, $validCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
-            Mock `
-                -CommandName Get-ChildItem `
-                -MockWith { @( $expiredCert ) } `
-                -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
-                -Verifiable
-
             Context 'FriendlyName only is passed and only expired certificates exist' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $expiredCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result | Should BeNullOrEmpty
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
             }
 
             Context 'FriendlyName only is passed and only expired certificates exist but allowexpired passed' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith { @( $expiredCert ) } `
+                    -ParameterFilter { $Path -eq 'cert:\LocalMachine\My' } `
+                    -Verifiable
+
                 It 'should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName -AllowExpired:$true } | Should Not Throw
                 }
+
                 It 'should return expected certificate' {
                     $script:result.Thumbprint | Should Be $expiredThumbprint
                 }
+
                 It 'should call expected mocks' {
                     Assert-VerifiableMocks
                 }
