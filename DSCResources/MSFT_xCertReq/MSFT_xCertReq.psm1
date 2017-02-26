@@ -310,7 +310,7 @@ function Set-TargetResource
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
-    $workingPath = Join-Path -Path $ENV:Temp -ChildPath "xCertReq-$guid"
+    $workingPath = Join-Path -Path $env:Temp -ChildPath "xCertReq-$guid"
     $infPath = [System.IO.Path]::ChangeExtension($workingPath,'.inf')
     $reqPath = [System.IO.Path]::ChangeExtension($workingPath,'.req')
     $cerPath = [System.IO.Path]::ChangeExtension($workingPath,'.cer')
@@ -389,7 +389,7 @@ RenewalCert = $Thumbprint
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
             $command = "$PSHOME\PowerShell.exe"
-            $arguments = "-Command ""& $ENV:SystemRoot\system32\certreq.exe" + `
+            $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
                 " @('-submit','-q','-config',$ca,'$reqPath','$cerPath')" + `
                 " | Set-Content -Path '$certReqOutPath'"""
 

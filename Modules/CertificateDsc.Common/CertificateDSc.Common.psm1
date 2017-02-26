@@ -261,30 +261,37 @@ function Find-Certificate
     {
         $certFilters += @('($_.Thumbprint -eq $Thumbprint)')
     } # if
+
     if ($PSBoundParameters.ContainsKey('FriendlyName'))
     {
         $certFilters += @('($_.FriendlyName -eq $FriendlyName)')
     } # if
+
     if ($PSBoundParameters.ContainsKey('Subject'))
     {
         $certFilters += @('($_.Subject -eq $Subject)')
     } # if
+
     if ($PSBoundParameters.ContainsKey('Issuer'))
     {
         $certFilters += @('($_.Issuer -eq $Issuer)')
     } # if
+
     if (-not $AllowExpired)
     {
         $certFilters += @('(((Get-Date) -le $_.NotAfter) -and ((Get-Date) -ge $_.NotBefore))')
     } # if
+
     if ($PSBoundParameters.ContainsKey('DNSName'))
     {
         $certFilters += @('(@(Compare-Object -ReferenceObject $_.DNSNameList.Unicode -DifferenceObject $DNSName | Where-Object -Property SideIndicator -eq "=>").Count -eq 0)')
     } # if
+
     if ($PSBoundParameters.ContainsKey('KeyUsage'))
     {
         $certFilters += @('(@(Compare-Object -ReferenceObject ($_.Extensions.KeyUsages -split ", ") -DifferenceObject $KeyUsage | Where-Object -Property SideIndicator -eq "=>").Count -eq 0)')
     } # if
+
     if ($PSBoundParameters.ContainsKey('EnhancedKeyUsage'))
     {
         $certFilters += @('(@(Compare-Object -ReferenceObject ($_.EnhancedKeyUsageList.FriendlyName) -DifferenceObject $EnhancedKeyUsage | Where-Object -Property SideIndicator -eq "=>").Count -eq 0)')
