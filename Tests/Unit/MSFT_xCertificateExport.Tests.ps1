@@ -63,13 +63,13 @@ try
             KeyUsage         = $certKeyUsage
             EnhancedKeyUsage = $certEKU
             Store            = $certStore
-            AllowExpired     = $False
-            MatchSource      = $False
+            AllowExpired     = $false
+            MatchSource      = $false
             Type             = 'Cert'
         }
 
         $validCertMatchSourceParams = @{} + $validCertParams
-        $validCertMatchSourceParams.MatchSource = $True
+        $validCertMatchSourceParams.MatchSource = $true
 
         $pfxPlainTextPassword = 'P@ssword!1'
         $pfxPassword = ConvertTo-SecureString -String $pfxPlainTextPassword -AsPlainText -Force
@@ -86,15 +86,15 @@ try
             KeyUsage         = $certKeyUsage
             EnhancedKeyUsage = $certEKU
             Store            = $certStore
-            AllowExpired     = $False
-            MatchSource      = $False
+            AllowExpired     = $false
+            MatchSource      = $false
             Password         = $pfxCred
             ProtectTo        = 'Administrators'
             Type             = 'PFX'
         }
 
         $validPfxMatchSourceParams = @{} + $validPfxParams
-        $validPfxMatchSourceParams.MatchSource = $True
+        $validPfxMatchSourceParams.MatchSource = $true
 
         # This is so we can mock the Import method in Set-TargetResource
         class X509Certificate2CollectionDummyMatch:System.Object {
@@ -117,13 +117,13 @@ try
             Context 'Certificate has been exported' {
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $True } `
+                    -MockWith { $true } `
                     -ParameterFilter { $Path -eq $certPath } `
                     -Verifiable
 
                 It 'should return IsExported true' {
                     $Result = Get-TargetResource -Path $certPath -Verbose
-                    $Result.IsExported | Should Be $True
+                    $Result.IsExported | Should Be $true
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -133,13 +133,13 @@ try
             Context 'Certificate has not been exported' {
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $False } `
+                    -MockWith { $false } `
                     -ParameterFilter { $Path -eq $certPath } `
                     -Verifiable
 
                 It 'should return IsExported false' {
                     $Result = Get-TargetResource -Path $certPath -Verbose
-                    $Result.IsExported | Should Be $False
+                    $Result.IsExported | Should Be $false
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -237,7 +237,7 @@ try
                     -Verifiable
 
                 It 'should return true' {
-                    Test-TargetResource @validCertParams -Verbose | Should Be $True
+                    Test-TargetResource @validCertParams -Verbose | Should Be $true
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -252,11 +252,11 @@ try
                     -Verifiable
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $False } `
+                    -MockWith { $false } `
                     -Verifiable
 
                 It 'should return false' {
-                    Test-TargetResource @validCertParams -Verbose | Should Be $False
+                    Test-TargetResource @validCertParams -Verbose | Should Be $false
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -270,11 +270,11 @@ try
                     -Verifiable
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $True } `
+                    -MockWith { $true } `
                     -Verifiable
 
                 It 'should return true' {
-                    Test-TargetResource @validCertParams -Verbose | Should Be $True
+                    Test-TargetResource @validCertParams -Verbose | Should Be $true
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -288,7 +288,7 @@ try
                     -Verifiable
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $True } `
+                    -MockWith { $true } `
                     -Verifiable
                 Mock `
                     -CommandName New-Object `
@@ -296,7 +296,7 @@ try
                     -Verifiable
 
                 It 'should return true' {
-                    Test-TargetResource @validCertMatchSourceParams -Verbose | Should Be $True
+                    Test-TargetResource @validCertMatchSourceParams -Verbose | Should Be $true
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -310,7 +310,7 @@ try
                     -Verifiable
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $True } `
+                    -MockWith { $true } `
                     -Verifiable
                 Mock `
                     -CommandName New-Object `
@@ -318,7 +318,7 @@ try
                     -Verifiable
 
                 It 'should return false' {
-                    Test-TargetResource @validCertMatchSourceParams -Verbose | Should Be $False
+                    Test-TargetResource @validCertMatchSourceParams -Verbose | Should Be $false
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -332,7 +332,7 @@ try
                     -Verifiable
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $True } `
+                    -MockWith { $true } `
                     -Verifiable
                 Mock `
                     -CommandName New-Object `
@@ -340,7 +340,7 @@ try
                     -Verifiable
 
                 It 'should return true' {
-                    Test-TargetResource @validPfxMatchSourceParams -Verbose | Should Be $True
+                    Test-TargetResource @validPfxMatchSourceParams -Verbose | Should Be $true
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
@@ -354,7 +354,7 @@ try
                     -Verifiable
                 Mock `
                     -CommandName Test-Path `
-                    -MockWith { $True } `
+                    -MockWith { $true } `
                     -Verifiable
                 Mock `
                     -CommandName New-Object `
@@ -362,7 +362,7 @@ try
                     -Verifiable
 
                 It 'should return false' {
-                    Test-TargetResource @validPfxMatchSourceParams -Verbose | Should Be $False
+                    Test-TargetResource @validPfxMatchSourceParams -Verbose | Should Be $false
                 }
                 It 'should call the expected mocks' {
                     Assert-VerifiableMocks
