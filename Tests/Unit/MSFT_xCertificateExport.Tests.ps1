@@ -31,6 +31,7 @@ try
         $certificateSubject = 'CN=contoso, DC=com'
         $certificateFriendlyName = 'Contoso Test Cert'
         $certificateThumbprint = '1111111111111111111111111111111111111111'
+        $certificateNotFoundThumbprint = '2222222222222222222222222222222222222222'
         $certificateStore = 'My'
 
         $validCertificate = New-Object -TypeName PSObject -Property @{
@@ -67,6 +68,9 @@ try
             MatchSource      = $false
             Type             = 'Cert'
         }
+
+        $validCertificateNotFoundParameters = @{} + $validCertificateParameters
+        $validCertificateNotFoundParameters.Thumbprint = $certificateNotFoundThumbprint
 
         $validCertificateMatchSourceParameters = @{} + $validCertificateParameters
         $validCertificateMatchSourceParameters.MatchSource = $true
@@ -144,6 +148,14 @@ try
             }
         }
 
+        # MockWith content for Find-Certifciate
+        $mockFindCertificate = {
+            if ($Thumbprint -eq $certificateThumbprint)
+            {
+                $validCertificate
+            }
+        }
+
         Describe "$DSCResourceName\Get-TargetResource" {
             Context 'Certificate has been exported' {
                 Mock `
@@ -179,11 +191,13 @@ try
         }
 
         Describe "$DSCResourceName\Set-TargetResource" {
-            Context 'Certificate is not found' {
+            BeforeEach {
                 Mock `
                     -CommandName Find-Certificate `
-                    -MockWith { }
+                    -MockWith $mockFindCertificate
+            }
 
+            Context 'Certificate is not found' {
                 Mock `
                     -CommandName Export-Certificate
 
@@ -191,7 +205,7 @@ try
                     -CommandName Export-PfxCertificate
 
                 It 'should not throw exception' {
-                    { Set-TargetResource @validCertificateParameters -Verbose } | Should Not Throw
+                    { Set-TargetResource @validCertificateNotFoundParameters -Verbose } | Should Not Throw
                 }
 
                 It 'should call the expected mocks' {
@@ -214,10 +228,6 @@ try
                         $Type
                     )
                 }
-
-                Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
 
                 Mock `
                     -CommandName Export-Certificate `
@@ -255,10 +265,6 @@ try
                 }
 
                 Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
-
-                Mock `
                     -CommandName Export-Certificate
 
                 Mock `
@@ -278,11 +284,13 @@ try
         }
 
         Describe "$DSCResourceName\Test-TargetResource" {
-            Context 'Certificate is not found' {
+            BeforeEach {
                 Mock `
                     -CommandName Find-Certificate `
-                    -MockWith { }
+                    -MockWith $mockFindCertificate
+            }
 
+            Context 'Certificate is not found' {
                 Mock `
                     -CommandName Test-Path
 
@@ -290,7 +298,7 @@ try
                     -CommandName New-Object
 
                 It 'should return true' {
-                    Test-TargetResource @validCertificateParameters -Verbose | Should Be $true
+                    Test-TargetResource @validCertificateNotFoundParameters -Verbose | Should Be $true
                 }
 
                 It 'should call the expected mocks' {
@@ -301,10 +309,6 @@ try
             }
 
             Context 'Certificate is found and needs to be exported as Cert and has not been exported' {
-                Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
-
                 Mock `
                     -CommandName Test-Path `
                     -MockWith { $false }
@@ -325,10 +329,6 @@ try
 
             Context 'Certificate is found and needs to be exported as Cert but already exported and MatchSource False' {
                 Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
-
-                Mock `
                     -CommandName Test-Path `
                     -MockWith { $true }
 
@@ -347,10 +347,6 @@ try
             }
 
             Context 'Certificate is found and needs to be exported as Cert but already exported and MatchSource True and matches' {
-                Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
-
                 Mock `
                     -CommandName Test-Path `
                     -MockWith { $true }
@@ -372,10 +368,6 @@ try
 
             Context 'Certificate is found and needs to be exported as Cert but already exported and MatchSource True but no match' {
                 Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
-
-                Mock `
                     -CommandName Test-Path `
                     -MockWith { $true }
 
@@ -396,10 +388,6 @@ try
 
             Context 'Certificate is found and needs to be exported as Pfx but already exported and MatchSource True and matches' {
                 Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
-
-                Mock `
                     -CommandName Test-Path `
                     -MockWith { $true }
 
@@ -419,10 +407,6 @@ try
             }
 
             Context 'Certificate is found and needs to be exported as Pfx but already exported and MatchSource True but no match' {
-                Mock `
-                    -CommandName Find-Certificate `
-                    -MockWith { $validCertificate }
-
                 Mock `
                     -CommandName Test-Path `
                     -MockWith { $true }
