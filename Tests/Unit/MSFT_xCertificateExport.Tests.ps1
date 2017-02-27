@@ -23,8 +23,8 @@ try
     InModuleScope $script:DSCResourceName {
         $DSCResourceName = 'MSFT_xCertificateExport'
 
-        $certificatePath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.cer'
-        $pfxPath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.pfx'
+        $certificatePath = Join-Path -Path $ENV:Temp -ChildPath 'xCertificateExportTestCert.cer'
+        $pfxPath = Join-Path -Path $ENV:Temp -ChildPath 'xCertificateExportTestCert.pfx'
         $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
         $certificateKeyUsage = @('DigitalSignature','DataEncipherment')
         $certificateEKU = @('Server Authentication','Client authentication')
@@ -128,6 +128,22 @@ try
         $importedCertificateMatch = New-Object -Type X509Certificate2CollectionDummyMatch
         $importedCertificateNoMatch = New-Object -Type X509Certificate2CollectionDummyNoMatch
 
+        # MockWith content for Export-Certificate
+        $mockExportCertificate = {
+            if ($FilePath -ne $certificatePath)
+            {
+                throw 'Expected mock to be called with {0}, but was {1}' -f $certificatePath,$FilePath
+            }
+        }
+
+        # MockWith content for Export-PfxCertificate
+        $mockExportPfxCertificate = {
+            if ($FilePath -ne $pfxPath)
+            {
+                throw 'Expected mock to be called with {0}, but was {1}' -f $pfxPath,$FilePath
+            }
+        }
+
         Describe "$DSCResourceName\Get-TargetResource" {
             Context 'Certificate has been exported' {
                 Mock `
@@ -168,12 +184,20 @@ try
                     -CommandName Find-Certificate `
                     -MockWith { }
 
+                Mock `
+                    -CommandName Export-Certificate
+
+                Mock `
+                    -CommandName Export-PfxCertificate
+
                 It 'should not throw exception' {
                     { Set-TargetResource @validCertificateParameters -Verbose } | Should Not Throw
                 }
 
                 It 'should call the expected mocks' {
                     Assert-MockCalled -CommandName Find-Certificate -Exactly -Times 1
+                    Assert-MockCalled -CommandName Export-Certificate -Exactly -Times 0
+                    Assert-MockCalled -CommandName Export-PfxCertificate -Exactly -Times 0
                 }
             }
 
@@ -197,7 +221,7 @@ try
 
                 Mock `
                     -CommandName Export-Certificate `
-                    -Verifiable
+                    -MockWith $mockExportCertificate
 
                 Mock `
                     -CommandName Export-PfxCertificate
@@ -207,6 +231,7 @@ try
                 }
 
                 It 'should call the expected mocks' {
+                    Assert-MockCalled -CommandName Find-Certificate -Exactly -Times 1
                     Assert-MockCalled -CommandName Export-Certificate -Exactly -Times 1
                     Assert-MockCalled -CommandName Export-PfxCertificate -Exactly -Times 0
                 }
@@ -231,22 +256,23 @@ try
 
                 Mock `
                     -CommandName Find-Certificate `
-                    -MockWith { $validCertificate } `
-                    -Verifiable
+                    -MockWith { $validCertificate }
 
                 Mock `
                     -CommandName Export-Certificate
 
                 Mock `
-                    -CommandName Export-PfxCertificate
+                    -CommandName Export-PfxCertificate `
+                    -MockWith $mockExportPfxCertificate
 
                 It 'should not throw exception' {
                     { Set-TargetResource @validPfxParameters -Verbose } | Should Not Throw
                 }
 
                 It 'should call the expected mocks' {
-                    Assert-MockCalled -CommandName Export-PfxCertificate -Exactly -Times 1
+                    Assert-MockCalled -CommandName Find-Certificate -Exactly -Times 1
                     Assert-MockCalled -CommandName Export-Certificate -Exactly -Times 0
+                    Assert-MockCalled -CommandName Export-PfxCertificate -Exactly -Times 1
                 }
             }
         }
@@ -257,12 +283,20 @@ try
                     -CommandName Find-Certificate `
                     -MockWith { }
 
+                Mock `
+                    -CommandName Test-Path
+
+                Mock `
+                    -CommandName New-Object
+
                 It 'should return true' {
                     Test-TargetResource @validCertificateParameters -Verbose | Should Be $true
                 }
 
                 It 'should call the expected mocks' {
                     Assert-MockCalled -CommandName Find-Certificate -Exactly -Times 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 0
                 }
             }
 
@@ -275,6 +309,9 @@ try
                     -CommandName Test-Path `
                     -MockWith { $false }
 
+                Mock `
+                    -CommandName New-Object
+
                 It 'should return false' {
                     Test-TargetResource @validCertificateParameters -Verbose | Should Be $false
                 }
@@ -282,6 +319,7 @@ try
                 It 'should call the expected mocks' {
                     Assert-MockCalled -CommandName Find-Certificate -Exactly -Times 1
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 0
                 }
             }
 
@@ -294,6 +332,9 @@ try
                     -CommandName Test-Path `
                     -MockWith { $true }
 
+                Mock `
+                    -CommandName New-Object
+
                 It 'should return true' {
                     Test-TargetResource @validCertificateParameters -Verbose | Should Be $true
                 }
@@ -301,6 +342,7 @@ try
                 It 'should call the expected mocks' {
                     Assert-MockCalled -CommandName Find-Certificate -Exactly -Times 1
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                    Assert-MockCalled -CommandName New-Object -Exactly -Times 0
                 }
             }
 
