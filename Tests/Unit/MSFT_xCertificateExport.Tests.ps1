@@ -23,8 +23,8 @@ try
     InModuleScope $script:DSCResourceName {
         $DSCResourceName = 'MSFT_xCertificateExport'
 
-        $certificatePath = Join-Path -Path $ENV:Temp -ChildPath 'xCertificateExportTestCert.cer'
-        $pfxPath = Join-Path -Path $ENV:Temp -ChildPath 'xCertificateExportTestCert.pfx'
+        $certificatePath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.cer'
+        $pfxPath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.pfx'
         $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
         $certificateKeyUsage = @('DigitalSignature','DataEncipherment')
         $certificateEKU = @('Server Authentication','Client authentication')
