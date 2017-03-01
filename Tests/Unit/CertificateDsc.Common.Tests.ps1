@@ -194,18 +194,22 @@ try
                     {
                         return @( $validCert )
                     }
+
                     'cert:\LocalMachine\NoCert'
                     {
                         return @()
                     }
+
                     'cert:\LocalMachine\TwoCerts'
                     {
                         return @( $expiredCert, $validCert )
                     }
+
                     'cert:\LocalMachine\Expired'
                     {
                         return @( $expiredCert )
                     }
+
                     default
                     {
                         throw 'mock called with unexpected value {0}' -f $Path
