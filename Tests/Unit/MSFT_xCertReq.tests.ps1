@@ -282,7 +282,7 @@ RenewalCert = $validThumbprint
         #region Set-TargetResource
         Describe "$DSCResourceName\Set-TargetResource" {
             Mock -CommandName Join-Path -MockWith { 'xCertReq-Test' } `
-                -ParameterFilter { $Path -eq $ENV:Temp }
+                -ParameterFilter { $Path -eq $env:Temp }
             Mock -CommandName Test-Path -MockWith { $true } `
                 -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
             Mock -CommandName Test-Path -MockWith { $true } `
