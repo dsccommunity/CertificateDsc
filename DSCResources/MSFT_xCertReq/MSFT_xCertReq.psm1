@@ -1,27 +1,14 @@
 #Requires -Version 4.0
 
-#region localizeddata
-if (Test-Path "${PSScriptRoot}\${PSUICulture}")
-{
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xCertReq.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
-}
-else
-{
-    #fallback to en-US
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename MSFT_xCertReq.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\en-US"
-}
-#endregion
+$script:ResourceRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent)
 
-# Import the common certificate functions
-Import-Module -Name ( Join-Path `
-    -Path (Split-Path -Path $PSScriptRoot -Parent) `
-    -ChildPath 'CertificateCommon\CertificateCommon.psm1' )
+# Import the xCertificate Resource Module (to import the common modules)
+Import-Module -Name (Join-Path -Path $script:ResourceRootPath -ChildPath 'xCertificate.psd1')
+
+# Import Localization Strings
+$localizedData = Get-LocalizedData `
+    -ResourceName 'MSFT_xCertReq' `
+    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
 
 <#
     .SYNOPSIS
@@ -323,7 +310,7 @@ function Set-TargetResource
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
-    $workingPath = Join-Path -Path $ENV:Temp -ChildPath "xCertReq-$guid"
+    $workingPath = Join-Path -Path $env:Temp -ChildPath "xCertReq-$guid"
     $infPath = [System.IO.Path]::ChangeExtension($workingPath,'.inf')
     $reqPath = [System.IO.Path]::ChangeExtension($workingPath,'.req')
     $cerPath = [System.IO.Path]::ChangeExtension($workingPath,'.cer')
@@ -388,7 +375,7 @@ RenewalCert = $Thumbprint
     # SUBMIT: Submit a request to a Certification Authority.
     # DSC runs in the context of LocalSystem, which uses the Computer account in Active Directory
     # to authenticate to network resources
-    # The Credential paramter with xPDT is used to impersonate a user making the request
+    # The Credential paramter with PDT is used to impersonate a user making the request
     if (Test-Path -Path $reqPath)
     {
         Write-Verbose -Message ( @(
@@ -398,13 +385,11 @@ RenewalCert = $Thumbprint
 
         if ($Credential)
         {
-            Import-Module -Name $PSScriptRoot\..\PDT\PDT.psm1 -Force
-
             # Assemble the command and arguments to pass to the powershell process that
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
             $command = "$PSHOME\PowerShell.exe"
-            $arguments = "-Command ""& $ENV:SystemRoot\system32\certreq.exe" + `
+            $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
                 " @('-submit','-q','-config',$ca,'$reqPath','$cerPath')" + `
                 " | Set-Content -Path '$certReqOutPath'"""
 
