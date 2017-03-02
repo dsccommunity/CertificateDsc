@@ -12,7 +12,7 @@ $script:DSCResourceName = 'MSFT_xCertReq'
  These tests can only be run if a CA is available and configured to be used on the
  computer running these tests. This is usually required to be a domain joined computer.
 #>
-$CertUtilResult = & "$ENV:SystemRoot\system32\certutil.exe" @('-dump')
+$CertUtilResult = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
 $Result = ([regex]::matches($CertUtilResult,'Name:[ \t]+`([\sA-Za-z0-9._-]+)''','IgnoreCase'))
 if ([String]::IsNullOrEmpty($Result))
 {
@@ -48,7 +48,7 @@ try
 
     Describe "$($script:DSCResourceName)_Integration" {
         #region DEFAULT TESTS
-        It 'Should compile without throwing' {
+        It 'Should compile and apply the MOF without throwing' {
             {
                 # This is to allow the testing of certreq with domain credentials
                 $ConfigData = @{
@@ -64,12 +64,13 @@ try
                 & "$($script:DSCResourceName)_Config" `
                     -OutputPath $TestDrive `
                     -ConfigurationData $ConfigData
+
                 Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-            } | Should not throw
+            } | Should Not Throw
         }
 
-        It 'should be able to call Get-DscConfiguration without throwing' {
-            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not throw
+        It 'Should be able to call Get-DscConfiguration without throwing' {
+            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
         }
         #endregion
 

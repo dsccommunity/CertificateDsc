@@ -1,20 +1,12 @@
-﻿#region localizeddata
-if (Test-Path "${PSScriptRoot}\${PSUICulture}")
-{
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename CertificateCommon.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\${PSUICulture}"
-}
-else
-{
-    #fallback to en-US
-    Import-LocalizedData `
-        -BindingVariable LocalizedData `
-        -Filename CertificateCommon.strings.psd1 `
-        -BaseDirectory "${PSScriptRoot}\en-US"
-}
-#endregion
+﻿# Import the Networking Resource Helper Module
+Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
+                               -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
+                                                     -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
+
+# Import Localization Strings
+$localizedData = Get-LocalizedData `
+    -ResourceName 'CertificateDsc.Common' `
+    -ResourcePath $PSScriptRoot
 
 <#
     .SYNOPSIS
@@ -45,7 +37,8 @@ function Test-CertificatePath
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory,ValueFromPipeline)]
+        [Parameter(Mandatory = $true,
+                   ValueFromPipeline)]
         [String[]]
         $Path,
 
@@ -107,7 +100,8 @@ function Test-Thumbprint
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory,ValueFromPipeline)]
+        [Parameter(Mandatory = $true,
+                   ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [String[]]
         $Thumbprint,
@@ -174,37 +168,152 @@ function Test-Thumbprint
 
 <#
     .SYNOPSIS
-    Throws an InvalidOperation custom exception.
+    Locates one or more certificates using the passed certificate selector parameters.
 
-    .PARAMETER ErrorId
-    The error Id of the exception.
+    If more than one certificate is found matching the selector criteria, they will be
+    returned in order of descending expiration date.
 
-    .PARAMETER ErrorMessage
-    The error message text to set in the exception.
+    .PARAMETER Thumbprint
+    The thumbprint of the certificate to find.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to find.
+
+    .PARAMETER Subject
+    The subject of the certificate to find.
+
+    .PARAMETER DNSName
+    The subject alternative name of the certificate to export must contain these values.
+
+    .PARAMETER Issuer
+    The issuer of the certiicate to find.
+
+    .PARAMETER KeyUsage
+    The key usage of the certificate to find must contain these values.
+
+    .PARAMETER EnhancedKeyUsage
+    The enhanced key usage of the certificate to find must contain these values.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name to search for the certificate in.
+    Defaults to 'My'.
+
+    .PARAMETER AllowExpired
+    Allows expired certificates to be returned.
+
 #>
-function New-InvalidOperationError
+function Find-Certificate
 {
     [CmdletBinding()]
+    [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2[]])]
     param
     (
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ErrorId,
+        [Parameter()]
+        [String]
+        $Thumbprint,
 
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ErrorMessage
+        [Parameter()]
+        [String]
+        $FriendlyName,
+
+        [Parameter()]
+        [String]
+        $Subject,
+
+        [Parameter()]
+        [String[]]
+        $DNSName,
+
+        [Parameter()]
+        [String]
+        $Issuer,
+
+        [Parameter()]
+        [String[]]
+        $KeyUsage,
+
+        [Parameter()]
+        [String[]]
+        $EnhancedKeyUsage,
+
+        [Parameter()]
+        [String]
+        $Store = 'My',
+
+        [Parameter()]
+        [Boolean]
+        $AllowExpired = $false
     )
 
-    $exception = New-Object -TypeName System.InvalidOperationException `
-        -ArgumentList $ErrorMessage
-    $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
-    $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord `
-        -ArgumentList $exception, $ErrorId, $errorCategory, $null
-    throw $errorRecord
-} # end function New-InvalidOperationError
+    $certPath = Join-Path -Path 'Cert:\LocalMachine' -ChildPath $Store
+
+    if (-not (Test-Path -Path $certPath))
+    {
+        # The Certificte Path is not valid
+        New-InvalidArgumentError `
+            -ErrorId 'CannotFindCertificatePath' `
+            -ErrorMessage ($LocalizedData.CertificatePathError -f $certPath)
+    } # if
+
+    # Assemble the filter to use to select the certificate
+    $certFilters = @()
+    if ($PSBoundParameters.ContainsKey('Thumbprint'))
+    {
+        $certFilters += @('($_.Thumbprint -eq $Thumbprint)')
+    } # if
+
+    if ($PSBoundParameters.ContainsKey('FriendlyName'))
+    {
+        $certFilters += @('($_.FriendlyName -eq $FriendlyName)')
+    } # if
+
+    if ($PSBoundParameters.ContainsKey('Subject'))
+    {
+        $certFilters += @('($_.Subject -eq $Subject)')
+    } # if
+
+    if ($PSBoundParameters.ContainsKey('Issuer'))
+    {
+        $certFilters += @('($_.Issuer -eq $Issuer)')
+    } # if
+
+    if (-not $AllowExpired)
+    {
+        $certFilters += @('(((Get-Date) -le $_.NotAfter) -and ((Get-Date) -ge $_.NotBefore))')
+    } # if
+
+    if ($PSBoundParameters.ContainsKey('DNSName'))
+    {
+        $certFilters += @('(@(Compare-Object -ReferenceObject $_.DNSNameList.Unicode -DifferenceObject $DNSName | Where-Object -Property SideIndicator -eq "=>").Count -eq 0)')
+    } # if
+
+    if ($PSBoundParameters.ContainsKey('KeyUsage'))
+    {
+        $certFilters += @('(@(Compare-Object -ReferenceObject ($_.Extensions.KeyUsages -split ", ") -DifferenceObject $KeyUsage | Where-Object -Property SideIndicator -eq "=>").Count -eq 0)')
+    } # if
+
+    if ($PSBoundParameters.ContainsKey('EnhancedKeyUsage'))
+    {
+        $certFilters += @('(@(Compare-Object -ReferenceObject ($_.EnhancedKeyUsageList.FriendlyName) -DifferenceObject $EnhancedKeyUsage | Where-Object -Property SideIndicator -eq "=>").Count -eq 0)')
+    } # if
+
+    # Join all the filters together
+    $certFilterScript = '(' + ($certFilters -join ' -and ') + ')'
+
+    Write-Verbose -Message ($LocalizedData.SearchingForCertificateUsingFilters `
+        -f $store,$certFilterScript)
+
+    $certs = Get-ChildItem -Path $certPath |
+        Where-Object -FilterScript ([ScriptBlock]::Create($certFilterScript))
+
+    # Sort the certificates
+    if ($certs.count -gt 1)
+    {
+        $certs = $certs | Sort-Object -Descending -Property 'NotAfter'
+    } # if
+
+    return $certs
+} # end function Find-Certificate
 
 <#
     .SYNOPSIS

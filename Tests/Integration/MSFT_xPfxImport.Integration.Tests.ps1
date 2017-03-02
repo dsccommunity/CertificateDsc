@@ -28,10 +28,10 @@ try
     # Don't use CurrentUser certificates for this test because they won't be found because
     # DSC LCM runs under a different context (Local System).
     $Certificate = New-SelfSignedCertificate `
-        -DnsName $ENV:ComputerName `
+        -DnsName $env:ComputerName `
         -CertStoreLocation Cert:\LocalMachine\My
     $CertificatePath = Join-Path `
-        -Path $ENV:Temp `
+        -Path $env:Temp `
         -ChildPath "xPfxImport-$($Certificate.Thumbprint).pfx"
     $testUsername = 'DummyUsername'
     $testPassword = 'DummyPassword'
@@ -50,7 +50,7 @@ try
 
     Describe "$($script:DSCResourceName)_Add_Integration" {
         #region DEFAULT TESTS
-        It 'Should compile without throwing' {
+        It 'Should compile and apply the MOF without throwing' {
             {
                 $configData = @{
                     AllNodes = @(
@@ -66,12 +66,13 @@ try
                     -Path $CertificatePath `
                     -Thumbprint $Certificate.Thumbprint `
                     -Credential $testCredential
+
                 Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-            } | Should not throw
+            } | Should Not Throw
         }
 
-        It 'should be able to call Get-DscConfiguration without throwing' {
-            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not throw
+        It 'Should be able to call Get-DscConfiguration without throwing' {
+            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
         }
         #endregion
 
@@ -98,12 +99,13 @@ try
                     -OutputPath $TestDrive `
                     -Path $CertificatePath `
                     -Thumbprint $Certificate.Thumbprint
+
                 Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-            } | Should not throw
+            } | Should Not Throw
         }
 
-        It 'should be able to call Get-DscConfiguration without throwing' {
-            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not throw
+        It 'Should be able to call Get-DscConfiguration without throwing' {
+            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
         }
         #endregion
 
