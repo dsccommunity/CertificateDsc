@@ -1,5 +1,5 @@
 # This will fail if the machine does not have a CA Configured.
-$CertUtilResult       = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
+$CertUtilResult       = & "$ENV:SystemRoot\system32\certutil.exe" @('-dump')
 $CAServerFQDN         = ([regex]::matches($CertUtilResult,'Server:[ \t]+`([A-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
 $CARootName           = ([regex]::matches($CertUtilResult,'Name:[ \t]+`([\sA-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
 $KeyLength            = '1024'
@@ -19,7 +19,7 @@ $TestCertReq = [PSObject]@{
     CARootName          = $CARootName
     Credential          = $Credential
     KeyLength           = $KeyLength
-    Exportable          = $($Exportable.ToString().ToUpper())
+    Exportable          = $Exportable
     ProviderName        = $ProviderName
     OID                 = $OID
     KeyUsage            = $KeyUsage
