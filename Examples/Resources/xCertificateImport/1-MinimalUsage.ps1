@@ -1,6 +1,16 @@
-# Import public key certificate into Trusted Root store.
-Configuration Sample_xCertificateImport_MinimalUsage
+<#
+    .EXAMPLE
+    Import public key certificate into Trusted Root store.
+#>
+Configuration Example
 {
+    param
+    (
+        [Parameter()]
+        [string[]]
+        $NodeName = 'localhost'
+    )
+
     Import-DscResource -ModuleName xCertificate
 
     Node $AllNodes.NodeName
@@ -14,9 +24,3 @@ Configuration Sample_xCertificateImport_MinimalUsage
         }
     }
 }
-Sample_xCertificateImport_MinimalUsage `
-    -OutputPath 'c:\Sample_xCertificateImport_MinimalUsage'
-Start-DscConfiguration -Wait -Force -Verbose -Path 'c:\Sample_xCertificateImport_MinimalUsage'
-
-# Validate results
-Get-ChildItem Cert:\LocalMachine\My
