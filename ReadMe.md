@@ -76,6 +76,13 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 
+- xCertReq:
+    - Fixing issue #42 (Error when requesting cerificate using $credential and error regarding single quotes around the $ca variable value):
+        - Removed single quotes in three lines (131, 281 and 592) around the $ca variable value.
+        - Added single quotes around the $ca variable in line 408 when requesting the certificate.
+        - Changed function WaitProcessEnd to function WaitProcessStop (line 424).
+        - Changed line 22 of the integration test (`Exportable = $($Exportable.ToString().ToUpper())` to `Exportable = $Exportable`), so the manual integration tests work.
+
 ### 2.4.0.0
 
 - Converted AppVeyor build process to use AppVeyor.psm1.
