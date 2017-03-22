@@ -13,4 +13,6 @@ class MSFT_xCertReq : OMI_BaseResource
     [Write, Description("The subject alternative name used to createthe certificate.")] String SubjectAltName;
     [Write, Description("The credentials that will be used to access the template in the Certificate Authority."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Write, Description("Determines if the resource will also renew a certificate within 7 days of expiration.")] Boolean AutoRenew;
+    [Write, Description("The URL to the Certification Enrollment Policy Service.")] String CepURL;
+    [Write, Description("The URL to the Certofication Enrollment Service.")] String CesURL;
 };
