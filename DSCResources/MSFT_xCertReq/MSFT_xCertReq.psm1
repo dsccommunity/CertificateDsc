@@ -400,20 +400,24 @@ RenewalCert = $Thumbprint
 
     # If enrollment server is specified the request will be towards
     # the specified URLs instead, using credentials for authentication.
+    Write-Verbose -Message "CEP - $CepURL"
+    Write-Verbose -Message "CES - $CesURL"
     if ($Credential -and $CepURL -and $CesURL)
     {
+        Write-Verbose -Message "With credentials"
         $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
         $createRequest = & certreq.exe @(
-            '-new', '-q',
-            '-username', $Credential.UserName,
-            '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW),
-            '-PolicyServer', $CepURL,
-            '-config', $CesURL,                      
+            '-new', '-q', 
+            '-username', $Credential.UserName, 
+            '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW), 
+            '-PolicyServer', $CepURL, 
+            '-config', $CesURL, 
             $infPath, 
             $reqPath
         )
     }
     else {
+        Write-Verbose -Message "Without credentials"
         $createRequest = & certreq.exe @('-new','-q',$infPath,$reqPath)
     } # if
 
