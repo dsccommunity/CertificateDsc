@@ -338,16 +338,16 @@ function Find-CertificateAuthority
     {
         if (-not $DomainName)
         {
-            $DomainName = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().GetDirectoryEntry().distinguishedName
+            $configContext = ([ADSI]"LDAP://RootDSE").configurationNamingContext
         }
         else
         {
             $ctx = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
-            $DomainName = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName
+            $configContext = "CN=Configuration,$([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName)"
         }
 
-        Write-Verbose -Message "Using the following container to look for CA candidates: 'LDAP://CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,$DomainName'"
-        $cdpContainer = [ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,$DomainName"
+        Write-Verbose -Message "Using the following container to look for CA candidates: 'LDAP://CN=CDP,CN=Public Key Services,CN=Services,$configContext'"
+        $cdpContainer = [ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,$configContext"
     }
     catch
     {
@@ -403,7 +403,7 @@ function Find-CertificateAuthority
     }
     else
     {
-        Write-Error "No Certificate Authority could be found in domain '$DomainName'"
+        Write-Error "No Certificate Authority could be found in Configuration Naming Context '$configContext"
     }
 } # end function Find-CertificateAuthority
 
