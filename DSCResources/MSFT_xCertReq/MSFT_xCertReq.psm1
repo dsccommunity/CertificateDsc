@@ -61,13 +61,11 @@ function Get-TargetResource
         [System.String]
         $Subject,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CAServerFQDN,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CARootName,
 
@@ -115,7 +113,15 @@ function Get-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "'$CAServerFQDN\$CARootName'"
+    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    {
+        $caObject = Find-CertificateAuthority
+        $ca = "'$($ca.CAServerFQDN)\$($ca.CARootName)'"
+    }
+    else 
+    {
+        $ca = "'$CAServerFQDN\$CARootName'"   
+    }
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -211,13 +217,11 @@ function Set-TargetResource
         [System.String]
         $Subject,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CAServerFQDN,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CARootName,
 
@@ -265,7 +269,15 @@ function Set-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "'$CAServerFQDN\$CARootName'"
+    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    {
+        $caObject = Find-CertificateAuthority
+        $ca = "'$($ca.CAServerFQDN)\$($ca.CARootName)'"
+    }
+    else 
+    {
+        $ca = "'$CAServerFQDN\$CARootName'"   
+    }
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -520,13 +532,11 @@ function Test-TargetResource
         [System.String]
         $Subject,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CAServerFQDN,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CARootName,
 
@@ -574,7 +584,15 @@ function Test-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "'$CAServerFQDN\$CARootName'"
+    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    {
+        $caObject = Find-CertificateAuthority
+        $ca = "'$($ca.CAServerFQDN)\$($ca.CARootName)'"
+    }
+    else 
+    {
+        $ca = "'$CAServerFQDN\$CARootName'"   
+    }
 
     # If the Subject does not contain a full X500 path, construct just the CN
     if (($Subject.split('=').count) -eq 1)
