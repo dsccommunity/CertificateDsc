@@ -23,8 +23,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ### xCertReq
 
 - **`[String]` Subject**: Provide the text string to use as the subject of the certificate. Key.
-- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Required.
-- **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Required.
+- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Leave empty to auto-discover in an Active Directory environment.
+- **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Leave empty to auto-discover in an Active Directory environment.
 - **`[String]` KeyLength**: The bit length of the encryption key to be used. Optional. { *1024* | 2048 | 4096 | 8192 }.
 - **`[Boolean]` Exportable**: The option to allow the certificate to be exportable, by default it will be true. Optional. Defaults to `$true`.
 - **`[String]` ProviderName**: The selection of provider for the type of encryption to be used. Optional. Defaults to `"Microsoft RSA SChannel Cryptographic Provider"`.
@@ -75,6 +75,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+- Added Certificate Authority auto-discovery to resource xCertReq.
 
 ### 2.4.0.0
 
