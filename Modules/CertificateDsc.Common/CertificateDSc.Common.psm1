@@ -316,6 +316,98 @@ function Find-Certificate
 } # end function Find-Certificate
 
 <#
+.SYNOPSIS
+    Automatically locate a certificate authority in Active Directory
+.DESCRIPTION
+    Automatically locates a certificate autority in Active Directory environments by leveraging ADSI to look inside the container CDP and
+    subsequently trying to certutil -ping every located CA until one is found.
+.PARAMETER DomainName
+    The domain name of the domain that will be used to locate the CA. Can be left empty to use the current domain.
+#>
+function Find-CertificateAuthority
+{
+    [cmdletBinding()]
+    [OutputType([psobject])]
+    param(
+        [Parameter()]
+        [String]
+        $DomainName
+    )
+    
+    try
+    {
+        if (-not $DomainName)
+        {
+            $DomainName = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().GetDirectoryEntry().distinguishedName
+        }
+        else
+        {
+            $ctx = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
+            $DomainName = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName
+        }
+
+        Write-Verbose -Message "Using the following container to look for CA candidates: 'LDAP://CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,$DomainName'"
+        $cdpContainer = [ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,$DomainName"
+    }
+    catch
+    {
+        Write-Error "The domain '$DomainName' could not be contacted" -TargetObject $DomainName
+        return
+    }
+                
+    $caFound = $false
+    foreach ($item in $cdpContainer.Children)
+    {        
+        if (-not $caFound)
+        {            
+            $machine = ($item.distinguishedName -split '=|,')[1]
+            $caName = ($item.Children.distinguishedName -split '=|,')[1]
+            
+            $certificateAuthority = [psobject]@{
+                CARootName = $caName
+                CAServerFQDN = $machine
+            }
+
+            Write-Verbose -Message "Trying to certutil -ping $machine\$caName"
+                        
+            $locatorInfo = New-Object System.Diagnostics.ProcessStartInfo
+            $locatorInfo.FileName = 'certutil.exe'
+            $locatorInfo.Arguments = "-ping $machine\$caName"
+
+            # Certutil does not make use of standard error stream
+            $locatorInfo.RedirectStandardError = $false
+            $locatorInfo.RedirectStandardOutput = $true
+            $locatorInfo.UseShellExecute = $false
+            $locatorInfo.CreateNoWindow = $true
+
+            $locatorProcess = New-Object System.Diagnostics.Process
+            $locatorProcess.StartInfo = $locatorInfo
+
+            $null = $locatorProcess.Start()
+            $locatorOut = $locatorProcess.StandardOutput.ReadToEnd()
+            $null = $locatorProcess.WaitForExit()
+
+            Write-Verbose -Message ('certutil exited with code {0} and the following output:`r`n{1}' -f $locatorProcess.ExitCode, $locatorOut)
+            
+            if ($locatorProcess.ExitCode -eq 0 )
+            {
+                $caFound = $true
+            }
+        }
+    }
+    
+    if ($caFound)
+    {
+        Write-Verbose -Message ('Found certificate authority {0}\{1}' -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName)
+        $certificateAuthority
+    }
+    else
+    {
+        Write-Error "No Certificate Authority could be found in domain '$DomainName'"
+    }
+} # end function Find-CertificateAuthority
+
+<#
     .SYNOPSIS
     Throws an InvalidArgument custom exception.
 
