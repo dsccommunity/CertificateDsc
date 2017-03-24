@@ -34,6 +34,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` SubjectAltName** The subject alternative name used to createthe certificate. Optional.
 - **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
 - **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
+- **`[Boolean]` UseMachineContext**:  Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication. Optional.
 
 ### xPfxImport
 
@@ -75,7 +76,15 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
-- Added Certificate Authority auto-discovery to resource xCertReq.
+
+- xCertReq:
+  - Added Certificate Authority auto-discovery to resource xCertReq.
+  - Added SAN and certificate template name to xCertReq's Get-TargetResource
+  - Added new parameter UseMachineContext to be able to use CA templates that try to fill the subject alternative name
+- CertificateDSc.Common:
+  - Added function Get-CertificateTemplateName to retrieve template name
+  - Added function Get-CertificateSan to retrieve subject alternative name
+  - Added function Find-CertificateAuthority to enable auto-discovery
 
 ### 2.4.0.0
 
