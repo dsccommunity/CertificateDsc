@@ -113,7 +113,6 @@ function Get-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    # The certificate authority, accessible on the local area network
     if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
@@ -156,7 +155,7 @@ function Get-TargetResource
             OID                  = $null # This value can't be determined from the cert
             KeyUsage             = $null # This value can't be determined from the cert
             CertificateTemplate  = Get-CertificateTemplateName -Certificate $Cert
-            SubjectAltName       = $null # This value can't be determined from the cert
+            SubjectAltName       = Get-CertificateSan -Certificate $Cert
         }
     }
     else
@@ -582,7 +581,6 @@ function Test-TargetResource
         $AutoRenew
     )
 
-    # The certificate authority, accessible on the local area network
     # The certificate authority, accessible on the local area network
     if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
