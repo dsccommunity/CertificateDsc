@@ -407,6 +407,47 @@ function Find-CertificateAuthority
     }
 } # end function Find-CertificateAuthority
 
+Get-CertificateTemplateName
+{
+    [cmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        # The certificate for which a template is needed
+        [Parameter(Mandatory)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]
+        $Certificate
+    )
+
+    # Test the different OIDs
+    if ("1.3.6.1.4.1.311.21.7" -in $Certificate.Extensions.oid.Value)
+    {
+        $temp = $Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.21.7"}
+        $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
+        $TemplateName = $Matches.TemplateName
+    }
+
+    if ("1.3.6.1.4.1.311.20.2" -in $Certificate.Extensions.oid.Value)
+    {
+        $TemplateName = ($Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.20.2"}).Format(0)        
+    }
+
+    $TemplateName
+}
+
+Get-CertificateSan
+{
+    [cmdletBinding()]
+    [OutputType([System.String[]])]
+    param
+    (
+        # The certificate for which the subject alternative names are needed
+        [Parameter(Mandatory)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]
+        $Certificate
+    )
+}
+
 <#
     .SYNOPSIS
     Throws an InvalidArgument custom exception.
