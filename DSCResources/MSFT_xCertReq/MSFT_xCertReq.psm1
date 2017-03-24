@@ -117,8 +117,8 @@ function Get-TargetResource
     if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
-        $CARootName = $ca.CARootName
-        $CAServerFQDN = $ca.CAServerFQDN
+        $CARootName = $caObject.CARootName
+        $CAServerFQDN = $caObject.CAServerFQDN
     }
     
     $ca = "'$CAServerFQDN\$CARootName'"
@@ -272,8 +272,8 @@ function Set-TargetResource
     if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
-        $CARootName = $ca.CARootName
-        $CAServerFQDN = $ca.CAServerFQDN
+        $CARootName = $caObject.CARootName
+        $CAServerFQDN = $caObject.CAServerFQDN
     }
     
     $ca = "'$CAServerFQDN\$CARootName'"
@@ -587,8 +587,8 @@ function Test-TargetResource
     if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
-        $CARootName = $ca.CARootName
-        $CAServerFQDN = $ca.CAServerFQDN
+        $CARootName = $caObject.CARootName
+        $CAServerFQDN = $caObject.CAServerFQDN
     }
     
     $ca = "'$CAServerFQDN\$CARootName'"
