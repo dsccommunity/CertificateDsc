@@ -535,10 +535,10 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Import-Module
 
                 function Start-Win32Process { param ( $Path,$Arguments,$Credential ) }
-                function Wait-Win32ProcessEnd { param ( $Path,$Arguments,$Credential ) }
+                function Wait-Win32ProcessStop { param ( $Path,$Arguments,$Credential ) }
 
                 Mock -CommandName Start-Win32Process -ModuleName MSFT_xCertReq
-                Mock -CommandName Wait-Win32ProcessEnd -ModuleName MSFT_xCertReq
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq
 
                 It 'should not throw' {
                     { Set-TargetResource @Params } | Should Not Throw
@@ -557,7 +557,7 @@ RenewalCert = $validThumbprint
                         }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
                     Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_xCertReq -Exactly 1
-                    Assert-MockCalled -CommandName Wait-Win32ProcessEnd -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq -Exactly 1
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
                         -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
                     Assert-MockCalled -CommandName Get-Content -Exactly 1 `
