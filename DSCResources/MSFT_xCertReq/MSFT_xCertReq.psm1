@@ -272,12 +272,12 @@ function Set-TargetResource
     if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
-        $ca = "'$($ca.CAServerFQDN)\$($ca.CARootName)'"
+        $CARootName = $ca.CARootName
+        $CAServerFQDN = $ca.CAServerFQDN
+        
     }
-    else 
-    {
-        $ca = "'$CAServerFQDN\$CARootName'"   
-    }
+    
+    $ca = "'$CAServerFQDN\$CARootName'"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
