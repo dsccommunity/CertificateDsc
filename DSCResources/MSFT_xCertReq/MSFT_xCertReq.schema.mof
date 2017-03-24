@@ -13,4 +13,5 @@ class MSFT_xCertReq : OMI_BaseResource
     [Write, Description("The subject alternative name used to createthe certificate.")] String SubjectAltName;
     [Write, Description("The credentials that will be used to access the template in the Certificate Authority."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Write, Description("Determines if the resource will also renew a certificate within 7 days of expiration.")] Boolean AutoRenew;
+    [Write, Description("Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication")] Boolean UseMachineContext;
 };

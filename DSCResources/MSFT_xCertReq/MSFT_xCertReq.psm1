@@ -109,7 +109,11 @@ function Get-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $AutoRenew
+        $AutoRenew,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext
     )
 
     # The certificate authority, accessible on the local area network
@@ -120,7 +124,7 @@ function Get-TargetResource
         $CAServerFQDN = $caObject.CAServerFQDN
     }
     
-    $ca = "'$CAServerFQDN\$CARootName'"
+    $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -264,7 +268,11 @@ function Set-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $AutoRenew
+        $AutoRenew,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext
     )
 
     # The certificate authority, accessible on the local area network
@@ -275,7 +283,7 @@ function Set-TargetResource
         $CAServerFQDN = $caObject.CAServerFQDN
     }
     
-    $ca = "'$CAServerFQDN\$CARootName'"
+    $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -399,9 +407,19 @@ RenewalCert = $Thumbprint
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
             $command = "$PSHOME\PowerShell.exe"
-            $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
-                " @('-submit','-q','-config',$ca,'$reqPath','$cerPath')" + `
+            if($UseMachineContext)
+            {
+                $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
+                " @('-submit','-q','-adminforcemachine','-config','$ca','$reqPath','$cerPath')" + `
                 " | Set-Content -Path '$certReqOutPath'"""
+            }
+            else
+            {
+                $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
+                " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
+                " | Set-Content -Path '$certReqOutPath'"""
+            }
+            
 
             # This may output a win32-process object, but it often does not because of
             # a timing issue in PDT (the process has often completed before the
@@ -578,7 +596,11 @@ function Test-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $AutoRenew
+        $AutoRenew,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext
     )
 
     # The certificate authority, accessible on the local area network
@@ -589,7 +611,7 @@ function Test-TargetResource
         $CAServerFQDN = $caObject.CAServerFQDN
     }
     
-    $ca = "'$CAServerFQDN\$CARootName'"
+    $ca = "$CAServerFQDN\$CARootName"
 
     # If the Subject does not contain a full X500 path, construct just the CN
     if (($Subject.split('=').count) -eq 1)
