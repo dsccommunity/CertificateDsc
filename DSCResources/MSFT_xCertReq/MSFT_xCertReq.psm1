@@ -434,7 +434,7 @@ RenewalCert = $Thumbprint
                 $($LocalizedData.SubmittingRequestProcessCertificateMessage)
             ) -join '' )
 
-            $null = Wait-Win32ProcessEnd `
+            $null = Wait-Win32ProcessStop `
                 -Path $command `
                 -Arguments $arguments `
                 -Credential $Credential

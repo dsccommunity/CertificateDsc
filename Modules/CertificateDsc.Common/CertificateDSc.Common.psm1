@@ -346,12 +346,13 @@ function Find-CertificateAuthority
             $configContext = "CN=Configuration,$([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName)"
         }
 
-        Write-Verbose -Message "Using the following container to look for CA candidates: 'LDAP://CN=CDP,CN=Public Key Services,CN=Services,$configContext'"
+        Write-Verbose -Message ($LocalizedData.ConfigurationNamingContext `
+        -f $configContext)
         $cdpContainer = [ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,$configContext"
     }
     catch
     {
-        Write-Error "The domain '$DomainName' could not be contacted" -TargetObject $DomainName
+        Write-Error -Message ($LocalizedData.DomainContactError -f $DomainName) -TargetObject $DomainName
         return
     }
                 
@@ -367,8 +368,6 @@ function Find-CertificateAuthority
                 CARootName = $caName
                 CAServerFQDN = $machine
             }
-
-            Write-Verbose -Message "Trying to certutil -ping $machine\$caName"
                         
             $locatorInfo = New-Object System.Diagnostics.ProcessStartInfo
             $locatorInfo.FileName = 'certutil.exe'
@@ -387,7 +386,7 @@ function Find-CertificateAuthority
             $locatorOut = $locatorProcess.StandardOutput.ReadToEnd()
             $null = $locatorProcess.WaitForExit()
 
-            Write-Verbose -Message ('certutil exited with code {0} and the following output:`r`n{1}' -f $locatorProcess.ExitCode, $locatorOut)
+            Write-Verbose -Message ($LocalizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut)
             
             if ($locatorProcess.ExitCode -eq 0 )
             {
@@ -398,12 +397,12 @@ function Find-CertificateAuthority
     
     if ($caFound)
     {
-        Write-Verbose -Message ('Found certificate authority {0}\{1}' -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName)
+        Write-Verbose -Message ($LocalizedData.CaFoundMessage -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName)
         $certificateAuthority
     }
     else
     {
-        Write-Error "No Certificate Authority could be found in Configuration Naming Context '$configContext"
+        Write-Error -Message ($LocalizedData.NoCaFoundError -f $configContext) -TargetObject $configContext
     }
 } # end function Find-CertificateAuthority
 
