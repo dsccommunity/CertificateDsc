@@ -624,11 +624,21 @@ function Test-TargetResource
             $($LocalizedData.TestingCertReqStatusMessage -f $Subject,$ca)
         ) -join '' )
 
+    # Exception for standard template DomainControllerAuthentication
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
             $_.Subject -eq $Subject -and `
             $_.Issuer.split(',')[0] -eq "CN=$CARootName"
         }
+
+    if ($CertificateTemplate -eq 'DomainControllerAuthentication')
+    {
+        $cert = Get-Childitem -Path Cert:\LocalMachine\My |
+        Where-Object -FilterScript {
+            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+            $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+        }
+    }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $cert = $cert |

@@ -426,7 +426,7 @@ function Get-CertificateTemplateName
         $Certificate
     )
 
-    if($Certificate.GetType().Name -ne 'System.Security.Cryptography.X509Certificates.X509Certificate2')
+    if($Certificate.GetType().Name -ne 'X509Certificate2')
     {
         return
     }
@@ -436,7 +436,7 @@ function Get-CertificateTemplateName
     {
         $temp = $Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.21.7"}
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
-        $TemplateName = $Matches.TemplateName
+        $TemplateName = $Matches.TemplateName -replace ' '
     }
 
     if ("1.3.6.1.4.1.311.20.2" -in $Certificate.Extensions.oid.Value)
