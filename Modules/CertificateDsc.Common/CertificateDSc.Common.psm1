@@ -407,7 +407,15 @@ function Find-CertificateAuthority
     }
 } # end function Find-CertificateAuthority
 
-Get-CertificateTemplateName
+<#
+.SYNOPSIS
+    Get a certificate template name
+.DESCRIPTION
+    Gets the name of the template used for the certificate that is passed to this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or "1.3.6.1.4.1.311.20.2"
+.PARAMETER Certificate
+    The certificate object the template name is needed for
+#>
+function Get-CertificateTemplateName
 {
     [cmdletBinding()]
     [OutputType([System.String])]
@@ -435,7 +443,15 @@ Get-CertificateTemplateName
     $TemplateName
 }
 
-Get-CertificateSan
+<#
+.SYNOPSIS
+    Get certificate SANs
+.DESCRIPTION
+    Gets the subject alternative names for the certificate that is passed to this cmdlet
+.PARAMETER Certificate
+    The certificate object the subject alternative name is needed for
+#>
+function Get-CertificateSan
 {
     [cmdletBinding()]
     [OutputType([System.String[]])]
