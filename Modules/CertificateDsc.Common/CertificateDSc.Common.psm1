@@ -423,9 +423,14 @@ function Get-CertificateTemplateName
     (
         # The certificate for which a template is needed
         [Parameter(Mandatory)]
-        [System.Security.Cryptography.X509Certificates.X509Certificate2]
+        [object]
         $Certificate
     )
+
+    if($Certificate.GetType().Name -ne 'System.Security.Cryptography.X509Certificates.X509Certificate2')
+    {
+        return
+    }
 
     # Test the different OIDs
     if ("1.3.6.1.4.1.311.21.7" -in $Certificate.Extensions.oid.Value)
@@ -445,43 +450,43 @@ function Get-CertificateTemplateName
 
 <#
 .SYNOPSIS
-    Get certificate SANs
+    Get certificate SAN
 .DESCRIPTION
-    Gets the subject alternative names for the certificate that is passed to this cmdlet
+    Gets the first subject alternative name for the certificate that is passed to this cmdlet
 .PARAMETER Certificate
     The certificate object the subject alternative name is needed for
 #>
 function Get-CertificateSan
 {
     [cmdletBinding()]
-    [OutputType([System.String[]])]
+    [OutputType([System.String])]
     param
     (
         # The certificate for which the subject alternative names are needed
         [Parameter(Mandatory)]
-        [System.Security.Cryptography.X509Certificates.X509Certificate2]
+        [object]
         $Certificate
     )
 
-    $subjectAlternativeNames = @()
+    if ($Certificate.GetType().Name -ne 'System.Security.Cryptography.X509Certificates.X509Certificate2')
+    {
+        return
+    }
+    
+    $subjectAlternativeName = [string]::Empty
     
     $sanExtension = $Certificate.Extensions | Where-Object {$_.Oid.FriendlyName -match "subject alternative name"}
     
     if($null -eq $sanExtension)
     {
-        return $subjectAlternativeNames
+        return $subjectAlternativeName
     }
 
-    $sanObjects = new-object -ComObject X509Enrollment.CX509ExtensionAlternativeNames            
+    $sanObjects = New-Object -ComObject X509Enrollment.CX509ExtensionAlternativeNames            
     $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)            
     $sanObjects.InitializeDecode(1, $altNamesStr)
 
-    foreach ($SAN in $sanObjects.AlternativeNames)
-    {
-        $subjectAlternativeNames += $SAN.strValue
-    }
-
-    $subjectAlternativeNames
+    $SAN.AlternativeNames[0].strValue
 }
 
 <#

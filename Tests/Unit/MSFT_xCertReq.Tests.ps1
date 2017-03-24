@@ -260,6 +260,8 @@ RenewalCert = $validThumbprint
         Describe "$DSCResourceName\Get-TargetResource" {
             Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                 -Mockwith { $validCert }
+            Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
+            Mock Get-CertificateSan -MockWith { $SubjectAltName }
             $result = Get-TargetResource @Params
             It 'should return a hashtable' {
                 ($result -is [hashtable]) | Should Be $true
@@ -273,7 +275,7 @@ RenewalCert = $validThumbprint
                 $result.ProviderName         | Should BeNullOrEmpty
                 $result.OID                  | Should BeNullOrEmpty
                 $result.KeyUsage             | Should BeNullOrEmpty
-                $result.CertificateTemplate  | Should BeNullOrEmpty
+                $result.CertificateTemplate  | Should BeExactly $CertificateTemplate
                 $result.SubjectAltName       | Should BeNullOrEmpty
             }
         }
@@ -610,11 +612,15 @@ RenewalCert = $validThumbprint
             It 'should return true when a valid certificate already exists and is not about to expire' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $validCert }
+                Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
+                Mock Get-CertificateSan -MockWith { $SubjectAltName }
                 Test-TargetResource @Params | Should Be $true
             }
             It 'should return true when a valid certificate already exists and is about to expire and autorenew set' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $expiringCert }
+                Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
+                Mock Get-CertificateSan -MockWith { $SubjectAltName }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true
             }
         }
