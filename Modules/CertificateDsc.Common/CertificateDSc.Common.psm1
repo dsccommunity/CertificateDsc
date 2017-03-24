@@ -465,7 +465,13 @@ function Get-CertificateSan
 
     $subjectAlternativeNames = @()
     
-    $sanExtension = $Certificate.Extensions | Where-Object {$_.Oid.FriendlyName -match "subject alternative name"}            
+    $sanExtension = $Certificate.Extensions | Where-Object {$_.Oid.FriendlyName -match "subject alternative name"}
+    
+    if($null -eq $sanExtension)
+    {
+        return $subjectAlternativeNames
+    }
+
     $sanObjects = new-object -ComObject X509Enrollment.CX509ExtensionAlternativeNames            
     $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)            
     $sanObjects.InitializeDecode(1, $altNamesStr)
