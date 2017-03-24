@@ -151,11 +151,11 @@ function Get-TargetResource
             CAServerFQDN         = $null # This value can't be determined from the cert
             CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
             KeyLength            = $Cert.Publickey.Key.KeySize
-            Exportable           = $null # This value can't be determined from the cert
-            ProviderName         = $null # This value can't be determined from the cert
+            Exportable           = $Cert.PrivateKey.CspKeyContainerInfo.Exportable
+            ProviderName         = $Cert.PrivateKey.CspKeyContainerInfo.ProviderName
             OID                  = $null # This value can't be determined from the cert
             KeyUsage             = $null # This value can't be determined from the cert
-            CertificateTemplate  = $null # This value can't be determined from the cert
+            CertificateTemplate  = Get-CertificateTemplateName -Certificate $Cert
             SubjectAltName       = $null # This value can't be determined from the cert
         }
     }
@@ -644,6 +644,15 @@ function Test-TargetResource
                     ) -join '' )
                 return $false
             } # if
+        } # if
+
+        if ($CertificateTemplate -ne (Get-CertificateTemplateName -Certificate $cert))
+        {
+            Write-Verbose -Message ( @(
+                        "$($MyInvocation.MyCommand): "
+                        $($LocalizedData.CertTemplateMismatch -f $Subject,$ca,$cert.Thumbprint,(Get-CertificateTemplateName -Certificate $cert))
+                    ) -join '' )
+            return $false
         } # if
 
         # The certificate was found and is OK - so no change required.
