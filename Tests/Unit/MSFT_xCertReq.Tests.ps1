@@ -537,7 +537,7 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Import-Module
 
                 function Start-Win32Process { param ( $Path,$Arguments,$Credential ) }
-                function Wait-Win32ProcessEnd { param ( $Path,$Arguments,$Credential ) }
+                function Wait-Win32ProcessStop { param ( $Path,$Arguments,$Credential ) }
 
                 Mock -CommandName Start-Win32Process -ModuleName MSFT_xCertReq
                 Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq

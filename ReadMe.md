@@ -86,6 +86,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Added function Get-CertificateSan to retrieve subject alternative name
   - Added function Find-CertificateAuthority to enable auto-discovery
 
+- Fixed issue where xCertReq does not process requested certificate when credentials parameter set and PSDscRunAsCredential not passed. See [issue](https://github.com/PowerShell/xCertificate/issues/49)
+
 ### 2.4.0.0
 
 - Converted AppVeyor build process to use AppVeyor.psm1.
