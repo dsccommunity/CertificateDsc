@@ -634,10 +634,10 @@ function Test-TargetResource
     if ($CertificateTemplate -eq 'DomainControllerAuthentication')
     {
         $cert = Get-Childitem -Path Cert:\LocalMachine\My |
-        Where-Object -FilterScript {
-            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
-            $_.Issuer.split(',')[0] -eq "CN=$CARootName"
-        }
+            Where-Object -FilterScript {
+                (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+                $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+            }
     }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest

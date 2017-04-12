@@ -338,21 +338,20 @@ function Find-CertificateAuthority
     {
         if (-not $DomainName)
         {
-            $configContext = ([ADSI]"LDAP://RootDSE").configurationNamingContext
+            $configContext = ([ADSI]'LDAP://RootDSE').configurationNamingContext
         }
         else
         {
-            $ctx = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
-            $configContext = "CN=Configuration,$([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName)"
+            $ctx = New-Object -TypeName System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
+            $configContext = 'CN=Configuration,{0}' -f ([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName)
         }
 
-        Write-Verbose -Message ($LocalizedData.ConfigurationNamingContext `
-        -f $configContext)
-        $cdpContainer = [ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,$configContext"
+        Write-Verbose -Message ($LocalizedData.ConfigurationNamingContext -f $configContext)
+        $cdpContainer = [ADSI]('LDAP://CN=CDP,CN=Public Key Services,CN=Services,{0}' -f $configContext)
     }
     catch
     {
-        Write-Error -Message ($LocalizedData.DomainContactError -f $DomainName) -TargetObject $DomainName
+        Write-Error -Message ($LocalizedData.DomainContactError -f $DomainName, $PSItem.Exception.Message) -TargetObject $DomainName
         return
     }
                 
@@ -369,7 +368,7 @@ function Find-CertificateAuthority
                 CAServerFQDN = $machine
             }
                         
-            $locatorInfo = New-Object System.Diagnostics.ProcessStartInfo
+            $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
             $locatorInfo.FileName = 'certutil.exe'
             $locatorInfo.Arguments = "-ping $machine\$caName"
 
@@ -379,7 +378,7 @@ function Find-CertificateAuthority
             $locatorInfo.UseShellExecute = $false
             $locatorInfo.CreateNoWindow = $true
 
-            $locatorProcess = New-Object System.Diagnostics.Process
+            $locatorProcess = New-Object -TypeName System.Diagnostics.Process
             $locatorProcess.StartInfo = $locatorInfo
 
             $null = $locatorProcess.Start()
@@ -398,7 +397,7 @@ function Find-CertificateAuthority
     if ($caFound)
     {
         Write-Verbose -Message ($LocalizedData.CaFoundMessage -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName)
-        $certificateAuthority
+        return $certificateAuthority
     }
     else
     {
@@ -426,7 +425,7 @@ function Get-CertificateTemplateName
         $Certificate
     )
 
-    if($Certificate.GetType().Name -ne 'X509Certificate2')
+    if($Certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2])
     {
         return
     }
@@ -436,15 +435,15 @@ function Get-CertificateTemplateName
     {
         $temp = $Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.21.7"}
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
-        $TemplateName = $Matches.TemplateName -replace ' '
+        $templateName = $Matches.TemplateName -replace ' '
     }
 
     if ("1.3.6.1.4.1.311.20.2" -in $Certificate.Extensions.oid.Value)
     {
-        $TemplateName = ($Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.20.2"}).Format(0)        
+        $templateName = ($Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.20.2"}).Format(0)        
     }
 
-    $TemplateName
+    return $templateName
 }
 
 <#
@@ -485,7 +484,7 @@ function Get-CertificateSan
     $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)            
     $sanObjects.InitializeDecode(1, $altNamesStr)
 
-    $SAN.AlternativeNames[0].strValue
+    return $SAN.AlternativeNames[0].strValue
 }
 
 <#
