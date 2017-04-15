@@ -445,11 +445,11 @@ if(-not (Test-CommandExists -command "Import-PfxCertificate"))
          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
          [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
          
-         $Flags = [Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+         $Flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
    
          if($Exportable)
          {
-             $Flags = $Flags -bor [Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+             $Flags = $Flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
 
          }
          if($Password)
