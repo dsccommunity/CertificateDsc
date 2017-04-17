@@ -610,9 +610,7 @@ try
                         Source      = "PKI"
                     }
                 }
-                
-                Import-Module -Name $global:modulePath -Force
-
+               
                 It 'should return true' {
                     (Test-CommandExists -command "Import-Certificate") | Should Be $true
                     (Test-CommandExists -command "Import-PfxCertificate") | Should Be $true
@@ -628,12 +626,19 @@ try
                 Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-PfxCertificate" } -MockWith { 
                     throw "The term 'Import-PfxCertificate' is not recognized as the name of a cmdlet, function..."
                 }
-                
-                Import-Module -Name $global:modulePath -Force
-
-                It 'should return false' {
+               
+                It 'import-certificate should return false' {
+                   
                     (Test-CommandExists -command "Import-Certificate") | Should Be $false
+                }   
+                It 'should call relevant mocks' {
+                    Assert-MockCalled -CommandName Get-Command -Times 1
+                }
+                It 'import-pfxcertificate should return false' {
                     (Test-CommandExists -command "Import-PfxCertificate") | Should Be $false
+                }
+                It 'should call relevant mocks' {
+                              Assert-MockCalled -CommandName Get-Command -Times 1
                 }
             }
         }
