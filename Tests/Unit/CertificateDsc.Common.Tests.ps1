@@ -587,6 +587,49 @@ try
                 }
             }
         }
+
+        Describe "$DSCResourceName\Test-CommandExists" {
+             
+            Context 'Import-Certificate Cmdlet is available' {   
+                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-Certificate"} -MockWith { 
+                    return @{
+                        CommandType = [System.Management.Automation.CommandTypes]::Cmdlet
+                        Name        = "Import-Certificate"
+                        Version     = "1.0.0.0"
+                        Source      = "PKI"
+                    }
+                }
+                
+                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-PfxCertificate"} -MockWith { 
+                       return @{
+                        CommandType = [System.Management.Automation.CommandTypes]::Cmdlet
+                        Name        = "Import-PfxCertificate"
+                        Version     = "1.0.0.0"
+                        Source      = "PKI"
+                    }
+                }
+                It 'should return true' {
+                    (Test-CommandExists -command "Import-Certificate") | Should Be $true
+                    (Test-CommandExists -command "Import-PfxCertificate") | Should Be $true
+                }
+            }
+
+
+            Context "Import-Certificate Cmdlet is not available" {
+                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-Certificate" } -MockWith { 
+                    throw "The term 'Import-Certificate' is not recognized as the name of a cmdlet, function..."
+                }
+                
+                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-PfxCertificate" } -MockWith { 
+                    throw "The term 'Import-PfxCertificate' is not recognized as the name of a cmdlet, function..."
+                }
+
+                It 'should return false' {
+                    (Test-CommandExists -command "Import-Certificate") | Should Be $false
+                    (Test-CommandExists -command "Import-PfxCertificate") | Should Be $false
+                }
+            }
+        }
     }
 }
 finally
