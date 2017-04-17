@@ -402,7 +402,7 @@ RenewalCert = $Thumbprint
     # the specified URLs instead, using credentials for authentication.
     Write-Verbose -Message "CEP - $CepURL"
     Write-Verbose -Message "CES - $CesURL"
-    if ($Credential -and $CepURL -and $CesURL)
+    if ($Credential -and $CepURL.length -and $CesURL.length)
     {
         Write-Verbose -Message "With credentials"
         $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
