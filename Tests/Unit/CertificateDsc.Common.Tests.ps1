@@ -9,6 +9,8 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
     & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
+$global:modulePath = (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'Modules' -ChildPath $script:ModuleName)) -ChildPath "$script:ModuleName.psm1")
+
 Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 Import-Module -Name (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'Modules' -ChildPath $script:ModuleName)) -ChildPath "$script:ModuleName.psm1") -Force
 Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global
@@ -608,6 +610,9 @@ try
                         Source      = "PKI"
                     }
                 }
+                
+                Import-Module -Name $global:modulePath -Force
+
                 It 'should return true' {
                     (Test-CommandExists -command "Import-Certificate") | Should Be $true
                     (Test-CommandExists -command "Import-PfxCertificate") | Should Be $true
@@ -623,6 +628,8 @@ try
                 Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-PfxCertificate" } -MockWith { 
                     throw "The term 'Import-PfxCertificate' is not recognized as the name of a cmdlet, function..."
                 }
+                
+                Import-Module -Name $global:modulePath -Force
 
                 It 'should return false' {
                     (Test-CommandExists -command "Import-Certificate") | Should Be $false
