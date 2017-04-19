@@ -140,7 +140,7 @@ function Get-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "'$CAServerFQDN\$CARootName'"
+    $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -314,7 +314,7 @@ function Set-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "'$CAServerFQDN\$CARootName'"
+    $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -484,7 +484,7 @@ RenewalCert = $Thumbprint
                 $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
                 $command = "$PSHOME\PowerShell.exe"
                 $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
-                    " @('-submit','-q','-config',$ca,'$reqPath','$cerPath')" + `
+                    " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
                     " | Set-Content -Path '$certReqOutPath'"""
 
                 # This may output a win32-process object, but it often does not because of
@@ -500,7 +500,7 @@ RenewalCert = $Thumbprint
                     $($LocalizedData.SubmittingRequestProcessCertificateMessage)
                 ) -join '' )
 
-                $null = Wait-Win32ProcessEnd `
+                $null = Wait-Win32ProcessStop `
                     -Path $command `
                     -Arguments $arguments `
                     -Credential $Credential
@@ -693,7 +693,7 @@ function Test-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    $ca = "'$CAServerFQDN\$CARootName'"
+    $ca = "$CAServerFQDN\$CARootName"
 
     # If the Subject does not contain a full X500 path, construct just the CN
     if (($Subject.split('=').count) -eq 1)
