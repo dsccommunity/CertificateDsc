@@ -50,6 +50,9 @@ $localizedData = Get-LocalizedData `
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
 
+    .PARAMETER CAType
+    The type of CA in use, Standalone/Enterprise.
+
     .PARAMETER CepURL
     The URL to the Certification Enrollment Policy Service.
 
@@ -119,6 +122,11 @@ function Get-TargetResource
         [Parameter()]
         [System.Boolean]
         $AutoRenew,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CAType = 'Enterprise',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -217,6 +225,9 @@ function Get-TargetResource
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
+
+    .PARAMETER CAType
+    The type of CA in use, Standalone/Enterprise.
  
     .PARAMETER CepURL
     The URL to the Certification Enrollment Policy Service.
@@ -285,6 +296,11 @@ function Set-TargetResource
         [Parameter()]
         [System.Boolean]
         $AutoRenew,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CAType = 'Enterprise',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -365,11 +381,23 @@ ProviderName = $ProviderName
 ProviderType = $providerType
 RequestType = $requestType
 KeyUsage = $KeyUsage
+"@
+    # If an enterprise CA is used a certificate template must be provided.
+    if ($CAType -eq 'Enterprise')
+    {
+        $requestDetails += @"
+
 [RequestAttributes]
 CertificateTemplate = $CertificateTemplate
+"@
+    }
+
+    $requestDetails += @"
+    
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
+
     if ($PSBoundParameters.ContainsKey('SubjectAltName'))
     {
         # If a Subject Alt Name was specified, add it.
@@ -400,11 +428,8 @@ RenewalCert = $Thumbprint
 
     # If enrollment server is specified the request will be towards
     # the specified URLs instead, using credentials for authentication.
-    Write-Verbose -Message "CEP - $CepURL"
-    Write-Verbose -Message "CES - $CesURL"
-    if ($Credential -and $CepURL.length -and $CesURL.length)
+    if ($Credential -and $CepURL -and $CesURL)
     {
-        Write-Verbose -Message "With credentials"
         $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
         $createRequest = & certreq.exe @(
             '-new', '-q', 
@@ -417,7 +442,6 @@ RenewalCert = $Thumbprint
         )
     }
     else {
-        Write-Verbose -Message "Without credentials"
         $createRequest = & certreq.exe @('-new','-q',$infPath,$reqPath)
     } # if
 
@@ -580,6 +604,9 @@ RenewalCert = $Thumbprint
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
 
+    .PARAMETER CAType
+    The type of CA in use, Standalone/Enterprise.
+
     .PARAMETER CepURL
     The URL to the Certification Enrollment Policy Service.
 
@@ -648,6 +675,11 @@ function Test-TargetResource
         [Parameter()]
         [System.Boolean]
         $AutoRenew,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CAType = 'Enterprise',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
