@@ -381,15 +381,20 @@ ProviderName = $ProviderName
 ProviderType = $providerType
 RequestType = $requestType
 KeyUsage = $KeyUsage
+[RequestAttributes]
+CertificateTemplate = $CertificateTemplate
+[EnhancedKeyUsageExtension]
+OID = $OID
 "@
     # If an enterprise CA is used a certificate template must be provided.
-    if ($CAType -eq 'Enterprise')
+<#    if ($CAType -eq 'Enterprise')
     {
         $requestDetails += @"
 
 [RequestAttributes]
 CertificateTemplate = $CertificateTemplate
 "@
+
     }
 
     $requestDetails += @"
@@ -397,7 +402,7 @@ CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
-
+#>
     if ($PSBoundParameters.ContainsKey('SubjectAltName'))
     {
         # If a Subject Alt Name was specified, add it.
