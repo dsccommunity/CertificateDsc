@@ -383,14 +383,14 @@ RequestType = $requestType
 KeyUsage = $KeyUsage
 "@
     # If an enterprise CA is used a certificate template must be provided.
-    if ($CAType -eq 'Enterprise')
-    {
+#    if ($CAType -eq 'Enterprise')
+#    {
         $requestDetails += @"
 
 [RequestAttributes]
 CertificateTemplate = $CertificateTemplate
 "@
-    }
+#    }
 
     $requestDetails += @"
     
