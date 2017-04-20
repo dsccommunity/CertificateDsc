@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    ModuleVersion = '2.4.0.0'
+    ModuleVersion = '2.5.0.0'
 
     # ID used to uniquely identify this module
     GUID = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -50,15 +50,7 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- Converted AppVeyor build process to use AppVeyor.psm1.
-- Correct Param block to meet guidelines.
-- Moved shared modules into modules folder.
-- xCertificateExport:
-  - Added new resource.
-- Cleanup xCertificate.psd1 to remove unneccessary properties.
-- Converted AppVeyor.yml to use DSCResource.tests shared code.
-- Opted-In to markdown rule validation.
-- Examples modified to meet standards for auto documentation generation.
+        ReleaseNotes = '- Fixed issue where xCertReq does not process requested certificate when credentials parameter set and PSDscRunAsCredential not passed. See [issue](https://github.com/PowerShell/xCertificate/issues/49)
 
 '
 
@@ -67,6 +59,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 
