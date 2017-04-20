@@ -126,7 +126,6 @@ try
             return $true
         }
         
-        $CAType         = 'Enterprise'
         $testUsername   = 'DummyUsername'
         $testPassword   = 'DummyPassword'
         $testCredential = New-Object System.Management.Automation.PSCredential $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
@@ -142,7 +141,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $testCredential
             AutoRenew             = $False
-            CAType                = $CAType
         }
         $ParamsAutoRenew = @{
             Subject               = $validSubject
@@ -156,7 +154,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $testCredential
             AutoRenew             = $True
-            CAType                = $CAType
         }
         $ParamsNoCred = @{
             Subject               = $validSubject
@@ -170,7 +167,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $False
-            CAType                = $CAType
         }
         $ParamsAutoRenewNoCred = @{
             Subject               = $validSubject
@@ -184,7 +180,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $True
-            CAType                = $CAType
         }
         $ParamsKeyLength4096NoCred = @{
             Subject               = $validSubject
@@ -198,7 +193,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $False
-            CAType                = $CAType
         }
         $ParamsKeyLength4096AutoRenewNoCred = @{
             Subject               = $validSubject
@@ -212,7 +206,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $True
-            CAType                = $CAType
         }
         $ParamsSubjectAltNameNoCred = @{
             Subject               = $validSubject
@@ -227,7 +220,6 @@ try
             Credential            = $null
             SubjectAltName        = $SubjectAltName
             AutoRenew             = $False
-            CAType                = $CAType
         }
 
         $CertInf = @"
