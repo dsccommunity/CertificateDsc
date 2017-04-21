@@ -49,6 +49,9 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
+    
+    .PARAMETER UseMachineContext
+    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 #>
 function Get-TargetResource
 {
@@ -209,6 +212,9 @@ function Get-TargetResource
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
+    
+    .PARAMETER UseMachineContext
+    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 #>
 function Set-TargetResource
 {
@@ -407,7 +413,7 @@ RenewalCert = $Thumbprint
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
             $command = "$PSHOME\PowerShell.exe"
-            
+
             if($UseMachineContext)
             {
                 $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
@@ -537,6 +543,9 @@ RenewalCert = $Thumbprint
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
+    
+    .PARAMETER UseMachineContext
+    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 #>
 function Test-TargetResource
 {
