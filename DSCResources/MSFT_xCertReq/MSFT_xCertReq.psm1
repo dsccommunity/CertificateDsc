@@ -123,7 +123,7 @@ function Get-TargetResource
         $CARootName = $caObject.CARootName
         $CAServerFQDN = $caObject.CAServerFQDN
     }
-    
+
     $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
@@ -407,6 +407,7 @@ RenewalCert = $Thumbprint
             # will request the certificate
             $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
             $command = "$PSHOME\PowerShell.exe"
+            
             if($UseMachineContext)
             {
                 $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
