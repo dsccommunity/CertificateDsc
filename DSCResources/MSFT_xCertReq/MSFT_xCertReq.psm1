@@ -386,7 +386,7 @@ CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
-
+    # If a standalone CA is used certificate templates are not used.
     if ($CAType -ne 'Enterprise')
     {
         $requestDetails = $requestDetails.Replace(@"
@@ -395,22 +395,6 @@ CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 "@, '[EnhancedKeyUsageExtension]')
     }
-    # If an enterprise CA is used a certificate template must be provided.
-<#    if ($CAType -eq 'Enterprise')
-    {
-        $requestDetails += @"
-
-[RequestAttributes]
-CertificateTemplate = $CertificateTemplate
-"@
-    }
-
-    $requestDetails += @"
-    
-[EnhancedKeyUsageExtension]
-OID = $OID
-"@
-#>
 
     if ($PSBoundParameters.ContainsKey('SubjectAltName'))
     {
