@@ -128,7 +128,7 @@ try
         
         $CAType         = 'Enterprise'
         $CepURL         = 'DummyURL'
-        $CepURL         = 'DummyURL'
+        $CesURL         = 'DummyURL'
 
         $testUsername   = 'DummyUsername'
         $testPassword   = 'DummyPassword'
@@ -232,7 +232,7 @@ try
             AutoRenew             = $False
             CAType                = $CAType
         }
-        $ParamsStandalone = @{
+        $ParamsStandaloneWebEnrollment = @{
             Subject               = $validSubject
             CAServerFQDN          = $CAServerFQDN
             CARootName            = $CARootName
@@ -242,10 +242,12 @@ try
             OID                   = $OID
             KeyUsage              = $KeyUsage
             CertificateTemplate   = $CertificateTemplate
-            Credential            = $null
+            Credential            = $testCredential
             SubjectAltName        = $SubjectAltName
             AutoRenew             = $False
             CAType                = 'Standalone'
+            CepURL                = $CepURL
+            CesURL                = $CesURL
         }
 
         $CertInf = @"
@@ -274,7 +276,7 @@ OID = $OID
 CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 "@, '[EnhancedKeyUsageExtension]')
-    }
+    
 
         $CertInfKey = $CertInf -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
         $CertInfRenew = $Certinf
@@ -629,8 +631,8 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'CA is standalone, inf file should not contain template' {
-                 Mock -CommandName Set-Content -ParameterFilter {
+            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
+                Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'xCertReq-Test.inf' -and `
                     $Value -eq $CertInfNoTemplate
                 }
@@ -638,7 +640,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'should not throw' {
-                    { Set-TargetResource @ParamsStandalone } | Should Not Throw
+                    { Set-TargetResource @ParamsStandaloneWebEnrollment } | Should Not Throw
                 }
 
                 It 'should call expected mocks' {
