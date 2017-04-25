@@ -127,6 +127,9 @@ try
         }
         
         $CAType         = 'Enterprise'
+        $CepURL         = 'DummyURL'
+        $CepURL         = 'DummyURL'
+
         $testUsername   = 'DummyUsername'
         $testPassword   = 'DummyPassword'
         $testCredential = New-Object System.Management.Automation.PSCredential $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
@@ -229,6 +232,21 @@ try
             AutoRenew             = $False
             CAType                = $CAType
         }
+        $ParamsStandalone = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $null
+            SubjectAltName        = $SubjectAltName
+            AutoRenew             = $False
+            CAType                = 'Standalone'
+        }
 
         $CertInf = @"
 [NewRequest]
@@ -250,6 +268,13 @@ CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
+
+        $CertInfNoTemplate = $CertInf.Replace(@"
+[RequestAttributes]
+CertificateTemplate = $CertificateTemplate
+[EnhancedKeyUsageExtension]
+"@, '[EnhancedKeyUsageExtension]')
+    }
 
         $CertInfKey = $CertInf -Replace 'KeyLength = ([0-z]*)', 'KeyLength = 4096'
         $CertInfRenew = $Certinf
@@ -587,6 +612,33 @@ RenewalCert = $validThumbprint
 
                 It 'should not throw' {
                     { Set-TargetResource @ParamsSubjectAltNameNoCred } | Should Not Throw
+                }
+
+                It 'should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInfSubjectAltName
+                        }
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly 3
+                }
+            }
+
+            Context 'CA is standalone, inf file should not contain template' {
+                 Mock -CommandName Set-Content -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInfNoTemplate
+                }
+                Mock -CommandName Get-ChildItem -Mockwith { } `
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+
+                It 'should not throw' {
+                    { Set-TargetResource @ParamsStandalone } | Should Not Throw
                 }
 
                 It 'should call expected mocks' {
