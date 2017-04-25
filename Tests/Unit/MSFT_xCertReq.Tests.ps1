@@ -652,7 +652,7 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
                             $Path -eq 'xCertReq-Test.inf' -and `
-                            $Value -eq $CertInfSubjectAltName
+                            $Value -eq $CertInfNoTemplate
                         }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
