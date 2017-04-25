@@ -125,7 +125,7 @@ try
         Add-Member -InputObject $expiredCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
-        
+
         $CAType         = 'Enterprise'
         $CepURL         = 'DummyURL'
         $CesURL         = 'DummyURL'
@@ -145,7 +145,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $testCredential
             AutoRenew             = $False
-            CAType                = $CAType
         }
         $ParamsAutoRenew = @{
             Subject               = $validSubject
@@ -159,7 +158,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $testCredential
             AutoRenew             = $True
-            CAType                = $CAType
         }
         $ParamsNoCred = @{
             Subject               = $validSubject
@@ -173,7 +171,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $False
-            CAType                = $CAType
         }
         $ParamsAutoRenewNoCred = @{
             Subject               = $validSubject
@@ -187,7 +184,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $True
-            CAType                = $CAType
         }
         $ParamsKeyLength4096NoCred = @{
             Subject               = $validSubject
@@ -201,7 +197,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $False
-            CAType                = $CAType
         }
         $ParamsKeyLength4096AutoRenewNoCred = @{
             Subject               = $validSubject
@@ -215,7 +210,6 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $True
-            CAType                = $CAType
         }
         $ParamsSubjectAltNameNoCred = @{
             Subject               = $validSubject
@@ -230,7 +224,6 @@ try
             Credential            = $null
             SubjectAltName        = $SubjectAltName
             AutoRenew             = $False
-            CAType                = $CAType
         }
         $ParamsStandaloneWebEnrollment = @{
             Subject               = $validSubject
@@ -245,6 +238,22 @@ try
             Credential            = $testCredential
             AutoRenew             = $False
             CAType                = 'Standalone'
+            CepURL                = $CepURL
+            CesURL                = $CesURL
+        }
+        $ParamsEnterpriseWebEnrollment = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $testCredential
+            AutoRenew             = $False
+            CAType                = $CAType
             CepURL                = $CepURL
             CesURL                = $CesURL
         }
@@ -630,12 +639,11 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Mock -CommandName Set-Content -ParameterFilter {
+            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
+                Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'xCertReq-Test.inf' -and `
                     $Value -eq $CertInfNoTemplate
-            }
-
-            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
+                }
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -653,6 +661,33 @@ RenewalCert = $validThumbprint
                         -ParameterFilter {
                             $Path -eq 'xCertReq-Test.inf' -and `
                             $Value -eq $CertInfNoTemplate
+                        }
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly 3
+                }
+            }
+
+            Context 'enterprise CA, URL for CEP and CES passed, credentials passed' {
+                Mock -CommandName Set-Content -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInf
+                }
+                Mock -CommandName Get-ChildItem -Mockwith { } `
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+
+                It 'should not throw' {
+                    { Set-TargetResource @ParamsEnterpriseWebEnrollment } | Should Not Throw
+                }
+
+                It 'should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
                         }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
