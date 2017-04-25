@@ -241,6 +241,22 @@ try
             CepURL                = $CepURL
             CesURL                = $CesURL
         }
+        $ParamsEnterpriseWebEnrollment = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $testCredential
+            AutoRenew             = $False
+            CAType                = $CAType
+            CepURL                = $CepURL
+            CesURL                = $CesURL
+        }
 
         $CertInf = @"
 [NewRequest]
@@ -623,12 +639,11 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Mock -CommandName Set-Content -ParameterFilter {
+            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
+                Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'xCertReq-Test.inf' -and `
                     $Value -eq $CertInfNoTemplate
-            }
-
-            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
+                }
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -646,6 +661,33 @@ RenewalCert = $validThumbprint
                         -ParameterFilter {
                             $Path -eq 'xCertReq-Test.inf' -and `
                             $Value -eq $CertInfNoTemplate
+                        }
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly 3
+                }
+            }
+
+            Context 'enterprise CA, URL for CEP and CES passed, credentials passed' {
+                Mock -CommandName Set-Content -ParameterFilter {
+                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Value -eq $CertInf
+                }
+                Mock -CommandName Get-ChildItem -Mockwith { } `
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+
+                It 'should not throw' {
+                    { Set-TargetResource @ParamsEnterpriseWebEnrollment } | Should Not Throw
+                }
+
+                It 'should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
                         }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
