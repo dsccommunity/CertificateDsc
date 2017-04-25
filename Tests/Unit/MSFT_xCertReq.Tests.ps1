@@ -631,11 +631,12 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
-                Mock -CommandName Set-Content -ParameterFilter {
+            Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'xCertReq-Test.inf' -and `
                     $Value -eq $CertInfNoTemplate
-                }
+            }
+
+            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
