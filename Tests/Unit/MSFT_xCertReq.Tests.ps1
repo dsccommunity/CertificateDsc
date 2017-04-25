@@ -243,7 +243,6 @@ try
             KeyUsage              = $KeyUsage
             CertificateTemplate   = $CertificateTemplate
             Credential            = $testCredential
-            SubjectAltName        = $SubjectAltName
             AutoRenew             = $False
             CAType                = 'Standalone'
             CepURL                = $CepURL
