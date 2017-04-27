@@ -58,7 +58,6 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER CesURL
     The URL to the Certification Enrollment Service.
-
 #>
 function Get-TargetResource
 {
@@ -424,8 +423,10 @@ RenewalCert = $Thumbprint
             $($LocalizedData.CreateRequestCertificateMessage -f $infPath,$reqPath)
         ) -join '' )
 
-    # If enrollment server is specified the request will be towards
-    # the specified URLs instead, using credentials for authentication.
+    <#
+    If enrollment server is specified the request will be towards
+    the specified URLs instead, using credentials for authentication.
+    #>
     if ($Credential -and $CepURL -and $CesURL)
     {
         $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
@@ -439,7 +440,8 @@ RenewalCert = $Thumbprint
             $reqPath
         )
     }
-    else {
+    else 
+    {
         $createRequest = & certreq.exe @('-new','-q',$infPath,$reqPath)
     } # if
 
@@ -461,8 +463,10 @@ RenewalCert = $Thumbprint
 
         if ($Credential)
         {
-            # If enrollment server is specified the request will be towards
-            # the specified URLs instead, using credentials for authentication.
+            <#
+            If enrollment server is specified the request will be towards
+            the specified URLs instead, using credentials for authentication.
+            #>
             if($CepURL -and $CesURL)
             {
                 $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
@@ -476,7 +480,8 @@ RenewalCert = $Thumbprint
                     $CerPath
                 )
             }
-            else {
+            else 
+            {
                 # Assemble the command and arguments to pass to the powershell process that
                 # will request the certificate
                 $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')

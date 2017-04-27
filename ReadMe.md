@@ -31,9 +31,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` OID**: The Object Identifier that is used to name the object. Optional. Defaults to `1.3.6.1.5.5.7.3.1`.
 - **`[String]` KeyUsage**: The Keyusage is a restriction method that determines what a certificate can be used for. Optional. Defaults to `0xa0`
 - **`[String]` CertificateTemplate** The template used for the definiton of the certificate. Optional. Defaults to `WebServer`
-- **`[String]` SubjectAltName** The subject alternative name used to createthe certificate. Optional.
+- **`[String]` SubjectAltName** The subject alternative name used to create the certificate. Optional.
 - **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
 - **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
+- **`[String]` CAType** The type of Certificate Authority in use. Optional. Defaults to `Enterprise`
+- **`[String]` CepURL** The URL to a Certificate Enrollment Policy Web Service. Optional.
+- **`[String]` CesURL** The URL to a Certificate Enrollment Web Service. Optional.
 
 ### xPfxImport
 
@@ -76,11 +79,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 
-<<<<<<< HEAD
-=======
 ### 2.5.0.0
-
->>>>>>> upstream/dev
 - Fixed issue where xCertReq does not process requested certificate when credentials parameter set and PSDscRunAsCredential not passed. See [issue](https://github.com/PowerShell/xCertificate/issues/49)
 
 ### 2.4.0.0
