@@ -49,6 +49,15 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
+
+    .PARAMETER CAType
+    The type of CA in use, Standalone/Enterprise.
+
+    .PARAMETER CepURL
+    The URL to the Certification Enrollment Policy Service.
+
+    .PARAMETER CesURL
+    The URL to the Certification Enrollment Service.
 #>
 function Get-TargetResource
 {
@@ -111,7 +120,22 @@ function Get-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $AutoRenew
+        $AutoRenew,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CAType = 'Enterprise',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CepURL,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CesURL
     )
 
     # The certificate authority, accessible on the local area network
@@ -200,6 +224,15 @@ function Get-TargetResource
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
+
+    .PARAMETER CAType
+    The type of CA in use, Standalone/Enterprise.
+ 
+    .PARAMETER CepURL
+    The URL to the Certification Enrollment Policy Service.
+
+    .PARAMETER CesURL
+    The URL to the Certification Enrollment Service.
 #>
 function Set-TargetResource
 {
@@ -261,7 +294,22 @@ function Set-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $AutoRenew
+        $AutoRenew,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CAType = 'Enterprise',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CepURL,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CesURL
     )
 
     # The certificate authority, accessible on the local area network
@@ -337,6 +385,16 @@ CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
+    # If a standalone CA is used certificate templates are not used.
+    if ($CAType -ne 'Enterprise')
+    {
+        $requestDetails = $requestDetails.Replace(@"
+[RequestAttributes]
+CertificateTemplate = $CertificateTemplate
+[EnhancedKeyUsageExtension]
+"@, '[EnhancedKeyUsageExtension]')
+    }
+
     if ($PSBoundParameters.ContainsKey('SubjectAltName'))
     {
         # If a Subject Alt Name was specified, add it.
@@ -365,7 +423,27 @@ RenewalCert = $Thumbprint
             $($LocalizedData.CreateRequestCertificateMessage -f $infPath,$reqPath)
         ) -join '' )
 
-    $createRequest = & certreq.exe @('-new','-q',$infPath,$reqPath)
+    <#
+    If enrollment server is specified the request will be towards
+    the specified URLs instead, using credentials for authentication.
+    #>
+    if ($Credential -and $CepURL -and $CesURL)
+    {
+        $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
+        $createRequest = & certreq.exe @(
+            '-new', '-q', 
+            '-username', $Credential.UserName, 
+            '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW), 
+            '-PolicyServer', $CepURL, 
+            '-config', $CesURL, 
+            $infPath, 
+            $reqPath
+        )
+    }
+    else 
+    {
+        $createRequest = & certreq.exe @('-new','-q',$infPath,$reqPath)
+    } # if
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -385,42 +463,62 @@ RenewalCert = $Thumbprint
 
         if ($Credential)
         {
-            # Assemble the command and arguments to pass to the powershell process that
-            # will request the certificate
-            $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
-            $command = "$PSHOME\PowerShell.exe"
-            $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
-                " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
-                " | Set-Content -Path '$certReqOutPath'"""
-
-            # This may output a win32-process object, but it often does not because of
-            # a timing issue in PDT (the process has often completed before the
-            # process can be read in).
-            $null = Start-Win32Process `
-                -Path $command `
-                -Arguments $arguments `
-                -Credential $Credential
-
-            Write-Verbose -Message ( @(
-                "$($MyInvocation.MyCommand): "
-                $($LocalizedData.SubmittingRequestProcessCertificateMessage)
-            ) -join '' )
-
-            $null = Wait-Win32ProcessStop `
-                -Path $command `
-                -Arguments $arguments `
-                -Credential $Credential
-
-            if (Test-Path -Path $certReqOutPath)
+            <#
+            If enrollment server is specified the request will be towards
+            the specified URLs instead, using credentials for authentication.
+            #>
+            if($CepURL -and $CesURL)
             {
-                $submitRequest = Get-Content -Path $certReqOutPath
-                Remove-Item -Path $certReqOutPath -Force
+                $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
+                $submitRequest = & certreq.exe @(
+                    '-submit', '-q',
+                    '-username', $Credential.UserName,
+                    '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW),
+                    '-PolicyServer', $CepURL,
+                    '-config', $CesURL,  
+                    $ReqPath,
+                    $CerPath
+                )
             }
-            else
+            else 
             {
-                New-InvalidArgumentError `
-                    -ErrorId 'CertReqOutNotFoundError' `
-                    -ErrorMessage ($LocalizedData.CertReqOutNotFoundError -f $certReqOutPath)
+                # Assemble the command and arguments to pass to the powershell process that
+                # will request the certificate
+                $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
+                $command = "$PSHOME\PowerShell.exe"
+                $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
+                    " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
+                    " | Set-Content -Path '$certReqOutPath'"""
+
+                # This may output a win32-process object, but it often does not because of
+                # a timing issue in PDT (the process has often completed before the
+                # process can be read in).
+                $null = Start-Win32Process `
+                    -Path $command `
+                    -Arguments $arguments `
+                    -Credential $Credential
+
+                Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($LocalizedData.SubmittingRequestProcessCertificateMessage)
+                ) -join '' )
+
+                $null = Wait-Win32ProcessStop `
+                    -Path $command `
+                    -Arguments $arguments `
+                    -Credential $Credential
+
+                if (Test-Path -Path $certReqOutPath)
+                {
+                    $submitRequest = Get-Content -Path $certReqOutPath
+                    Remove-Item -Path $certReqOutPath -Force
+                }
+                else
+                {
+                    New-InvalidArgumentError `
+                        -ErrorId 'CertReqOutNotFoundError' `
+                        -ErrorMessage ($LocalizedData.CertReqOutNotFoundError -f $certReqOutPath)
+                } # if
             } # if
         }
         else
@@ -508,6 +606,15 @@ RenewalCert = $Thumbprint
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
+
+    .PARAMETER CAType
+    The type of CA in use, Standalone/Enterprise.
+
+    .PARAMETER CepURL
+    The URL to the Certification Enrollment Policy Service.
+
+    .PARAMETER CesURL
+    The URL to the Certification Enrollment Service.
 #>
 function Test-TargetResource
 {
@@ -570,7 +677,22 @@ function Test-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $AutoRenew
+        $AutoRenew,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CAType = 'Enterprise',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CepURL,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CesURL
     )
 
     # The certificate authority, accessible on the local area network
