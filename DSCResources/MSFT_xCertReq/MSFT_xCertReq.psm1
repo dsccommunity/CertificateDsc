@@ -506,23 +506,23 @@ RenewalCert = $Thumbprint
             }
             else 
             {
-				# Assemble the command and arguments to pass to the powershell process that
-				# will request the certificate
-				$certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
-				$command = "$PSHOME\PowerShell.exe"
+                # Assemble the command and arguments to pass to the powershell process that
+                # will request the certificate
+                $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
+                $command = "$PSHOME\PowerShell.exe"
 
-				if($UseMachineContext)
-				{
-					$arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
-					" @('-submit','-q','-adminforcemachine','-config','$ca','$reqPath','$cerPath')" + `
-					" | Set-Content -Path '$certReqOutPath'"""
-				}
-				else
-				{
-					$arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
-					" @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
-					" | Set-Content -Path '$certReqOutPath'"""
-				}            
+                if($UseMachineContext)
+                {
+                    $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
+                    " @('-submit','-q','-adminforcemachine','-config','$ca','$reqPath','$cerPath')" + `
+                    " | Set-Content -Path '$certReqOutPath'"""
+                }
+                else
+                {
+                    $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
+                    " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
+                    " | Set-Content -Path '$certReqOutPath'"""
+                }            
 
                 # This may output a win32-process object, but it often does not because of
                 # a timing issue in PDT (the process has often completed before the
