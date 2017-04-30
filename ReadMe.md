@@ -31,10 +31,13 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` OID**: The Object Identifier that is used to name the object. Optional. Defaults to `1.3.6.1.5.5.7.3.1`.
 - **`[String]` KeyUsage**: The Keyusage is a restriction method that determines what a certificate can be used for. Optional. Defaults to `0xa0`
 - **`[String]` CertificateTemplate** The template used for the definiton of the certificate. Optional. Defaults to `WebServer`
-- **`[String]` SubjectAltName** The subject alternative name used to createthe certificate. Optional.
+- **`[String]` SubjectAltName** The subject alternative name used to create the certificate. Optional.
 - **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
 - **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
 - **`[Boolean]` UseMachineContext**:  Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication. Optional.
+- **`[String]` CAType** The type of Certificate Authority in use. Optional. Defaults to `Enterprise`
+- **`[String]` CepURL** The URL to a Certificate Enrollment Policy Web Service. Optional.
+- **`[String]` CesURL** The URL to a Certificate Enrollment Web Service. Optional.
 
 ### xPfxImport
 
@@ -76,6 +79,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+- Added mandatory properties for xPfxImport resource example.
 
 - xCertReq:
   - Added Certificate Authority auto-discovery to resource xCertReq.
@@ -309,6 +313,8 @@ Configuration Example
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
+            Store      = 'My'
+            Location   = 'LocalMachine'
             Credential = $Credential
         }
     }
