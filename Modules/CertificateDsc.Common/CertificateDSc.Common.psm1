@@ -372,7 +372,7 @@ function Test-CommandExists
     return ($null -ne $command)
 }
 
-if(-not (Test-CommandExists -command 'Import-Certificate'))
+if (-not (Test-CommandExists -command 'Import-Certificate'))
 {
     Write-Verbose -Message "Loading Import-Certificate Function"
 
@@ -410,7 +410,7 @@ if(-not (Test-CommandExists -command 'Import-Certificate'))
     }
 }
 
-if(-not (Test-CommandExists -command 'Import-PfxCertificate'))
+if (-not (Test-CommandExists -command 'Import-PfxCertificate'))
 {
     Write-Verbose -Message "Loading Import-PfxCertificate Function"
   <#
@@ -455,12 +455,12 @@ if(-not (Test-CommandExists -command 'Import-PfxCertificate'))
          
          $Flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
    
-         if($Exportable)
+         if ($Exportable)
          {
              $Flags = $Flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
 
          }
-         if($Password)
+         if ($Password)
          {
             $cert.import($FilePath, $Password, $Flags)
          }
