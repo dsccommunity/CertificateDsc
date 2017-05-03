@@ -372,7 +372,7 @@ function Test-CommandExists
     return ($null -ne $command)
 }
 
-if (-not (Test-CommandExists -command 'Import-Certificate'))
+if (-not (Test-CommandExists -Name 'Import-Certificate'))
 {
     Write-Verbose -Message "Loading Import-Certificate Function"
 
@@ -397,6 +397,7 @@ if (-not (Test-CommandExists -command 'Import-Certificate'))
             [System.String]
             $CertStoreLocation
         )
+
         $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
         $Store = Split-Path -Path $CertStoreLocation -Leaf
         
@@ -410,7 +411,7 @@ if (-not (Test-CommandExists -command 'Import-Certificate'))
     }
 }
 
-if (-not (Test-CommandExists -command 'Import-PfxCertificate'))
+if (-not (Test-CommandExists -Name 'Import-PfxCertificate'))
 {
     Write-Verbose -Message "Loading Import-PfxCertificate Function"
   <#
@@ -450,28 +451,28 @@ if (-not (Test-CommandExists -command 'Import-PfxCertificate'))
         $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
         $Store = Split-Path -Path $CertStoreLocation -Leaf
         
-         $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
-         [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+        $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
+        [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
          
-         $Flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+        $Flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
    
-         if ($Exportable)
-         {
-             $Flags = $Flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+        if ($Exportable)
+        {
+            $Flags = $Flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportabl
+        }
 
-         }
-         if ($Password)
-         {
-            $cert.import($FilePath, $Password, $Flags)
-         }
-         else 
-         {
-             $cert.Import($FilePath, $Flags)
-         }
-         
-         $certStore = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $Store, $Location
-         $certStore.Open('MaxAllowed')
-         $certStore.Add($cert)
-         $certStore.Close()
+        if ($Password)
+        {
+           $cert.import($FilePath, $Password, $Flags)
+        }
+        else 
+        {
+            $cert.Import($FilePath, $Flags)
+        }
+        
+        $certStore = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $Store, $Location
+        $certStore.Open('MaxAllowed')
+        $certStore.Add($cert)
+        $certStore.Close()
     }
 } 
