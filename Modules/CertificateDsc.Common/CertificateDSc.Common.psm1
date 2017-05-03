@@ -402,7 +402,7 @@ if (-not (Test-CommandExists -Name 'Import-Certificate'))
         $Store = Split-Path -Path $CertStoreLocation -Leaf
         
         $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
-        $cert.import($FilePath)
+        $cert.Import($FilePath)
 
         $certStore = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $Store, $Location
         $certStore.Open('MaxAllowed')
@@ -463,7 +463,7 @@ if (-not (Test-CommandExists -Name 'Import-PfxCertificate'))
 
         if ($Password)
         {
-           $cert.import($FilePath, $Password, $Flags)
+           $cert.Import($FilePath, $Password, $Flags)
         }
         else 
         {
