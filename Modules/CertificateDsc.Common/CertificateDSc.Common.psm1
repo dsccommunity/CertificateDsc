@@ -400,10 +400,10 @@ if(-not (Test-CommandExists -command 'Import-Certificate'))
         $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
         $Store = Split-Path -Path $CertStoreLocation -Leaf
         
-        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+        $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
         $cert.import($FilePath)
 
-        $certStore = New-Object System.Security.Cryptography.X509Certificates.X509Store($Store, $Location)
+        $certStore = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $Store, $Location
         $certStore.Open('MaxAllowed')
         $certStore.Add($cert)
         $certStore.Close()
@@ -450,7 +450,7 @@ if(-not (Test-CommandExists -command 'Import-PfxCertificate'))
         $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
         $Store = Split-Path -Path $CertStoreLocation -Leaf
         
-         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+         $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
          [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
          
          $Flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
@@ -469,7 +469,7 @@ if(-not (Test-CommandExists -command 'Import-PfxCertificate'))
              $cert.Import($FilePath, $Flags)
          }
          
-         $certStore = New-Object System.Security.Cryptography.X509Certificates.X509Store($Store, $Location)
+         $certStore = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $Store, $Location
          $certStore.Open('MaxAllowed')
          $certStore.Add($cert)
          $certStore.Close()
