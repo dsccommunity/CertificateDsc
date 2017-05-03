@@ -351,31 +351,31 @@ function New-InvalidArgumentError
 
 <#
     .SYNOPSIS
-     Checks to see if a Command exists.
-
-    .PARAMETER command
-     The command to check that exists.
+      Tests whether or not the command with the specified name exists.
+    .PARAMETER Name
+      The name of the command to test for.
 #>
-function Test-CommandExists {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$command
+
+function Test-CommandExists
+{
+    [OutputType([Boolean])]
+    [CmdletBinding()]
+    param 
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Name 
     )
 
-    try{
-        if(Get-Command $command -ErrorAction SilentlyContinue) {
-            return $true;
-        }
-        return $false;
-    }
-    catch {
-        return $false;
-    }
+    $command = Get-Command -Name $Name -ErrorAction 'SilentlyContinue'
+    return ($null -ne $command)
 }
 
 if(-not (Test-CommandExists -command "Import-Certificate"))
 {
-    Write-Verbose "Loading Import-Certificate Function"
+    Write-Verbose -Message "Loading Import-Certificate Function"
+
 <#
     .SYNOPSIS
      This function imports a 509 public key certificate to the specific Store.
@@ -388,11 +388,14 @@ if(-not (Test-CommandExists -command "Import-Certificate"))
 
 #>
     function Import-Certificate {
-        param(
+        param
+        (
             [Parameter(Mandatory = $true)]
-            [string]$FilePath,
+            [System.String]
+            $FilePath,
             [Parameter(Mandatory = $true)]
-            [string]$CertStoreLocation
+            [System.String]
+            $CertStoreLocation
         )
         $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
         $Store = Split-Path -Path $CertStoreLocation -Leaf
@@ -409,7 +412,7 @@ if(-not (Test-CommandExists -command "Import-Certificate"))
 
 if(-not (Test-CommandExists -command "Import-PfxCertificate"))
 {
-    Write-Verbose "Loading Import-PfxCertificate Function"
+    Write-Verbose -Message "Loading Import-PfxCertificate Function"
   <#
     .SYNOPSIS
      This function imports a Pfx publiic - private certificate to the specific Certificate Store Location.
@@ -428,15 +431,20 @@ if(-not (Test-CommandExists -command "Import-PfxCertificate"))
 
   #> 
     function Import-PfxCertificate {
-        param(
+        param
+        (
             [Parameter(Mandatory = $true)]
-            [string]$FilePath,
+            [System.String]
+            $FilePath,
             [Parameter(Mandatory = $true)]
-            [string]$CertStoreLocation,
+            [System.String]
+            $CertStoreLocation,
             [Parameter(Mandatory = $false)]
-            [Boolean]$Exportable = $false,
+            [System.Boolean]
+            $Exportable = $false,
             [Parameter(Mandatory = $false)]
-            [SecureString]$Password
+            [System.Security.SecureString]
+            $Password
         )
         
         $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf

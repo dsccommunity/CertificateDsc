@@ -589,56 +589,47 @@ try
                 }
             }
         }
-
         Describe "$DSCResourceName\Test-CommandExists" {
-             
-            Context 'Import-Certificate Cmdlet is available' {   
-                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-Certificate"} -MockWith { 
-                    return @{
-                        CommandType = [System.Management.Automation.CommandTypes]::Cmdlet
-                        Name        = "Import-Certificate"
-                        Version     = "1.0.0.0"
-                        Source      = "PKI"
+
+            $testCommandName = 'TestCommandName'
+
+            Mock -CommandName 'Get-Command' -MockWith { return $Name }
+
+            Context 'Get-Command returns the command' {
+                It 'Should not throw' {
+                    { $null = Test-CommandExists -Name $testCommandName } | Should Not Throw
+                }
+
+                It 'Should retrieve the command with the specified name' {
+                    $getCommandParameterFilter = {
+                        return $Name -eq $testCommandName
                     }
+
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
                 }
-                
-                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-PfxCertificate"} -MockWith { 
-                       return @{
-                        CommandType = [System.Management.Automation.CommandTypes]::Cmdlet
-                        Name        = "Import-PfxCertificate"
-                        Version     = "1.0.0.0"
-                        Source      = "PKI"
-                    }
+
+                It 'Should return true' {
+                    Test-CommandExists -Name $testCommandName | Should Be $true
                 }
-               
-                It 'should return true' {
-                    (Test-CommandExists -command "Import-Certificate") | Should Be $true
-                    (Test-CommandExists -command "Import-PfxCertificate") | Should Be $true
-                }
+
             }
 
+            Context 'Get-Command returns null' {
+                Mock -CommandName 'Get-Command' -MockWith { return $null }
 
-            Context "Import-Certificate Cmdlet is not available" {
-                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-Certificate" } -MockWith { 
-                    throw "The term 'Import-Certificate' is not recognized as the name of a cmdlet, function..."
+                It 'Should not throw' {
+                    { $null = Test-CommandExists -Name $testCommandName } | Should Not Throw
                 }
-                
-                Mock -CommandName "Get-Command" -ParameterFilter { $Name -eq "Import-PfxCertificate" } -MockWith { 
-                    throw "The term 'Import-PfxCertificate' is not recognized as the name of a cmdlet, function..."
+
+                It 'Should retrieve the command with the specified name' {
+                    $getCommandParameterFilter = {
+                        return $Name -eq $testCommandName
+                    }
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
                 }
-               
-                It 'import-certificate should return false' {
-                   
-                    (Test-CommandExists -command "Import-Certificate") | Should Be $false
-                }   
-                It 'should call relevant mocks' {
-                    Assert-MockCalled -CommandName Get-Command -Times 1
-                }
-                It 'import-pfxcertificate should return false' {
-                    (Test-CommandExists -command "Import-PfxCertificate") | Should Be $false
-                }
-                It 'should call relevant mocks' {
-                              Assert-MockCalled -CommandName Get-Command -Times 1
+
+                It 'Should return false' {
+                    Test-CommandExists -Name $testCommandName | Should Be $false
                 }
             }
         }
