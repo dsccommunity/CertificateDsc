@@ -372,21 +372,21 @@ function Test-CommandExists
     return ($null -ne $command)
 }
 
-if(-not (Test-CommandExists -command "Import-Certificate"))
+if(-not (Test-CommandExists -command 'Import-Certificate'))
 {
     Write-Verbose -Message "Loading Import-Certificate Function"
 
 <#
     .SYNOPSIS
-     This function imports a 509 public key certificate to the specific Store.
+      This function imports a 509 public key certificate to the specific Store.
 
     .PARAMETER FilePath
-    The path to the certificate file to import.
+      The path to the certificate file to import.
 
     .PARAMETER CertStoreLocation
-     The Certificate Store and Location Path to import the certificate to.
-
+      The Certificate Store and Location Path to import the certificate to.
 #>
+  
     function Import-Certificate {
         param
         (
@@ -404,32 +404,32 @@ if(-not (Test-CommandExists -command "Import-Certificate"))
         $cert.import($FilePath)
 
         $certStore = New-Object System.Security.Cryptography.X509Certificates.X509Store($Store, $Location)
-        $certStore.Open("MaxAllowed")
+        $certStore.Open('MaxAllowed')
         $certStore.Add($cert)
         $certStore.Close()
     }
 }
 
-if(-not (Test-CommandExists -command "Import-PfxCertificate"))
+if(-not (Test-CommandExists -command 'Import-PfxCertificate'))
 {
     Write-Verbose -Message "Loading Import-PfxCertificate Function"
   <#
     .SYNOPSIS
-     This function imports a Pfx publiic - private certificate to the specific Certificate Store Location.
+      This function imports a Pfx publiic - private certificate to the specific Certificate Store Location.
 
     .PARAMETER FilePath
-    The path to the certificate file to import.
+      The path to the certificate file to import.
 
     .PARAMETER CertStoreLocation
-     The Certificate Store and Location Path to import the certificate to.
+      The Certificate Store and Location Path to import the certificate to.
 
     .PARAMETER Exportable
-     The paremter controls if certificate will be able to export the private key.
+      The paremter controls if certificate will be able to export the private key.
 
     .PARAMETER Password
-     The password that the Certificate located at the FilePath needs to be imported.
-
+      The password that the Certificate located at the FilePath needs to be imported.
   #> 
+
     function Import-PfxCertificate {
         param
         (
@@ -470,7 +470,7 @@ if(-not (Test-CommandExists -command "Import-PfxCertificate"))
          }
          
          $certStore = New-Object System.Security.Cryptography.X509Certificates.X509Store($Store, $Location)
-         $certStore.Open("MaxAllowed")
+         $certStore.Open('MaxAllowed')
          $certStore.Add($cert)
          $certStore.Close()
     }
