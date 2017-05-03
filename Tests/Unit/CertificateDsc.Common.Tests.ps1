@@ -9,6 +9,8 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
     & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
+$global:modulePath = (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'Modules' -ChildPath $script:ModuleName)) -ChildPath "$script:ModuleName.psm1")
+
 Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 Import-Module -Name (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'Modules' -ChildPath $script:ModuleName)) -ChildPath "$script:ModuleName.psm1") -Force
 Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global
@@ -584,6 +586,50 @@ try
                 It 'should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+                }
+            }
+        }
+        Describe "$DSCResourceName\Test-CommandExists" {
+
+            $testCommandName = 'TestCommandName'
+
+            Mock -CommandName 'Get-Command' -MockWith { return $Name }
+
+            Context 'Get-Command returns the command' {
+                It 'Should not throw' {
+                    { $null = Test-CommandExists -Name $testCommandName } | Should Not Throw
+                }
+
+                It 'Should retrieve the command with the specified name' {
+                    $getCommandParameterFilter = {
+                        return $Name -eq $testCommandName
+                    }
+
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                }
+
+                It 'Should return true' {
+                    Test-CommandExists -Name $testCommandName | Should Be $true
+                }
+
+            }
+
+            Context 'Get-Command returns null' {
+                Mock -CommandName 'Get-Command' -MockWith { return $null }
+
+                It 'Should not throw' {
+                    { $null = Test-CommandExists -Name $testCommandName } | Should Not Throw
+                }
+
+                It 'Should retrieve the command with the specified name' {
+                    $getCommandParameterFilter = {
+                        return $Name -eq $testCommandName
+                    }
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                }
+
+                It 'Should return false' {
+                    Test-CommandExists -Name $testCommandName | Should Be $false
                 }
             }
         }

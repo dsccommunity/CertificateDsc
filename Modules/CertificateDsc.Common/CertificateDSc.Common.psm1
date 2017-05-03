@@ -348,3 +348,131 @@ function New-InvalidArgumentError
         -ArgumentList $exception, $ErrorId, $errorCategory, $null
     throw $errorRecord
 } # end function New-InvalidArgumentError
+
+<#
+    .SYNOPSIS
+      Tests whether or not the command with the specified name exists.
+    .PARAMETER Name
+      The name of the command to test for.
+#>
+
+function Test-CommandExists
+{
+    [OutputType([Boolean])]
+    [CmdletBinding()]
+    param 
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Name 
+    )
+
+    $command = Get-Command -Name $Name -ErrorAction 'SilentlyContinue'
+    return ($null -ne $command)
+}
+
+if (-not (Test-CommandExists -Name 'Import-Certificate'))
+{
+    Write-Verbose -Message "Loading Import-Certificate Function"
+
+<#
+    .SYNOPSIS
+      This function imports a 509 public key certificate to the specific Store.
+
+    .PARAMETER FilePath
+      The path to the certificate file to import.
+
+    .PARAMETER CertStoreLocation
+      The Certificate Store and Location Path to import the certificate to.
+#>
+  
+    function Import-Certificate {
+        param
+        (
+            [Parameter(Mandatory = $true)]
+            [System.String]
+            $FilePath,
+            [Parameter(Mandatory = $true)]
+            [System.String]
+            $CertStoreLocation
+        )
+
+        $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
+        $Store = Split-Path -Path $CertStoreLocation -Leaf
+        
+        $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
+        $cert.Import($FilePath)
+
+        $certStore = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $Store, $Location
+        $certStore.Open('MaxAllowed')
+        $certStore.Add($cert)
+        $certStore.Close()
+    }
+}
+
+if (-not (Test-CommandExists -Name 'Import-PfxCertificate'))
+{
+    Write-Verbose -Message "Loading Import-PfxCertificate Function"
+  <#
+    .SYNOPSIS
+      This function imports a Pfx publiic - private certificate to the specific Certificate Store Location.
+
+    .PARAMETER FilePath
+      The path to the certificate file to import.
+
+    .PARAMETER CertStoreLocation
+      The Certificate Store and Location Path to import the certificate to.
+
+    .PARAMETER Exportable
+      The paremter controls if certificate will be able to export the private key.
+
+    .PARAMETER Password
+      The password that the Certificate located at the FilePath needs to be imported.
+  #> 
+
+    function Import-PfxCertificate {
+        param
+        (
+            [Parameter(Mandatory = $true)]
+            [System.String]
+            $FilePath,
+            [Parameter(Mandatory = $true)]
+            [System.String]
+            $CertStoreLocation,
+            [Parameter(Mandatory = $false)]
+            [System.Boolean]
+            $Exportable = $false,
+            [Parameter(Mandatory = $false)]
+            [System.Security.SecureString]
+            $Password
+        )
+        
+        $Location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
+        $Store = Split-Path -Path $CertStoreLocation -Leaf
+        
+        $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
+        [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+         
+        $Flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+   
+        if ($Exportable)
+        {
+            $Flags = $Flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportabl
+        }
+
+        if ($Password)
+        {
+           $cert.Import($FilePath, $Password, $Flags)
+        }
+        else 
+        {
+            $cert.Import($FilePath, $Flags)
+        }
+        
+        $certStore = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $Store, $Location
+        $certStore.Open('MaxAllowed')
+        $certStore.Add($cert)
+        $certStore.Close()
+    }
+} 
