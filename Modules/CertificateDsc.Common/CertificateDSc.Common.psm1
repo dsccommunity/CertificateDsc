@@ -466,7 +466,7 @@ function Get-CertificateSan
         $Certificate
     )
 
-    if ($Certificate -isnot 'System.Security.Cryptography.X509Certificates.X509Certificate2')
+    if ($Certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2])
     {
         return
     }
