@@ -317,6 +317,40 @@ function Find-Certificate
 
 <#
 .SYNOPSIS
+    Get CDP container
+.DESCRIPTION
+    Gets the configuration data partition from the active directory configuration naming context
+.PARAMETER DomainName
+    The domain name
+#>
+function Get-CdpContainer
+{
+    [cmdletBinding()]
+    [OutputType([psobject])]
+    param(
+        [Parameter()]
+        [String]
+        $DomainName
+    )
+
+    if (-not $DomainName)
+    {
+        $configContext = ([ADSI]'LDAP://RootDSE').configurationNamingContext
+    }
+    else
+    {
+        $ctx = New-Object -TypeName System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
+        $configContext = 'CN=Configuration,{0}' -f ([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName[0])
+    }
+
+    Write-Verbose -Message ($LocalizedData.ConfigurationNamingContext -f $configContext)
+    $cdpContainer = [ADSI]('LDAP://CN=CDP,CN=Public Key Services,CN=Services,{0}' -f $configContext)
+
+    return $cdpContainer
+}
+
+<#
+.SYNOPSIS
     Automatically locate a certificate authority in Active Directory
 .DESCRIPTION
     Automatically locates a certificate autority in Active Directory environments by leveraging ADSI to look inside the container CDP and
@@ -336,18 +370,7 @@ function Find-CertificateAuthority
     
     try
     {
-        if (-not $DomainName)
-        {
-            $configContext = ([ADSI]'LDAP://RootDSE').configurationNamingContext
-        }
-        else
-        {
-            $ctx = New-Object -TypeName System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
-            $configContext = 'CN=Configuration,{0}' -f ([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName)
-        }
-
-        Write-Verbose -Message ($LocalizedData.ConfigurationNamingContext -f $configContext)
-        $cdpContainer = [ADSI]('LDAP://CN=CDP,CN=Public Key Services,CN=Services,{0}' -f $configContext)
+        $cdpContainer = Get-CdpContainer -DomainName $DomainName -ErrorAction Stop
     }
     catch
     {

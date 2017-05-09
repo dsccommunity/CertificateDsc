@@ -655,12 +655,52 @@ try
         }
 
         Describe "$DSCResourceName\Find-CertificateAuthority" {
-            Context 'Function is executed with domain connectivity' {
+            Mock -CommandName Get-CdpContainer -MockWith {
+                return New-Object -TypeName psobject -Property @{
+                    Children = @(
+                        @{
+                            distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                            Children = @{
+                                distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                            }
+                        }
+                    )
+                }
+            }
 
+            Mock -CommandName New-Object -ParameterFilter {$TypeName -eq 'System.Diagnostics.Process'} -MockWith {
+                $retObj = New-Object -TypeName psobject -Property @{
+                    StartInfo = $null
+                    ExitCode = 0
+                    StandardOutput = New-Object psobject | Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {} -PassThru
+                }
+
+                $retObj | Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
+                    Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
+                
+                return $retObj
+            }
+            
+            Context 'Function is executed with domain connectivity' {
+                It 'Should return the CA name' {
+                    (Find-CertificateAuthority -DomainName contoso.com).CARootName | Should Be 'LabRootCA1'
+                }
+
+                It 'Should return the CA server fqdn' {
+                    (Find-CertificateAuthority -DomainName contoso.com).CAServerFQDN | Should Be 'CA1'
+                }
             }
 
             Context 'Function is executed without domain connectivity' {
+                Mock -CommandName Get-CdpContainer -MockWith { }
 
+                It 'Should throw' {
+                    { Find-CertificateAuthority -DomainName somewhere.overtherainbow } | Should Throw
+                }
+
+                It 'Should call Get-CdpContainer once' {
+                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                }
             }
         }
 
