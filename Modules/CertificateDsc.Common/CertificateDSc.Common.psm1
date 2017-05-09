@@ -318,8 +318,10 @@ function Find-Certificate
 <#
 .SYNOPSIS
     Get CDP container
+
 .DESCRIPTION
     Gets the configuration data partition from the active directory configuration naming context
+
 .PARAMETER DomainName
     The domain name
 #>
@@ -347,14 +349,16 @@ function Get-CdpContainer
     $cdpContainer = [ADSI]('LDAP://CN=CDP,CN=Public Key Services,CN=Services,{0}' -f $configContext)
 
     return $cdpContainer
-}
+} # end function Get-CdpContainer
 
 <#
 .SYNOPSIS
     Automatically locate a certificate authority in Active Directory
+
 .DESCRIPTION
     Automatically locates a certificate autority in Active Directory environments by leveraging ADSI to look inside the container CDP and
     subsequently trying to certutil -ping every located CA until one is found.
+
 .PARAMETER DomainName
     The domain name of the domain that will be used to locate the CA. Can be left empty to use the current domain.
 #>
@@ -431,8 +435,10 @@ function Find-CertificateAuthority
 <#
 .SYNOPSIS
     Get a certificate template name
+
 .DESCRIPTION
     Gets the name of the template used for the certificate that is passed to this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or "1.3.6.1.4.1.311.20.2"
+
 .PARAMETER Certificate
     The certificate object the template name is needed for
 #>
@@ -443,7 +449,7 @@ function Get-CertificateTemplateName
     param
     (
         # The certificate for which a template is needed
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [object]
         $Certificate
     )
@@ -456,14 +462,14 @@ function Get-CertificateTemplateName
     # Test the different OIDs
     if ('1.3.6.1.4.1.311.21.7' -in $Certificate.Extensions.oid.Value)
     {
-        $temp = $Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7'}
+        $temp = $Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7' }
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
         $templateName = $Matches.TemplateName -replace ' '
     }
 
     if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)
     {
-        $templateName = ($Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq '1.3.6.1.4.1.311.20.2'}).Format(0)        
+        $templateName = ($Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.20.2' }).Format(0)        
     }
 
     return $templateName
@@ -472,8 +478,10 @@ function Get-CertificateTemplateName
 <#
 .SYNOPSIS
     Get certificate SAN
+
 .DESCRIPTION
     Gets the first subject alternative name for the certificate that is passed to this cmdlet
+
 .PARAMETER Certificate
     The certificate object the subject alternative name is needed for
 #>
@@ -484,7 +492,7 @@ function Get-CertificateSan
     param
     (
         # The certificate for which the subject alternative names are needed
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [object]
         $Certificate
     )
@@ -496,7 +504,7 @@ function Get-CertificateSan
     
     $subjectAlternativeName = $null
     
-    $sanExtension = $Certificate.Extensions | Where-Object {$_.Oid.FriendlyName -match 'subject alternative name'}
+    $sanExtension = $Certificate.Extensions | Where-Object { $_.Oid.FriendlyName -match 'subject alternative name' }
     
     if ($null -eq $sanExtension)
     {
@@ -530,12 +538,12 @@ function New-InvalidArgumentError
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ErrorId,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ErrorMessage

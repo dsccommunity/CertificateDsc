@@ -695,7 +695,7 @@ try
                 Mock -CommandName Get-CdpContainer -MockWith { }
 
                 It 'Should throw' {
-                    { Find-CertificateAuthority -DomainName somewhere.overtherainbow } | Should Throw
+                    { Find-CertificateAuthority -DomainName somewhere.overtherainbow -ErrorAction Stop } | Should Throw
                 }
 
                 It 'Should call Get-CdpContainer once' {

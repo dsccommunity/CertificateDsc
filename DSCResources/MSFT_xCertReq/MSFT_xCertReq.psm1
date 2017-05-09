@@ -124,10 +124,6 @@ function Get-TargetResource
         $AutoRenew,
 
         [Parameter()]
-        [System.Boolean]
-        $UseMachineContext,
-
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $CAType = 'Enterprise',
@@ -140,7 +136,11 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $CesURL
+        $CesURL,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext
     )
 
     # The certificate authority, accessible on the local area network
