@@ -425,22 +425,22 @@ function Get-CertificateTemplateName
         $Certificate
     )
 
-    if($Certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2])
+    if ($Certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2])
     {
         return
     }
 
     # Test the different OIDs
-    if ("1.3.6.1.4.1.311.21.7" -in $Certificate.Extensions.oid.Value)
+    if ('1.3.6.1.4.1.311.21.7' -in $Certificate.Extensions.oid.Value)
     {
-        $temp = $Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.21.7"}
+        $temp = $Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7'}
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
         $templateName = $Matches.TemplateName -replace ' '
     }
 
-    if ("1.3.6.1.4.1.311.20.2" -in $Certificate.Extensions.oid.Value)
+    if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)
     {
-        $templateName = ($Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq "1.3.6.1.4.1.311.20.2"}).Format(0)        
+        $templateName = ($Certificate.Extensions | Where-Object {$PSItem.Oid.Value -eq '1.3.6.1.4.1.311.20.2'}).Format(0)        
     }
 
     return $templateName
@@ -471,11 +471,11 @@ function Get-CertificateSan
         return
     }
     
-    $subjectAlternativeName = [string]::Empty
+    $subjectAlternativeName = $null
     
-    $sanExtension = $Certificate.Extensions | Where-Object {$_.Oid.FriendlyName -match "subject alternative name"}
+    $sanExtension = $Certificate.Extensions | Where-Object {$_.Oid.FriendlyName -match 'subject alternative name'}
     
-    if($null -eq $sanExtension)
+    if ($null -eq $sanExtension)
     {
         return $subjectAlternativeName
     }
@@ -484,7 +484,12 @@ function Get-CertificateSan
     $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)            
     $sanObjects.InitializeDecode(1, $altNamesStr)
 
-    return $SAN.AlternativeNames[0].strValue
+    if ($sanObjects.AlternativeNames.Count -gt 0)
+    {
+        $subjectAlternativeName = $sanObjects.AlternativeNames[0].strValue
+    }
+
+    return $subjectAlternativeName
 }
 
 <#
