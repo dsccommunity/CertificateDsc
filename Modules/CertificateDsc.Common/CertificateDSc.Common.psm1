@@ -374,7 +374,7 @@ function Find-CertificateAuthority
     
     try
     {
-        $cdpContainer = Get-CdpContainer -DomainName $DomainName -ErrorAction Stop
+        $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
     }
     catch
     {

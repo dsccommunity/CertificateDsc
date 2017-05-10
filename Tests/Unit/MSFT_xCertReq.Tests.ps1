@@ -146,6 +146,17 @@ try
             Credential            = $testCredential
             AutoRenew             = $False
         }
+        $ParamsAutoDiscovery = @{
+            Subject               = $validSubject
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $testCredential
+            AutoRenew             = $False
+        }
         $ParamsAutoRenew = @{
             Subject               = $validSubject
             CAServerFQDN          = $CAServerFQDN
@@ -692,6 +703,52 @@ RenewalCert = $validThumbprint
                             $Value -eq $CertInf
                         }
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
+                }
+            }
+
+            Context 'Auto-discovered CA, autorenew is false, credentials passed' {
+                Mock -CommandName Get-ChildItem -Mockwith { } `
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+                Mock -CommandName Get-Content -Mockwith { 'Output' } `
+                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                Mock -CommandName Remove-Item `
+                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                Mock -CommandName Import-Module
+                Mock -CommandName Start-Win32Process
+                Mock -CommandName Wait-Win32ProcessStop
+                Mock -CommandName Find-CertificateAuthority -MockWith {
+                    Write-Verbose -Message 'Stop mocking me'
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                It 'should not throw' {
+                    { Set-TargetResource @ParamsAutoDiscovery -Verbose } | Should Not Throw
+                }
+
+                It 'should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly 2
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    Assert-MockCalled -CommandName Get-Content -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    Assert-MockCalled -CommandName Remove-Item -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
                 }
             }
         }
