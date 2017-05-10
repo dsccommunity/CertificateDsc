@@ -178,7 +178,7 @@ function Get-TargetResource
 
         $returnValue = @{
             Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN         = $null # This value can't be determined from the cert
+            CAServerFQDN         = $caObject.CAServerFQDN
             CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
             KeyLength            = $Cert.Publickey.Key.KeySize
             Exportable           = $Cert.PrivateKey.CspKeyContainerInfo.Exportable

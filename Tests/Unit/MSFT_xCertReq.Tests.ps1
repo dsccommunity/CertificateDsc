@@ -316,7 +316,15 @@ RenewalCert = $validThumbprint
                 -Mockwith { $validCert }
             Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
             Mock Get-CertificateSan -MockWith { $SubjectAltName }
+            Mock -CommandName Find-CertificateAuthority -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CAServerFQDN = 'rootca.contoso.com'
+                        CARootName = 'contoso-CA'
+                    }
+                }
+
             $result = Get-TargetResource @Params
+            $resultAutoDiscovery = Get-TargetResource @ParamsAutoDiscovery
             It 'should return a hashtable' {
                 ($result -is [hashtable]) | Should Be $true
             }
@@ -331,6 +339,24 @@ RenewalCert = $validThumbprint
                 $result.KeyUsage             | Should BeNullOrEmpty
                 $result.CertificateTemplate  | Should BeExactly $CertificateTemplate
                 $result.SubjectAltName       | Should BeNullOrEmpty
+            }            
+            It 'should return a hashtable' {
+                ($resultAutoDiscovery -is [hashtable]) | Should Be $true
+            }
+            It 'should contain the input values and the CA should be auto-discovered' {
+                $resultAutoDiscovery.Subject              | Should BeExactly $validSubject
+                $resultAutoDiscovery.CAServerFQDN         | Should BeExactly $CAServerFQDN
+                $resultAutoDiscovery.CARootName           | Should BeExactly $CARootName
+                $resultAutoDiscovery.KeyLength            | Should BeNullOrEmpty
+                $resultAutoDiscovery.Exportable           | Should BeNullOrEmpty
+                $resultAutoDiscovery.ProviderName         | Should BeNullOrEmpty
+                $resultAutoDiscovery.OID                  | Should BeNullOrEmpty
+                $resultAutoDiscovery.KeyUsage             | Should BeNullOrEmpty
+                $resultAutoDiscovery.CertificateTemplate  | Should BeExactly $CertificateTemplate
+                $resultAutoDiscovery.SubjectAltName       | Should BeNullOrEmpty
+            }
+            It 'Should call the mocked function Find-CertificateAuthority once' {
+                Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
             }
         }
         #endregion
@@ -717,7 +743,6 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Start-Win32Process
                 Mock -CommandName Wait-Win32ProcessStop
                 Mock -CommandName Find-CertificateAuthority -MockWith {
-                    Write-Verbose -Message 'Stop mocking me'
                     return New-Object -TypeName psobject -Property @{
                         CARootName = "ContosoCA"
                         CAServerFQDN = "ContosoVm.contoso.com"
@@ -725,7 +750,7 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'should not throw' {
-                    { Set-TargetResource @ParamsAutoDiscovery -Verbose } | Should Not Throw
+                    { Set-TargetResource @ParamsAutoDiscovery } | Should Not Throw
                 }
 
                 It 'should call expected mocks' {
@@ -755,6 +780,13 @@ RenewalCert = $validThumbprint
         #endregion
 
         Describe "$DSCResourceName\Test-TargetResource" {
+            Mock -CommandName Find-CertificateAuthority -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
             It 'should return a bool' {
                 Test-TargetResource @Params | Should BeOfType Boolean
             }
@@ -776,6 +808,14 @@ RenewalCert = $validThumbprint
                 Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
                 Mock Get-CertificateSan -MockWith { $SubjectAltName }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true
+            }
+
+            It 'Should auto-discover the CA and return false' {
+                Test-TargetResource @ParamsAutoDiscovery | Should Be $false
+            }
+
+            It 'Should execute the auto-discovery function' {
+                Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
             }
         }
     }
