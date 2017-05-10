@@ -695,8 +695,8 @@ try
                     (Find-CertificateAuthority -DomainName contoso.com).CAServerFQDN | Should Be 'CA1'
                 }
 
-                It 'Should call Get-CdpContainer once' {
-                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                It 'Should call Get-CdpContainer twice' {
+                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 2
                 }
             }
 
