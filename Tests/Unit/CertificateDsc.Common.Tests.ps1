@@ -656,6 +656,11 @@ try
 
         Describe "$DSCResourceName\Find-CertificateAuthority" {
             Mock -CommandName Get-CdpContainer -MockWith {
+                [CmdletBinding()]
+                param
+                (
+                    $DomainName
+                )
                 return New-Object -TypeName psobject -Property @{
                     Children = @(
                         @{
@@ -689,18 +694,17 @@ try
                 It 'Should return the CA server fqdn' {
                     (Find-CertificateAuthority -DomainName contoso.com).CAServerFQDN | Should Be 'CA1'
                 }
-            }
-
-            Context 'Function is executed without domain connectivity' {
-                Mock -CommandName Get-CdpContainer -MockWith { }
-
-                It 'Should throw' {
-                    { Find-CertificateAuthority -DomainName somewhere.overtherainbow -ErrorAction Stop } | Should Throw
-                }
 
                 It 'Should call Get-CdpContainer once' {
                     Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
                 }
+            }
+
+            Context 'Function is executed without domain connectivity' {
+
+                It 'Should throw' {
+                    { Find-CertificateAuthority -DomainName somewhere.overtherainbow -ErrorAction Stop -Verbose } | Should Throw
+                }                
             }
         }
 

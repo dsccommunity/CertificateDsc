@@ -371,6 +371,8 @@ function Find-CertificateAuthority
         [String]
         $DomainName
     )
+
+    Write-Verbose -Message 'Starting to locate CA'
     
     try
     {
