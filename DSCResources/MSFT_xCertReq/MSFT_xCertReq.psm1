@@ -777,7 +777,7 @@ function Test-TargetResource
 			$CurrentDNSString = ($CurrentDNS | Sort-Object | Get-Unique) -join ','
 			
 			# Do the cert's DNS SANs and the desired DNS SANs match?
-			if ($CurrentDNS -ne $CorrectDNS) {
+			if ($CurrentDNSString -ne $CorrectDNSString) {
 				return $false
 			}
 		}
