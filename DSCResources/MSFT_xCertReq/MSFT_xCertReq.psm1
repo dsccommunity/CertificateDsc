@@ -765,7 +765,7 @@ function Test-TargetResource
 			$CorrectDNSString = ($CorrectDNS | Sort-Object | Get-Unique) -join ','
 			
 			# Find out what SANs are on the current cert
-			$CurrentSanList = ($cert.Extensions | Where {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n")
+			$CurrentSanList = ($cert.Extensions | Where {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
 			$CurrentDNS = @()
 			foreach ($San in $CurrentSanList) {
 				if ($San -like 'dns*') {
