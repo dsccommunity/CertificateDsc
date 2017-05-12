@@ -751,6 +751,37 @@ function Test-TargetResource
             } # if
         } # if
 
+		if ($PSBoundParameters.ContainsKey('SubjectAltName')) {
+			# Split the desired SANs into an array
+			$SanList = $SubjectAltName.Split('&')
+			$CorrectDNS = @()
+			foreach ($San in $SanList) {
+				if ($San -like 'dns*') {
+					# This SAN is a DNS name
+					$CorrectDNS += $San.split('=')[1]
+				}
+			}
+			# Convert array to string (makes comparison easy)
+			$CorrectDNSString = ($CorrectDNS | Sort-Object | Get-Unique) -join ','
+			
+			# Find out what SANs are on the current cert
+			$CurrentSanList = ($cert.Extensions | Where {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1)
+			$CurrentDNS = @()
+			foreach ($San in $CurrentSanList) {
+				if ($San -like 'dns*') {
+					# This SAN is a DNS name
+					$CurrentDNS += $San.split('=')[1]
+				}
+			}
+			# Convert array to string (makes comparison easy)
+			$CurrentDNSString = ($CurrentDNS | Sort-Object | Get-Unique) -join ','
+			
+			# Do the cert's DNS SANs and the desired DNS SANs match?
+			if ($CurrentDNS -ne $CorrectDNS) {
+				return $false
+			}
+		}
+
         # The certificate was found and is OK - so no change required.
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
