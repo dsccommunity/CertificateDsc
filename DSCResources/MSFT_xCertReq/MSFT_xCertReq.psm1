@@ -761,8 +761,6 @@ function Test-TargetResource
                     $correctDNS += $san.split('=')[1]
                 }
             }
-            # Convert array to string (makes comparison easy)
-            $correctDNSString = ($correctDNS | Sort-Object | Get-Unique) -join ','
             
             # Find out what SANs are on the current cert
             $currentSanList = ($cert.Extensions | Where {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
@@ -773,11 +771,9 @@ function Test-TargetResource
                     $currentDNS += $san.split('=')[1]
                 }
             }
-            # Convert array to string (makes comparison easy)
-            $currentDNSString = ($currentDNS | Sort-Object | Get-Unique) -join ','
-            
+
             # Do the cert's DNS SANs and the desired DNS SANs match?
-            if ($currentDNSString -ne $correctDNSString) {
+            if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0) {
                 return $false
             }
         }
