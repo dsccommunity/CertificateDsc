@@ -79,6 +79,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 - Added mandatory properties for xPfxImport resource example.
+- Fixed issue where xCertReq does not identify when DNS Names in SANs are incorrect.
 
 ### 2.5.0.0
 - Fixed issue where xCertReq does not process requested certificate when credentials parameter set and PSDscRunAsCredential not passed. See [issue](https://github.com/PowerShell/xCertificate/issues/49)
