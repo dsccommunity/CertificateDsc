@@ -146,6 +146,17 @@ try
             Credential            = $testCredential
             AutoRenew             = $False
         }
+        $ParamsAutoDiscovery = @{
+            Subject               = $validSubject
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $testCredential
+            AutoRenew             = $False
+        }
         $ParamsAutoRenew = @{
             Subject               = $validSubject
             CAServerFQDN          = $CAServerFQDN
@@ -303,7 +314,17 @@ RenewalCert = $validThumbprint
         Describe "$DSCResourceName\Get-TargetResource" {
             Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                 -Mockwith { $validCert }
+            Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
+            Mock Get-CertificateSan -MockWith { $SubjectAltName }
+            Mock -CommandName Find-CertificateAuthority -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CAServerFQDN = 'rootca.contoso.com'
+                        CARootName = 'contoso-CA'
+                    }
+                }
+
             $result = Get-TargetResource @Params
+            $resultAutoDiscovery = Get-TargetResource @ParamsAutoDiscovery
             It 'should return a hashtable' {
                 ($result -is [hashtable]) | Should Be $true
             }
@@ -316,8 +337,26 @@ RenewalCert = $validThumbprint
                 $result.ProviderName         | Should BeNullOrEmpty
                 $result.OID                  | Should BeNullOrEmpty
                 $result.KeyUsage             | Should BeNullOrEmpty
-                $result.CertificateTemplate  | Should BeNullOrEmpty
+                $result.CertificateTemplate  | Should BeExactly $CertificateTemplate
                 $result.SubjectAltName       | Should BeNullOrEmpty
+            }            
+            It 'should return a hashtable' {
+                ($resultAutoDiscovery -is [hashtable]) | Should Be $true
+            }
+            It 'should contain the input values and the CA should be auto-discovered' {
+                $resultAutoDiscovery.Subject              | Should BeExactly $validSubject
+                $resultAutoDiscovery.CAServerFQDN         | Should BeExactly $CAServerFQDN
+                $resultAutoDiscovery.CARootName           | Should BeExactly $CARootName
+                $resultAutoDiscovery.KeyLength            | Should BeNullOrEmpty
+                $resultAutoDiscovery.Exportable           | Should BeNullOrEmpty
+                $resultAutoDiscovery.ProviderName         | Should BeNullOrEmpty
+                $resultAutoDiscovery.OID                  | Should BeNullOrEmpty
+                $resultAutoDiscovery.KeyUsage             | Should BeNullOrEmpty
+                $resultAutoDiscovery.CertificateTemplate  | Should BeExactly $CertificateTemplate
+                $resultAutoDiscovery.SubjectAltName       | Should BeNullOrEmpty
+            }
+            It 'Should call the mocked function Find-CertificateAuthority once' {
+                Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
             }
         }
         #endregion
@@ -692,10 +731,62 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
                 }
             }
+
+            Context 'Auto-discovered CA, autorenew is false, credentials passed' {
+                Mock -CommandName Get-ChildItem -Mockwith { } `
+                    -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
+                Mock -CommandName Get-Content -Mockwith { 'Output' } `
+                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                Mock -CommandName Remove-Item `
+                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                Mock -CommandName Import-Module
+                Mock -CommandName Start-Win32Process
+                Mock -CommandName Wait-Win32ProcessStop
+                Mock -CommandName Find-CertificateAuthority -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                It 'should not throw' {
+                    { Set-TargetResource @ParamsAutoDiscovery } | Should Not Throw
+                }
+
+                It 'should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                        -ParameterFilter {
+                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Value -eq $CertInf
+                        }
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly 2
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    Assert-MockCalled -CommandName Get-Content -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    Assert-MockCalled -CommandName Remove-Item -Exactly 1 `
+                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
+                }
+            }
         }
         #endregion
 
         Describe "$DSCResourceName\Test-TargetResource" {
+            Mock -CommandName Find-CertificateAuthority -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
             It 'should return a bool' {
                 Test-TargetResource @Params | Should BeOfType Boolean
             }
@@ -707,12 +798,24 @@ RenewalCert = $validThumbprint
             It 'should return true when a valid certificate already exists and is not about to expire' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $validCert }
+                Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
+                Mock Get-CertificateSan -MockWith { $SubjectAltName }
                 Test-TargetResource @Params | Should Be $true
             }
             It 'should return true when a valid certificate already exists and is about to expire and autorenew set' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $expiringCert }
+                Mock Get-CertificateTemplateName -MockWith { $CertificateTemplate }
+                Mock Get-CertificateSan -MockWith { $SubjectAltName }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true
+            }
+
+            It 'Should auto-discover the CA and return false' {
+                Test-TargetResource @ParamsAutoDiscovery | Should Be $false
+            }
+
+            It 'Should execute the auto-discovery function' {
+                Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
             }
         }
     }

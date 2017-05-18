@@ -316,6 +316,216 @@ function Find-Certificate
 } # end function Find-Certificate
 
 <#
+.SYNOPSIS
+    Get CDP container
+
+.DESCRIPTION
+    Gets the configuration data partition from the active directory configuration naming context
+
+.PARAMETER DomainName
+    The domain name
+#>
+function Get-CdpContainer
+{
+    [cmdletBinding()]
+    [OutputType([psobject])]
+    param(
+        [Parameter()]
+        [String]
+        $DomainName
+    )
+
+    if (-not $DomainName)
+    {
+        $configContext = ([ADSI]'LDAP://RootDSE').configurationNamingContext
+    }
+    else
+    {
+        $ctx = New-Object -TypeName System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
+        $configContext = 'CN=Configuration,{0}' -f ([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName[0])
+    }
+
+    Write-Verbose -Message ($LocalizedData.ConfigurationNamingContext -f $configContext)
+    $cdpContainer = [ADSI]('LDAP://CN=CDP,CN=Public Key Services,CN=Services,{0}' -f $configContext)
+
+    return $cdpContainer
+} # end function Get-CdpContainer
+
+<#
+.SYNOPSIS
+    Automatically locate a certificate authority in Active Directory
+
+.DESCRIPTION
+    Automatically locates a certificate autority in Active Directory environments by leveraging ADSI to look inside the container CDP and
+    subsequently trying to certutil -ping every located CA until one is found.
+
+.PARAMETER DomainName
+    The domain name of the domain that will be used to locate the CA. Can be left empty to use the current domain.
+#>
+function Find-CertificateAuthority
+{
+    [cmdletBinding()]
+    [OutputType([psobject])]
+    param(
+        [Parameter()]
+        [String]
+        $DomainName
+    )
+
+    Write-Verbose -Message 'Starting to locate CA'
+    
+    try
+    {
+        $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
+    }
+    catch
+    {
+        Write-Error -Message ($LocalizedData.DomainContactError -f $DomainName, $PSItem.Exception.Message) -TargetObject $DomainName
+        return
+    }
+                
+    $caFound = $false
+    foreach ($item in $cdpContainer.Children)
+    {        
+        if (-not $caFound)
+        {            
+            $machine = ($item.distinguishedName -split '=|,')[1]
+            $caName = ($item.Children.distinguishedName -split '=|,')[1]
+            
+            $certificateAuthority = [psobject]@{
+                CARootName = $caName
+                CAServerFQDN = $machine
+            }
+                        
+            $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
+            $locatorInfo.FileName = 'certutil.exe'
+            $locatorInfo.Arguments = "-ping $machine\$caName"
+
+            # Certutil does not make use of standard error stream
+            $locatorInfo.RedirectStandardError = $false
+            $locatorInfo.RedirectStandardOutput = $true
+            $locatorInfo.UseShellExecute = $false
+            $locatorInfo.CreateNoWindow = $true
+
+            $locatorProcess = New-Object -TypeName System.Diagnostics.Process
+            $locatorProcess.StartInfo = $locatorInfo
+
+            $null = $locatorProcess.Start()
+            $locatorOut = $locatorProcess.StandardOutput.ReadToEnd()
+            $null = $locatorProcess.WaitForExit()
+
+            Write-Verbose -Message ($LocalizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut)
+            
+            if ($locatorProcess.ExitCode -eq 0 )
+            {
+                $caFound = $true
+            }
+        }
+    }
+    
+    if ($caFound)
+    {
+        Write-Verbose -Message ($LocalizedData.CaFoundMessage -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName)
+        return $certificateAuthority
+    }
+    else
+    {
+        Write-Error -Message ($LocalizedData.NoCaFoundError -f $configContext) -TargetObject $configContext
+    }
+} # end function Find-CertificateAuthority
+
+<#
+.SYNOPSIS
+    Get a certificate template name
+
+.DESCRIPTION
+    Gets the name of the template used for the certificate that is passed to this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or "1.3.6.1.4.1.311.20.2"
+
+.PARAMETER Certificate
+    The certificate object the template name is needed for
+#>
+function Get-CertificateTemplateName
+{
+    [cmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        # The certificate for which a template is needed
+        [Parameter(Mandatory = $true)]
+        [object]
+        $Certificate
+    )
+
+    if ($Certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2])
+    {
+        return
+    }
+
+    # Test the different OIDs
+    if ('1.3.6.1.4.1.311.21.7' -in $Certificate.Extensions.oid.Value)
+    {
+        $temp = $Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7' }
+        $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
+        $templateName = $Matches.TemplateName -replace ' '
+    }
+
+    if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)
+    {
+        $templateName = ($Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.20.2' }).Format(0)        
+    }
+
+    return $templateName
+}
+
+<#
+.SYNOPSIS
+    Get certificate SAN
+
+.DESCRIPTION
+    Gets the first subject alternative name for the certificate that is passed to this cmdlet
+
+.PARAMETER Certificate
+    The certificate object the subject alternative name is needed for
+#>
+function Get-CertificateSan
+{
+    [cmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        # The certificate for which the subject alternative names are needed
+        [Parameter(Mandatory = $true)]
+        [object]
+        $Certificate
+    )
+
+    if ($Certificate -isnot [System.Security.Cryptography.X509Certificates.X509Certificate2])
+    {
+        return
+    }
+    
+    $subjectAlternativeName = $null
+    
+    $sanExtension = $Certificate.Extensions | Where-Object { $_.Oid.FriendlyName -match 'subject alternative name' }
+    
+    if ($null -eq $sanExtension)
+    {
+        return $subjectAlternativeName
+    }
+
+    $sanObjects = New-Object -ComObject X509Enrollment.CX509ExtensionAlternativeNames            
+    $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)            
+    $sanObjects.InitializeDecode(1, $altNamesStr)
+
+    if ($sanObjects.AlternativeNames.Count -gt 0)
+    {
+        $subjectAlternativeName = $sanObjects.AlternativeNames[0].strValue
+    }
+
+    return $subjectAlternativeName
+}
+
+<#
     .SYNOPSIS
     Throws an InvalidArgument custom exception.
 
@@ -330,12 +540,12 @@ function New-InvalidArgumentError
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ErrorId,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ErrorMessage

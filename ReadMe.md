@@ -23,8 +23,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ### xCertReq
 
 - **`[String]` Subject**: Provide the text string to use as the subject of the certificate. Key.
-- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Required.
-- **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Required.
+- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Leave empty to auto-discover in an Active Directory environment.
+- **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Leave empty to auto-discover in an Active Directory environment.
 - **`[String]` KeyLength**: The bit length of the encryption key to be used. Optional. { *1024* | 2048 | 4096 | 8192 }.
 - **`[Boolean]` Exportable**: The option to allow the certificate to be exportable, by default it will be true. Optional. Defaults to `$true`.
 - **`[String]` ProviderName**: The selection of provider for the type of encryption to be used. Optional. Defaults to `"Microsoft RSA SChannel Cryptographic Provider"`.
@@ -34,6 +34,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[String]` SubjectAltName** The subject alternative name used to create the certificate. Optional.
 - **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
 - **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
+- **`[Boolean]` UseMachineContext**:  Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication. Optional.
 - **`[String]` CAType** The type of Certificate Authority in use. Optional. Defaults to `Enterprise`
 - **`[String]` CepURL** The URL to a Certificate Enrollment Policy Web Service. Optional.
 - **`[String]` CesURL** The URL to a Certificate Enrollment Web Service. Optional.
@@ -79,8 +80,17 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 - Added mandatory properties for xPfxImport resource example.
+- xCertReq:
+  - Added Certificate Authority auto-discovery to resource xCertReq.
+  - Added SAN and certificate template name to xCertReq's Get-TargetResource
+  - Added new parameter UseMachineContext to be able to use CA templates that try to fill the subject alternative name
+- CertificateDSc.Common:
+  - Added function Get-CertificateTemplateName to retrieve template name
+  - Added function Get-CertificateSan to retrieve subject alternative name
+  - Added function Find-CertificateAuthority to enable auto-discovery
 
 ### 2.5.0.0
+
 - Fixed issue where xCertReq does not process requested certificate when credentials parameter set and PSDscRunAsCredential not passed. See [issue](https://github.com/PowerShell/xCertificate/issues/49)
 
 ### 2.4.0.0
