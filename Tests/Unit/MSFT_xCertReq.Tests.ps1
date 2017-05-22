@@ -145,7 +145,7 @@ try
         Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
-		$incorrectSanExt = @{
+        $incorrectSanExt = @{
             oid = $(,$sanOid)    
             Critical = $false
         }
