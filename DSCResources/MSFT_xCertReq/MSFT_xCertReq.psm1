@@ -58,6 +58,9 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER CesURL
     The URL to the Certification Enrollment Service.
+    
+    .PARAMETER UseMachineContext
+    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 #>
 function Get-TargetResource
 {
@@ -70,13 +73,11 @@ function Get-TargetResource
         [System.String]
         $Subject,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CAServerFQDN,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CARootName,
 
@@ -135,10 +136,21 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $CesURL
+        $CesURL,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext
     )
 
     # The certificate authority, accessible on the local area network
+    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    {
+        $caObject = Find-CertificateAuthority
+        $CARootName = $caObject.CARootName
+        $CAServerFQDN = $caObject.CAServerFQDN
+    }
+
     $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
@@ -166,15 +178,15 @@ function Get-TargetResource
 
         $returnValue = @{
             Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN         = $null # This value can't be determined from the cert
+            CAServerFQDN         = $caObject.CAServerFQDN
             CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
             KeyLength            = $Cert.Publickey.Key.KeySize
-            Exportable           = $null # This value can't be determined from the cert
-            ProviderName         = $null # This value can't be determined from the cert
+            Exportable           = $Cert.PrivateKey.CspKeyContainerInfo.Exportable
+            ProviderName         = $Cert.PrivateKey.CspKeyContainerInfo.ProviderName
             OID                  = $null # This value can't be determined from the cert
             KeyUsage             = $null # This value can't be determined from the cert
-            CertificateTemplate  = $null # This value can't be determined from the cert
-            SubjectAltName       = $null # This value can't be determined from the cert
+            CertificateTemplate  = Get-CertificateTemplateName -Certificate $Cert
+            SubjectAltName       = Get-CertificateSan -Certificate $Cert
         }
     }
     else
@@ -233,6 +245,9 @@ function Get-TargetResource
 
     .PARAMETER CesURL
     The URL to the Certification Enrollment Service.
+    
+    .PARAMETER UseMachineContext
+    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 #>
 function Set-TargetResource
 {
@@ -244,13 +259,11 @@ function Set-TargetResource
         [System.String]
         $Subject,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CAServerFQDN,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CARootName,
 
@@ -309,10 +322,21 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $CesURL
+        $CesURL,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext
     )
 
     # The certificate authority, accessible on the local area network
+    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    {
+        $caObject = Find-CertificateAuthority
+        $CARootName = $caObject.CARootName
+        $CAServerFQDN = $caObject.CAServerFQDN
+    }
+    
     $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
@@ -486,9 +510,19 @@ RenewalCert = $Thumbprint
                 # will request the certificate
                 $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
                 $command = "$PSHOME\PowerShell.exe"
-                $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
+
+                if($UseMachineContext)
+                {
+                    $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
+                    " @('-submit','-q','-adminforcemachine','-config','$ca','$reqPath','$cerPath')" + `
+                    " | Set-Content -Path '$certReqOutPath'"""
+                }
+                else
+                {
+                    $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
                     " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
                     " | Set-Content -Path '$certReqOutPath'"""
+                }            
 
                 # This may output a win32-process object, but it often does not because of
                 # a timing issue in PDT (the process has often completed before the
@@ -615,6 +649,9 @@ RenewalCert = $Thumbprint
 
     .PARAMETER CesURL
     The URL to the Certification Enrollment Service.
+    
+    .PARAMETER UseMachineContext
+    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 #>
 function Test-TargetResource
 {
@@ -627,13 +664,11 @@ function Test-TargetResource
         [System.String]
         $Subject,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CAServerFQDN,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.String]
         $CARootName,
 
@@ -692,10 +727,21 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $CesURL
+        $CesURL,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext
     )
 
     # The certificate authority, accessible on the local area network
+    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    {
+        $caObject = Find-CertificateAuthority
+        $CARootName = $caObject.CARootName
+        $CAServerFQDN = $caObject.CAServerFQDN
+    }
+    
     $ca = "$CAServerFQDN\$CARootName"
 
     # If the Subject does not contain a full X500 path, construct just the CN
@@ -709,11 +755,21 @@ function Test-TargetResource
             $($LocalizedData.TestingCertReqStatusMessage -f $Subject,$ca)
         ) -join '' )
 
+    # Exception for standard template DomainControllerAuthentication
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
             $_.Subject -eq $Subject -and `
             $_.Issuer.split(',')[0] -eq "CN=$CARootName"
         }
+
+    if ($CertificateTemplate -eq 'DomainControllerAuthentication')
+    {
+        $cert = Get-Childitem -Path Cert:\LocalMachine\My |
+            Where-Object -FilterScript {
+                (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+                $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+            }
+    }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $cert = $cert |
@@ -777,6 +833,15 @@ function Test-TargetResource
                 return $false
             }
         }
+
+        if ($CertificateTemplate -ne (Get-CertificateTemplateName -Certificate $cert))
+        {
+            Write-Verbose -Message ( @(
+                        "$($MyInvocation.MyCommand): "
+                        $($LocalizedData.CertTemplateMismatch -f $Subject,$ca,$cert.Thumbprint,(Get-CertificateTemplateName -Certificate $cert))
+                    ) -join '' )
+            return $false
+        } # if
 
         # The certificate was found and is OK - so no change required.
         Write-Verbose -Message ( @(
