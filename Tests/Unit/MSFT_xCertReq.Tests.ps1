@@ -93,7 +93,7 @@ try
         $OID                   = '1.3.6.1.5.5.7.3.1'
         $KeyUsage              = '0xa0'
         $CertificateTemplate   = 'WebServer'
-		$SubjectAltUrl         = 'contoso.com'
+        $SubjectAltUrl         = 'contoso.com'
         $SubjectAltName        = "dns=$SubjectAltUrl"
 
         $validCert      = New-Object -TypeName PSObject -Property @{
@@ -126,46 +126,46 @@ try
         Add-Member -InputObject $expiredCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
-		$sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{FriendlyName = 'Subject Alternative Name'}
-		$sanExt = @{
-			oid = $(,$sanOid)    
-			Critical = $false
-		}
-		Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
+        $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{FriendlyName = 'Subject Alternative Name'}
+        $sanExt = @{
+            oid = $(,$sanOid)    
+            Critical = $false
+        }
+        Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
             return "DNS Name=$SubjectAltUrl"
         }
-		$validSANCert      = New-Object -TypeName PSObject -Property @{
+        $validSANCert      = New-Object -TypeName PSObject -Property @{
             Thumbprint     = $validThumbprint
             Subject        = "CN=$validSubject"
             Issuer         = $validIssuer
             NotBefore      = (Get-Date).AddDays(-30) # Issued on
             NotAfter       = (Get-Date).AddDays(31) # Expires after
-			Extensions     = $sanExt
+            Extensions     = $sanExt
         }
         Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
-		Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
+        Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
             return "DNS Name=incorrect.com"
         }
-		$incorrectSANCert  = New-Object -TypeName PSObject -Property @{
+        $incorrectSANCert  = New-Object -TypeName PSObject -Property @{
             Thumbprint     = $validThumbprint
             Subject        = "CN=$validSubject"
             Issuer         = $validIssuer
             NotBefore      = (Get-Date).AddDays(-30) # Issued on
             NotAfter       = (Get-Date).AddDays(31) # Expires after
-			Extensions     = $sanExt
+            Extensions     = $sanExt
         }
         Add-Member -InputObject $incorrectSANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
-		$emptySANCert      = New-Object -TypeName PSObject -Property @{
+        $emptySANCert      = New-Object -TypeName PSObject -Property @{
             Thumbprint     = $validThumbprint
             Subject        = "CN=$validSubject"
             Issuer         = $validIssuer
             NotBefore      = (Get-Date).AddDays(-30) # Issued on
             NotAfter       = (Get-Date).AddDays(31) # Expires after
-			Extensions     = @()
+            Extensions     = @()
         }
         Add-Member -InputObject $emptySANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
@@ -868,17 +868,17 @@ RenewalCert = $validThumbprint
                 Mock Get-CertificateSan -MockWith { $SubjectAltName }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true
             }
-			      It 'should return true when a valid certificate already exists and DNS SANs match' {
+                  It 'should return true when a valid certificate already exists and DNS SANs match' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $validSANCert }
                 Test-TargetResource @ParamsSubjectAltName | Should Be $true
             }
-			      It 'should return false when a certificate exists but contains incorrect DNS SANs' {
+                  It 'should return false when a certificate exists but contains incorrect DNS SANs' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $incorrectSANCert }
                 Test-TargetResource @ParamsSubjectAltName | Should Be $false
             }
-			      It 'should return false when a certificate exists but does not contain specified DNS SANs' {
+                  It 'should return false when a certificate exists but does not contain specified DNS SANs' {
                 Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -Mockwith { $emptySANCert }
                 Test-TargetResource @ParamsSubjectAltName | Should Be $false
