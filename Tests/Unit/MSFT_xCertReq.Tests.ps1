@@ -145,7 +145,11 @@ try
         Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
-        Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
+		$incorrectSanExt = @{
+            oid = $(,$sanOid)    
+            Critical = $false
+        }
+        Add-Member -InputObject $incorrectSanExt -MemberType ScriptMethod -Name Format -Force -Value {
             return "DNS Name=incorrect.com"
         }
         $incorrectSANCert  = New-Object -TypeName PSObject -Property @{
@@ -154,7 +158,7 @@ try
             Issuer         = $validIssuer
             NotBefore      = (Get-Date).AddDays(-30) # Issued on
             NotAfter       = (Get-Date).AddDays(31) # Expires after
-            Extensions     = $sanExt
+            Extensions     = $incorrectSanExt
         }
         Add-Member -InputObject $incorrectSANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
