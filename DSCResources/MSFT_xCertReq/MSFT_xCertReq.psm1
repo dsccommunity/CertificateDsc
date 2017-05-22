@@ -819,17 +819,23 @@ function Test-TargetResource
             }
             
             # Find out what SANs are on the current cert
-            $currentSanList = ($cert.Extensions | Where {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
-            $currentDNS = @()
-            foreach ($san in $currentSanList) {
-                if ($san -like 'dns*') {
-                    # This SAN is a DNS name
-                    $currentDNS += $san.split('=')[1]
+            if ($cert.Extensions.Count -gt 0) {
+                $currentSanList = ($cert.Extensions | Where {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
+                $currentDNS = @()
+                foreach ($san in $currentSanList) {
+                    if ($san -like 'dns*') {
+                        # This SAN is a DNS name
+                        $currentDNS += $san.split('=')[1]
+                    }
+                }
+
+                # Do the cert's DNS SANs and the desired DNS SANs match?
+                if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0) {
+                    return $false
                 }
             }
-
-            # Do the cert's DNS SANs and the desired DNS SANs match?
-            if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0) {
+            else {
+                # There are no SANs and there should be
                 return $false
             }
         }
