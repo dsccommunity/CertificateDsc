@@ -820,7 +820,7 @@ function Test-TargetResource
             
             # Find out what SANs are on the current cert
             if ($cert.Extensions.Count -gt 0) {
-                $currentSanList = ($cert.Extensions | Where {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
+                $currentSanList = ($cert.Extensions | Where-Object {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
                 $currentDNS = @()
                 foreach ($san in $currentSanList) {
                     if ($san -like 'dns*') {
