@@ -81,6 +81,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ### Unreleased
 - Added mandatory properties for xPfxImport resource example.
 - xCertReq:
+  - Fixed issue where xCertReq does not identify when DNS Names in SANs are incorrect.
   - Added Certificate Authority auto-discovery to resource xCertReq.
   - Added SAN and certificate template name to xCertReq's Get-TargetResource
   - Added new parameter UseMachineContext to be able to use CA templates that try to fill the subject alternative name

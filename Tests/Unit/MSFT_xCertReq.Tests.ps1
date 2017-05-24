@@ -93,7 +93,8 @@ try
         $OID                   = '1.3.6.1.5.5.7.3.1'
         $KeyUsage              = '0xa0'
         $CertificateTemplate   = 'WebServer'
-        $SubjectAltName        = 'dns=contoso.com'
+        $SubjectAltUrl         = 'contoso.com'
+        $SubjectAltName        = "dns=$SubjectAltUrl"
 
         $validCert      = New-Object -TypeName PSObject -Property @{
             Thumbprint  = $validThumbprint
@@ -123,6 +124,54 @@ try
             NotAfter    = (Get-Date).AddDays(-1) # Expires after
         }
         Add-Member -InputObject $expiredCert -MemberType ScriptMethod -Name Verify -Value {
+            return $true
+        }
+        $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{FriendlyName = 'Subject Alternative Name'}
+        $sanExt = @{
+            oid = $(,$sanOid)    
+            Critical = $false
+        }
+        Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
+            return "DNS Name=$SubjectAltUrl"
+        }
+        $validSANCert      = New-Object -TypeName PSObject -Property @{
+            Thumbprint     = $validThumbprint
+            Subject        = "CN=$validSubject"
+            Issuer         = $validIssuer
+            NotBefore      = (Get-Date).AddDays(-30) # Issued on
+            NotAfter       = (Get-Date).AddDays(31) # Expires after
+            Extensions     = $sanExt
+        }
+        Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
+            return $true
+        }
+        $incorrectSanExt = @{
+            oid = $(,$sanOid)    
+            Critical = $false
+        }
+        Add-Member -InputObject $incorrectSanExt -MemberType ScriptMethod -Name Format -Force -Value {
+            return "DNS Name=incorrect.com"
+        }
+        $incorrectSANCert  = New-Object -TypeName PSObject -Property @{
+            Thumbprint     = $validThumbprint
+            Subject        = "CN=$validSubject"
+            Issuer         = $validIssuer
+            NotBefore      = (Get-Date).AddDays(-30) # Issued on
+            NotAfter       = (Get-Date).AddDays(31) # Expires after
+            Extensions     = $incorrectSanExt
+        }
+        Add-Member -InputObject $incorrectSANCert -MemberType ScriptMethod -Name Verify -Value {
+            return $true
+        }
+        $emptySANCert      = New-Object -TypeName PSObject -Property @{
+            Thumbprint     = $validThumbprint
+            Subject        = "CN=$validSubject"
+            Issuer         = $validIssuer
+            NotBefore      = (Get-Date).AddDays(-30) # Issued on
+            NotAfter       = (Get-Date).AddDays(31) # Expires after
+            Extensions     = @()
+        }
+        Add-Member -InputObject $emptySANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
 
@@ -221,6 +270,20 @@ try
             CertificateTemplate   = $CertificateTemplate
             Credential            = $null
             AutoRenew             = $True
+        }
+        $ParamsSubjectAltName = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $CAServerFQDN
+            CARootName            = $CARootName
+            KeyLength             = $KeyLength
+            Exportable            = $Exportable
+            ProviderName          = $ProviderName
+            OID                   = $OID
+            KeyUsage              = $KeyUsage
+            CertificateTemplate   = $CertificateTemplate
+            Credential            = $testCredential
+            SubjectAltName        = $SubjectAltName
+            AutoRenew             = $False
         }
         $ParamsSubjectAltNameNoCred = @{
             Subject               = $validSubject
@@ -809,11 +872,24 @@ RenewalCert = $validThumbprint
                 Mock Get-CertificateSan -MockWith { $SubjectAltName }
                 Test-TargetResource @ParamsAutoRenew | Should Be $true
             }
-
+                  It 'should return true when a valid certificate already exists and DNS SANs match' {
+                Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -Mockwith { $validSANCert }
+                Test-TargetResource @ParamsSubjectAltName | Should Be $true
+            }
+                  It 'should return false when a certificate exists but contains incorrect DNS SANs' {
+                Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -Mockwith { $incorrectSANCert }
+                Test-TargetResource @ParamsSubjectAltName | Should Be $false
+            }
+                  It 'should return false when a certificate exists but does not contain specified DNS SANs' {
+                Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -Mockwith { $emptySANCert }
+                Test-TargetResource @ParamsSubjectAltName | Should Be $false
+            }
             It 'Should auto-discover the CA and return false' {
                 Test-TargetResource @ParamsAutoDiscovery | Should Be $false
             }
-
             It 'Should execute the auto-discovery function' {
                 Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
             }

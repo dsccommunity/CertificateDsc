@@ -807,6 +807,39 @@ function Test-TargetResource
             } # if
         } # if
 
+        if ($PSBoundParameters.ContainsKey('SubjectAltName')) {
+            # Split the desired SANs into an array
+            $sanList = $SubjectAltName.Split('&')
+            $correctDNS = @()
+            foreach ($san in $sanList) {
+                if ($san -like 'dns*') {
+                    # This SAN is a DNS name
+                    $correctDNS += $san.split('=')[1]
+                }
+            }
+            
+            # Find out what SANs are on the current cert
+            if ($cert.Extensions.Count -gt 0) {
+                $currentSanList = ($cert.Extensions | Where-Object {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
+                $currentDNS = @()
+                foreach ($san in $currentSanList) {
+                    if ($san -like 'dns*') {
+                        # This SAN is a DNS name
+                        $currentDNS += $san.split('=')[1]
+                    }
+                }
+
+                # Do the cert's DNS SANs and the desired DNS SANs match?
+                if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0) {
+                    return $false
+                }
+            }
+            else {
+                # There are no SANs and there should be
+                return $false
+            }
+        }
+
         if ($CertificateTemplate -ne (Get-CertificateTemplateName -Certificate $cert))
         {
             Write-Verbose -Message ( @(
