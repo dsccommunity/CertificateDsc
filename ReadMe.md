@@ -79,6 +79,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+
+### 2.6.0.0
 - Added mandatory properties for xPfxImport resource example.
 - xCertReq:
   - Fixed issue where xCertReq does not identify when DNS Names in SANs are incorrect.
