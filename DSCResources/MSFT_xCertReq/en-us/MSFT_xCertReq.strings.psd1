@@ -19,4 +19,5 @@ ConvertFrom-StringData @'
     CertificateReqNotFoundError = Certificate Request file '{0}' not found.
     CertificateCerNotFoundError = Certificate file '{0}' not found.
     CertReqOutNotFoundError = CertReq.exe output file '{0}' not found.
+    CertTemplateMismatch = The certificate with subject '{0}' issued by '{1}' with thumbprint {2} has the wrong template {3}.
 '@
