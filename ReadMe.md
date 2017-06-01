@@ -107,6 +107,9 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - Converted AppVeyor.yml to use DSCResource.tests shared code.
 - Opted-In to markdown rule validation.
 - Examples modified to meet standards for auto documentation generation.
+- Added integration test to test for conflicts with other common resource kit modules.
+- Prevented ResourceHelper and Common module cmdlets from being exported to resolve
+  conflicts with other resource modules.
 
 ### 2.3.0.0
 
