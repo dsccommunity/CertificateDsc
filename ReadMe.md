@@ -80,6 +80,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 
+### 2.7.0.0
+
 - Added integration test to test for conflicts with other common resource kit modules.
 - Prevented ResourceHelper and Common module cmdlets from being exported to resolve
   conflicts with other resource modules.

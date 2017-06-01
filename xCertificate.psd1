@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    ModuleVersion = '2.6.0.0'
+    ModuleVersion = '2.7.0.0'
 
     # ID used to uniquely identify this module
     GUID = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -50,16 +50,9 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- Added mandatory properties for xPfxImport resource example.
-- xCertReq:
-  - Fixed issue where xCertReq does not identify when DNS Names in SANs are incorrect.
-  - Added Certificate Authority auto-discovery to resource xCertReq.
-  - Added SAN and certificate template name to xCertReq"s Get-TargetResource
-  - Added new parameter UseMachineContext to be able to use CA templates that try to fill the subject alternative name
-- CertificateDSc.Common:
-  - Added function Get-CertificateTemplateName to retrieve template name
-  - Added function Get-CertificateSan to retrieve subject alternative name
-  - Added function Find-CertificateAuthority to enable auto-discovery
+        ReleaseNotes = '- Added integration test to test for conflicts with other common resource kit modules.
+- Prevented ResourceHelper and Common module cmdlets from being exported to resolve
+  conflicts with other resource modules.
 
 '
 
@@ -68,6 +61,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 
