@@ -142,6 +142,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Converted unit tests to use Get-InvalidOperationRecord in CommonTestHelper.
   - Improved unit test style to match standard layout.
   - Minor corrections to style to be HQRM compliant.
+  - Improved Verbose logging by writing all lines of CertReq.exe output.
 - Corrected all makrdown rule violations in README.MD.
 - Added markdownlint.json file to enable line length rule checking in VSCode
   with [MarkdownLint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)

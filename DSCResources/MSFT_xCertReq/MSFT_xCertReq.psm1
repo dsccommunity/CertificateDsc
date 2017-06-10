@@ -515,7 +515,7 @@ RenewalCert = $Thumbprint
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.CreateRequestResultCertificateMessage -f $createRequest)
+            $($LocalizedData.CreateRequestResultCertificateMessage -f ($createRequest | Out-String))
         ) -join '' )
 
     <#
@@ -611,7 +611,7 @@ RenewalCert = $Thumbprint
 
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.SubmittingRequestResultCertificateMessage -f $submitRequest)
+                $($LocalizedData.SubmittingRequestResultCertificateMessage -f ($submitRequest | Out-String))
             ) -join '' )
     }
     else
@@ -632,7 +632,7 @@ RenewalCert = $Thumbprint
 
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.AcceptingRequestResultCertificateMessage -f $acceptRequest)
+                $($LocalizedData.AcceptingRequestResultCertificateMessage -f ($acceptRequest | Out-String))
             ) -join '' )
     }
     else
