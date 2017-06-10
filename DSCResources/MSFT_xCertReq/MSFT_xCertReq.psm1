@@ -73,6 +73,9 @@ $localizedData = Get-LocalizedData `
     
     .PARAMETER UseMachineContext
     Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
+
+    .PARAMETER FriendlyName
+    Specifies a friendly name for the certificate.
 #>
 function Get-TargetResource
 {
@@ -152,7 +155,12 @@ function Get-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $UseMachineContext
+        $UseMachineContext,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
     )
 
     # The certificate authority, accessible on the local area network
@@ -199,6 +207,7 @@ function Get-TargetResource
             KeyUsage             = $null # This value can't be determined from the cert
             CertificateTemplate  = Get-CertificateTemplateName -Certificate $Cert
             SubjectAltName       = Get-CertificateSan -Certificate $Cert
+            FriendlyName         = $Cert.FriendlyName
         }
     }
     else
@@ -260,6 +269,9 @@ function Get-TargetResource
     
     .PARAMETER UseMachineContext
     Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
+
+    .PARAMETER FriendlyName
+    Specifies a friendly name for the certificate.
 #>
 function Set-TargetResource
 {
@@ -338,7 +350,12 @@ function Set-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $UseMachineContext
+        $UseMachineContext,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
     )
 
     # The certificate authority, accessible on the local area network
@@ -380,8 +397,10 @@ function Set-TargetResource
             ForEach-Object -Process { $_.Thumbprint }
     } # if
 
-    # Information that will be used in the INF file to generate the certificate request
-    # In future versions, select variables from the list below could be moved to parameters!
+    <#
+        Information that will be used in the INF file to generate the certificate request
+        In future versions, select variables from the list below could be moved to parameters!
+    #>
     $Subject             = "`"$Subject`""
     $keySpec             = '1'
     $machineKeySet       = 'TRUE'
@@ -391,7 +410,7 @@ function Set-TargetResource
     $useExistingKeySet   = 'FALSE'
     $providerType        = '12'
     $requestType         = 'CMC'
-
+    
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
     $workingPath = Join-Path -Path $env:Temp -ChildPath "xCertReq-$guid"
@@ -416,6 +435,16 @@ ProviderName = $ProviderName
 ProviderType = $providerType
 RequestType = $requestType
 KeyUsage = $KeyUsage
+"@
+    if ($FriendlyName)
+    {
+        $requestDetails += @"
+
+FriendlyName = "$FriendlyName"
+"@
+    }
+    $requestDetails += @"
+
 [RequestAttributes]
 CertificateTemplate = $CertificateTemplate
 [EnhancedKeyUsageExtension]
@@ -449,10 +478,13 @@ RenewalCert = $Thumbprint
     }
     Set-Content -Path $infPath -Value $requestDetails
 
-    # Certreq.exe:
-    # Syntax: https://technet.microsoft.com/en-us/library/cc736326.aspx
-    # Reference: https://support2.microsoft.com/default.aspx?scid=kb;EN-US;321051
-
+    <#
+        Certreq.exe is used to handle the request of the new certificate
+        because of the lack of native PowerShell Certificate cmdlets.
+        Syntax: https://technet.microsoft.com/en-us/library/cc736326.aspx
+        Reference: https://support2.microsoft.com/default.aspx?scid=kb;EN-US;321051
+    #>
+    
     # NEW: Create a new request as directed by PolicyFileIn
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -460,19 +492,19 @@ RenewalCert = $Thumbprint
         ) -join '' )
 
     <#
-    If enrollment server is specified the request will be towards
-    the specified URLs instead, using credentials for authentication.
+        If enrollment server is specified the request will be towards
+        the specified URLs instead, using credentials for authentication.
     #>
     if ($Credential -and $CepURL -and $CesURL)
     {
         $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
         $createRequest = & certreq.exe @(
-            '-new', '-q', 
-            '-username', $Credential.UserName, 
-            '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW), 
-            '-PolicyServer', $CepURL, 
-            '-config', $CesURL, 
-            $infPath, 
+            '-new', '-q',
+            '-username', $Credential.UserName,
+            '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW),
+            '-PolicyServer', $CepURL,
+            '-config', $CesURL,
+            $infPath,
             $reqPath
         )
     }
@@ -486,10 +518,12 @@ RenewalCert = $Thumbprint
             $($LocalizedData.CreateRequestResultCertificateMessage -f $createRequest)
         ) -join '' )
 
-    # SUBMIT: Submit a request to a Certification Authority.
-    # DSC runs in the context of LocalSystem, which uses the Computer account in Active Directory
-    # to authenticate to network resources
-    # The Credential paramter with PDT is used to impersonate a user making the request
+    <#
+        SUBMIT: Submit a request to a Certification Authority.
+        DSC runs in the context of LocalSystem, which uses the Computer account in Active Directory
+        to authenticate to network resources
+        The Credential paramter with PDT is used to impersonate a user making the request
+    #>
     if (Test-Path -Path $reqPath)
     {
         Write-Verbose -Message ( @(
@@ -500,8 +534,8 @@ RenewalCert = $Thumbprint
         if ($Credential)
         {
             <#
-            If enrollment server is specified the request will be towards
-            the specified URLs instead, using credentials for authentication.
+                If enrollment server is specified the request will be towards
+                the specified URLs instead, using credentials for authentication.
             #>
             if($CepURL -and $CesURL)
             {
@@ -518,8 +552,10 @@ RenewalCert = $Thumbprint
             }
             else 
             {
-                # Assemble the command and arguments to pass to the powershell process that
-                # will request the certificate
+                <#
+                    Assemble the command and arguments to pass to the powershell process that
+                    will request the certificate
+                #>
                 $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
                 $command = "$PSHOME\PowerShell.exe"
 
@@ -534,11 +570,13 @@ RenewalCert = $Thumbprint
                     $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
                     " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
                     " | Set-Content -Path '$certReqOutPath'"""
-                }            
+                }
 
-                # This may output a win32-process object, but it often does not because of
-                # a timing issue in PDT (the process has often completed before the
-                # process can be read in).
+                <#
+                    This may output a win32-process object, but it often does not because of
+                    a timing issue in PDT (the process has often completed before the
+                    process can be read in).
+                #>
                 $null = Start-Win32Process `
                     -Path $command `
                     -Arguments $arguments `
@@ -561,9 +599,8 @@ RenewalCert = $Thumbprint
                 }
                 else
                 {
-                    New-InvalidArgumentError `
-                        -ErrorId 'CertReqOutNotFoundError' `
-                        -ErrorMessage ($LocalizedData.CertReqOutNotFoundError -f $certReqOutPath)
+                    New-InvalidOperationException `
+                        -Message ($LocalizedData.CertReqOutNotFoundError -f $certReqOutPath)
                 } # if
             } # if
         }
@@ -579,9 +616,8 @@ RenewalCert = $Thumbprint
     }
     else
     {
-        New-InvalidArgumentError `
-            -ErrorId 'CertificateReqNotFoundError' `
-            -ErrorMessage ($LocalizedData.CertificateReqNotFoundError -f $reqPath)
+        New-InvalidOperationException `
+            -Message ($LocalizedData.CertificateReqNotFoundError -f $reqPath)
     } # if
 
     # ACCEPT: Accept the request
@@ -601,9 +637,8 @@ RenewalCert = $Thumbprint
     }
     else
     {
-        New-InvalidArgumentError `
-            -ErrorId 'CertificateCerNotFoundError' `
-            -ErrorMessage ($LocalizedData.CertificateCerNotFoundError -f $cerPath)
+        New-InvalidOperationException `
+            -Message ($LocalizedData.CertificateCerNotFoundError -f $cerPath)
     } # if
 
     Write-Verbose -Message ( @(
@@ -664,6 +699,9 @@ RenewalCert = $Thumbprint
     
     .PARAMETER UseMachineContext
     Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
+
+    .PARAMETER FriendlyName
+    Specifies a friendly name for the certificate.
 #>
 function Test-TargetResource
 {
@@ -743,7 +781,12 @@ function Test-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $UseMachineContext
+        $UseMachineContext,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
     )
 
     # The certificate authority, accessible on the local area network
@@ -819,30 +862,38 @@ function Test-TargetResource
             } # if
         } # if
 
-        if ($PSBoundParameters.ContainsKey('SubjectAltName')) {
+        if ($PSBoundParameters.ContainsKey('SubjectAltName'))
+        {
             # Split the desired SANs into an array
             $sanList = $SubjectAltName.Split('&')
             $correctDNS = @()
-            foreach ($san in $sanList) {
-                if ($san -like 'dns*') {
+
+            foreach ($san in $sanList)
+            {
+                if ($san -like 'dns*')
+                {
                     # This SAN is a DNS name
                     $correctDNS += $san.split('=')[1]
                 }
             }
             
             # Find out what SANs are on the current cert
-            if ($cert.Extensions.Count -gt 0) {
+            if ($cert.Extensions.Count -gt 0)
+            {
                 $currentSanList = ($cert.Extensions | Where-Object {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
                 $currentDNS = @()
-                foreach ($san in $currentSanList) {
-                    if ($san -like 'dns*') {
+                foreach ($san in $currentSanList)
+                {
+                    if ($san -like 'dns*')
+                    {
                         # This SAN is a DNS name
                         $currentDNS += $san.split('=')[1]
                     }
                 }
 
                 # Do the cert's DNS SANs and the desired DNS SANs match?
-                if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0) {
+                if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0)
+                {
                     return $false
                 }
             }
@@ -857,6 +908,16 @@ function Test-TargetResource
             Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
                         $($LocalizedData.CertTemplateMismatch -f $Subject,$ca,$cert.Thumbprint,(Get-CertificateTemplateName -Certificate $cert))
+                    ) -join '' )
+            return $false
+        } # if
+
+        # Check the friendly name of the certificate matches
+        if ($FriendlyName -ne $cert.FriendlyName)
+        {
+            Write-Verbose -Message ( @(
+                        "$($MyInvocation.MyCommand): "
+                        $($LocalizedData.CertFriendlyNameMismatch -f $Subject,$ca,$cert.Thumbprint,$cert.FriendlyName)
                     ) -join '' )
             return $false
         } # if

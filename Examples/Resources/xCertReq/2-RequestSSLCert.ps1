@@ -36,6 +36,7 @@ configuration Example
             KeyUsage                  = '0xa0'
             CertificateTemplate       = 'WebServer'
             AutoRenew                 = $true
+            FriendlyName              = 'SSL Cert for Web Server'
             Credential                = $Credential
         }
     }

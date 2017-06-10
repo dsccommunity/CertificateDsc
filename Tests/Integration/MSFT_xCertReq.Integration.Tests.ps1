@@ -47,51 +47,93 @@ try
     . $ConfigFile
 
     Describe "$($script:DSCResourceName)_Integration" {
-        #region DEFAULT TESTS
-        It 'Should compile and apply the MOF without throwing' {
-            {
-                # This is to allow the testing of certreq with domain credentials
-                $ConfigData = @{
-                    AllNodes = @(
-                        @{
-                            NodeName = 'localhost'
-                            PsDscAllowDomainUser = $true
-                            PsDscAllowPlainTextPassword = $true
-                        }
-                    )
-                }
+        BeforeAll {
+            # This will fail if the machine does not have a CA Configured.
+            $certUtilResult       = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
+            $caServerFQDN         = ([regex]::matches($certUtilResult,'Server:[ \t]+`([A-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
+            $caRootName           = ([regex]::matches($certUtilResult,'Name:[ \t]+`([\sA-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
+            $keyLength            = '1024'
+            $exportable           = $true
+            $providerName         = '"Microsoft RSA SChannel Cryptographic Provider"'
+            $oid                  = '1.3.6.1.5.5.7.3.1'
+            $keyUsage             = '0xa0'
+            $certificateTemplate  = 'WebServer'
+            $subject              = "$($script:DSCResourceName)_Test"
+            $dns1                 = 'contoso.com'
+            $dns2                 = 'fabrikam.com'
+            $subjectAltName       = "dns=$dns1&dns=$dns2"
+            $friendlyName         = "$($script:DSCResourceName) Integration Test"
 
-                & "$($script:DSCResourceName)_Config" `
-                    -OutputPath $TestDrive `
-                    -ConfigurationData $ConfigData
+            <#
+                If automated testing with a real CA can be performed then the credentials should be
+                obtained non-interactively. Do not do this in a production environment.
+            #>
+            $Credential = Get-Credential
 
-                Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-            } | Should Not Throw
+            # This is to allow the testing of certreq with domain credentials
+            $configData = @{
+                AllNodes = @(
+                    @{
+                        NodeName                    = 'localhost'
+                        Subject                     = $subject
+                        CAServerFQDN                = $caServerFQDN
+                        CARootName                  = $caRootName
+                        Credential                  = $credential
+                        KeyLength                   = $keyLength
+                        Exportable                  = $exportable
+                        ProviderName                = $providerName
+                        OID                         = $oid
+                        KeyUsage                    = $keyUsage
+                        CertificateTemplate         = $certificateTemplate
+                        SubjectAltName              = $subjectAltName
+                        FriendlyName                = $friendlyName
+                        PsDscAllowDomainUser        = $true
+                        PsDscAllowPlainTextPassword = $true
+                    }
+                )
+            }
         }
 
-        It 'Should be able to call Get-DscConfiguration without throwing' {
-            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+        #region DEFAULT TESTS
+        Context 'WebServer certificate does not exist' {
+            It 'Should compile and apply the MOF without throwing' {
+                {
+                    & "$($script:DSCResourceName)_Config" `
+                        -OutputPath $TestDrive `
+                        -ConfigurationData $configData
+
+                    Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
+                } | Should Not Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                # Get the Certificate details
+                $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
+                    Where-Object -FilterScript {
+                        $_.Subject -eq "CN=$($subject)" -and `
+                        $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
+                    }
+                $CertificateNew.Subject                        | Should Be "CN=$($subject)"
+                $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($caRootName)"
+                $CertificateNew.Publickey.Key.KeySize          | Should Be $keyLength
+                $CertificateNew.FriendlyName                   | Should Be $friendlyName
+                $CertificateNew.DnsNameList[0]                 | Should Be $dns1
+                $CertificateNew.DnsNameList[1]                 | Should Be $dns2
+                $CertificateNew.EnhancedKeyUsageList.ObjectId  | Should Be $oid
+            }
         }
         #endregion
-
-        It 'Should have set the resource and all the parameters should match' {
-            # Get the Certificate details
-            $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
-                Where-Object -FilterScript {
-                    $_.Subject -eq "CN=$($TestCertReq.Subject)" -and `
-                    $_.Issuer.split(',')[0] -eq "CN=$($TestCertReq.CARootName)"
-                }
-            $CertificateNew.Subject                        | Should Be "CN=$($TestCertReq.Subject)"
-            $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($TestCertReq.CARootName)"
-            $CertificateNew.Publickey.Key.KeySize          | Should Be $TestCertReq.KeyLength
-        }
 
         AfterAll {
             # Cleanup
             $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
                 Where-Object -FilterScript {
-                    $_.Subject -eq "CN=$($TestCertReq.Subject)" -and `
-                    $_.Issuer.split(',')[0] -eq "CN=$($TestCertReq.CARootName)"
+                    $_.Subject -eq "CN=$($subject)" -and `
+                    $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
                 }
 
             Remove-Item `
@@ -99,7 +141,7 @@ try
                 -Force `
                 -ErrorAction SilentlyContinue
         }
-   }
+    }
     #endregion
 }
 finally

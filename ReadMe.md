@@ -2,17 +2,24 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xcertificate/branch/master)
 
-The **xCertificate** module is a part of the Windows PowerShell Desired State Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This module includes DSC resources that simplify administration of certificates on a Windows Server, with simple declarative language.
+The **xCertificate** module is a part of the Windows PowerShell Desired State
+Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This
+module includes DSC resources that simplify administration of certificates on a
+Windows Server, with simple declarative language.
 
 The **xCertificate** module contains the following resources:
 
-- **xCertReq**
-- **xPfxImport**
-- **xCertificateImport**
-- **xCertificateExport**
+- **xCertReq**: Used to request a new certificate from an certificate authority.
+- **xPfxImport**: Used to import a PFX certificate into a Windows certificate store.
+- **xCertificateImport**: Used to import a certificate into a Windows certificate
+  store.
+- **xCertificateExport**: Used to export a certificate from a Windows certificate
+  store.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
+or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any
+additional questions or comments.
 
 ## Contributing
 
@@ -22,63 +29,123 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### xCertReq
 
-- **`[String]` Subject**: Provide the text string to use as the subject of the certificate. Key.
-- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate Authority on the local area network. Leave empty to auto-discover in an Active Directory environment.
-- **`[String]` CARootName**: The name of the certificate authority, by default this will be in format domain-servername-ca. Leave empty to auto-discover in an Active Directory environment.
-- **`[String]` KeyLength**: The bit length of the encryption key to be used. Optional. { *1024* | 2048 | 4096 | 8192 }.
-- **`[Boolean]` Exportable**: The option to allow the certificate to be exportable, by default it will be true. Optional. Defaults to `$true`.
-- **`[String]` ProviderName**: The selection of provider for the type of encryption to be used. Optional. Defaults to `"Microsoft RSA SChannel Cryptographic Provider"`.
-- **`[String]` OID**: The Object Identifier that is used to name the object. Optional. Defaults to `1.3.6.1.5.5.7.3.1`.
-- **`[String]` KeyUsage**: The Keyusage is a restriction method that determines what a certificate can be used for. Optional. Defaults to `0xa0`
-- **`[String]` CertificateTemplate** The template used for the definiton of the certificate. Optional. Defaults to `WebServer`
-- **`[String]` SubjectAltName** The subject alternative name used to create the certificate. Optional.
-- **`[PSCredential]` Credential**: The credentials that will be used to access the template in the Certificate Authority. Optional.
-- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate within 7 days of expiration. Optional.
-- **`[Boolean]` UseMachineContext**:  Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication. Optional.
-- **`[String]` CAType** The type of Certificate Authority in use. Optional. Defaults to `Enterprise`
+- **`[String]` Subject**: Provide the text string to use as the subject of the
+  certificate. Key.
+- **`[String]` CAServerFQDN**: The FQDN of the Active Directory Certificate
+  Authority on the local area network. Leave empty to auto-discover in an Active
+  Directory environment.
+- **`[String]` CARootName**: The name of the certificate authority, by default
+  this will be in format domain-servername-ca. Leave empty to auto-discover in
+  an Active Directory environment.
+- **`[String]` KeyLength**: The bit length of the encryption key to be used.
+  Optional. { *1024* | 2048 | 4096 | 8192 }.
+- **`[Boolean]` Exportable**: The option to allow the certificate to be exportable,
+  by default it will be true. Optional. Defaults to `$true`.
+- **`[String]` ProviderName**: The selection of provider for the type of encryption
+  to be used. Optional. Defaults to `"Microsoft RSA SChannel Cryptographic Provider"`.
+- **`[String]` OID**: The Object Identifier that is used to name the object.
+  Optional. Defaults to `1.3.6.1.5.5.7.3.1`.
+- **`[String]` KeyUsage**: The Keyusage is a restriction method that determines
+  what a certificate can be used for. Optional. Defaults to `0xa0`
+- **`[String]` CertificateTemplate** The template used for the definition of the
+  certificate. Optional. Defaults to `WebServer`
+- **`[String]` SubjectAltName** The subject alternative name used to create the
+  certificate. Optional.
+- **`[PSCredential]` Credential**: The credentials that will be used to access
+  the template in the Certificate Authority. Optional.
+- **`[Boolean]` AutoRenew**: Determines if the resource will also renew a certificate
+  within 7 days of expiration. Optional.
+- **`[Boolean]` UseMachineContext**:  Indicates whether or not the flag -adminforcemachine
+  will be used when requesting certificates. Necessary for certain templates like
+  e.g. DomainControllerAuthentication. Optional.
+- **`[String]` CAType** The type of Certificate Authority in use. Optional.
+  Defaults to `Enterprise`
 - **`[String]` CepURL** The URL to a Certificate Enrollment Policy Web Service. Optional.
 - **`[String]` CesURL** The URL to a Certificate Enrollment Web Service. Optional.
+- **`[String]` FriendlyName** Specifies a friendly name for the certificate. Optional.
 
 ### xPfxImport
 
-- **`[String]` Thumbprint** (_Key_): The thumbprint (unique identifier) of the PFX file you're importing.
+- **`[String]` Thumbprint** (_Key_): The thumbprint (unique identifier) of the
+  PFX file you're importing.
 - **`[String]` Path** (_Required_): The path to the PFX file you want to import.
-- **`[String]` Location** (_Key_): The Windows Certificate Store Location to import the PFX file to. { LocalMachine | CurrentUser }
-- **`[String]` Store** (_Key_): The Windows Certificate Store Name to import the PFX file to.
-- **`[Boolean]` Exportable** (_Write_): Determines whether the private key is exportable from the machine after it has been imported. Defaults to `$false`.
-- **`[PSCredential]` Credential** (_Write_): A `[PSCredential]` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
-- **`[String]` Ensure** (_Write_): Specifies whether the PFX file should be present or absent. { *Present* | Absent }.
+- **`[String]` Location** (_Key_): The Windows Certificate Store Location to
+  import the PFX file to. { LocalMachine | CurrentUser }
+- **`[String]` Store** (_Key_): The Windows Certificate Store Name to import the
+  PFX file to.
+- **`[Boolean]` Exportable** (_Write_): Determines whether the private key is
+  exportable from the machine after it has been imported. Defaults to `$false`.
+- **`[PSCredential]` Credential** (_Write_): A `[PSCredential]` object that is
+  used to decrypt the PFX file. Only the password is used, so any user name is valid.
+- **`[String]` Ensure** (_Write_): Specifies whether the PFX file should be
+  present or absent. { *Present* | Absent }.
 
 ### xCertificateImport
 
-- **`[String]` Thumbprint** (_Key_): The thumbprint (unique identifier) of the certificate you're importing.
+- **`[String]` Thumbprint** (_Key_): The thumbprint (unique identifier) of the
+  certificate you're importing.
 - **`[String]` Path** (_Required_): The path to the CER file you want to import.
-- **`[String]` Location** (_Key_): The Windows Certificate Store Location to import the certificate to. { LocalMachine | CurrentUser }
-- **`[String]` Store** (_Key_): The Windows Certificate Store Name to import the certificate to.
-- **`[String]` Ensure** (_Write_): Specifies whether the certificate should be present or absent. { *Present* | Absent }.
+- **`[String]` Location** (_Key_): The Windows Certificate Store Location to
+  import the certificate to. { LocalMachine | CurrentUser }
+- **`[String]` Store** (_Key_): The Windows Certificate Store Name to import the
+  certificate to.
+- **`[String]` Ensure** (_Write_): Specifies whether the certificate should be
+  present or absent. { *Present* | Absent }.
 
 ### xCertificateExport
 
-- **`[String]` Path** (_Key_): The path to the file you that will contain the exported certificate.
-- **`[String]` Thumbprint** (_Write_): The thumbprint of the certificate to export. Certificate selector parameter.
-- **`[String]` FriendlyName** (_Write_): The friendly name of the certificate to export. Certificate selector parameter.
-- **`[String]` Subject** (_Write_): The subject of the certificate to export. Certificate selector parameter.
-- **`[String]` DNSName** (_Write_): The subject alternative name of the certificate to export must contain these values. Certificate selector parameter.
-- **`[String]` Issuer** (_Write_): The issuer of the certiicate to export. Certificate selector parameter.
-- **`[String[]]` KeyUsage** (_Write_): The key usage of the certificate to export must contain these values. Certificate selector parameter.
-- **`[String[]]` EnhancedKeyUsage** (_Write_): The enhanced key usage of the certificate to export must contain these values. Certificate selector parameter.
-- **`[String]` Store** (_Write_): The Windows Certificate Store Name to search for the certificate to export from. Certificate selector parameter. Defaults to 'My'.
-- **`[Boolean]` AllowExpired** (_Write_): Allow an expired certificate to be exported. Certificate selector parameter.
-- **`[Boolean]` MatchSource** (_Write_): Causes an existing exported certificate to be compared with the certificate identified for export and re-exported if it does not match.
-- **`[String]` Type** (_Write_): Specifies the type of certificate to export. { *Cert* | P7B | SST | PFX }
-- **`[String]` ChainOption** (_Write_): Specifies the options for building a chain when exporting a PFX certificate. { *BuildChain* | EndEntityCertOnly }
-- **`[PSCredential]` Password** (_Write_): Specifies the password used to protect an exported PFX file.
-- **`[String[]]` ProtectTo** (_Write_): Specifies an array of strings for the username or group name that can access the private key of an exported PFX file without any password.
-- **`[Boolean]` IsExported** (_Read_): Returns true if the certificate file already exists and therefore has been exported.
+- **`[String]` Path** (_Key_): The path to the file you that will contain the
+  exported certificate.
+- **`[String]` Thumbprint** (_Write_): The thumbprint of the certificate to export.
+  Certificate selector parameter.
+- **`[String]` FriendlyName** (_Write_): The friendly name of the certificate to
+  export. Certificate selector parameter.
+- **`[String]` Subject** (_Write_): The subject of the certificate to export.
+  Certificate selector parameter.
+- **`[String]` DNSName** (_Write_): The subject alternative name of the certificate
+  to export must contain these values. Certificate selector parameter.
+- **`[String]` Issuer** (_Write_): The issuer of the certificate to export.
+  Certificate selector parameter.
+- **`[String[]]` KeyUsage** (_Write_): The key usage of the certificate to export
+  must contain these values. Certificate selector parameter.
+- **`[String[]]` EnhancedKeyUsage** (_Write_): The enhanced key usage of the
+  certificate to export must contain these values. Certificate selector parameter.
+- **`[String]` Store** (_Write_): The Windows Certificate Store Name to search
+  for the certificate to export from. Certificate selector parameter.
+  Defaults to 'My'.
+- **`[Boolean]` AllowExpired** (_Write_): Allow an expired certificate to be exported.
+  Certificate selector parameter.
+- **`[Boolean]` MatchSource** (_Write_): Causes an existing exported certificate
+  to be compared with the certificate identified for export and re-exported if it
+  does not match.
+- **`[String]` Type** (_Write_): Specifies the type of certificate to export.
+  { *Cert* | P7B | SST | PFX }
+- **`[String]` ChainOption** (_Write_): Specifies the options for building a
+  chain when exporting a PFX certificate. { *BuildChain* | EndEntityCertOnly }
+- **`[PSCredential]` Password** (_Write_): Specifies the password used to
+  protect an exported PFX file.
+- **`[String[]]` ProtectTo** (_Write_): Specifies an array of strings for the
+  username or group name that can access the private key of an exported PFX file
+  without any password.
+- **`[Boolean]` IsExported** (_Read_): Returns true if the certificate file already
+  exists and therefore has been exported.
 
 ## Versions
 
 ### Unreleased
+
+- xCertReq:
+  - Added FriendlyName parameter to xCertReq.
+  - Changed exceptions to be raised using New-InvalidOperationException from PSDscResources.
+  - Changed integration tests to use Config Data instead of value in config to support
+    additional tests.
+  - Converted unit tests to use Get-InvalidOperationRecord in CommonTestHelper.
+  - Improved unit test style to match standard layout.
+  - Minor corrections to style to be HQRM compliant.
+- Corrected all makrdown rule violations in README.MD.
+- Added markdownlint.json file to enable line length rule checking in VSCode
+  with [MarkdownLint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+  installed.
 
 ### 2.7.0.0
 
@@ -87,12 +154,14 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   conflicts with other resource modules.
 
 ### 2.6.0.0
+
 - Added mandatory properties for xPfxImport resource example.
 - xCertReq:
   - Fixed issue where xCertReq does not identify when DNS Names in SANs are incorrect.
   - Added Certificate Authority auto-discovery to resource xCertReq.
   - Added SAN and certificate template name to xCertReq's Get-TargetResource
-  - Added new parameter UseMachineContext to be able to use CA templates that try to fill the subject alternative name
+  - Added new parameter UseMachineContext to be able to use CA templates that try
+    to fill the subject alternative name
 - CertificateDSc.Common:
   - Added function Get-CertificateTemplateName to retrieve template name
   - Added function Get-CertificateSan to retrieve subject alternative name
@@ -100,7 +169,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### 2.5.0.0
 
-- Fixed issue where xCertReq does not process requested certificate when credentials parameter set and PSDscRunAsCredential not passed. See [issue](https://github.com/PowerShell/xCertificate/issues/49)
+- Fixed issue where xCertReq does not process requested certificate when credentials
+  parameter set and PSDscRunAsCredential not passed. See [issue](https://github.com/PowerShell/xCertificate/issues/49)
 
 ### 2.4.0.0
 
@@ -109,7 +179,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - Moved shared modules into modules folder.
 - xCertificateExport:
   - Added new resource.
-- Cleanup xCertificate.psd1 to remove unneccessary properties.
+- Cleanup xCertificate.psd1 to remove unnecessary properties.
 - Converted AppVeyor.yml to use DSCResource.tests shared code.
 - Opted-In to markdown rule validation.
 - Examples modified to meet standards for auto documentation generation.
@@ -117,18 +187,21 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ### 2.3.0.0
 
 - xCertReq:
-  - Added additional parameters KeyLength, Exportable, ProviderName, OID, KeyUsage, CertificateTemplate, SubjectAltName
+  - Added additional parameters KeyLength, Exportable, ProviderName, OID, KeyUsage,
+    CertificateTemplate, SubjectAltName
 - Fixed most markdown errors in Readme.md.
 - Corrected Parameter decoration format to be consistent with guidelines.
 
 ### 2.2.0.0
 
-- Converted appveyor.yml to install Pester from PSGallery instead of from Chocolatey.
+- Converted appveyor.yml to install Pester from PSGallery instead of from
+  Chocolatey.
 - Moved unit tests to correct folder structure.
 - Changed unit tests to use standard test templates.
 - Updated all resources to meet HQRM standards and style guidelines.
 - Added .gitignore file
-- Added .gitattributes file to force line endings to CRLF to allow unit tests to work.
+- Added .gitattributes file to force line endings to CRLF to allow unit tests to
+  work.
 - xCertificateCommon:
   - Moved common code into new module CertificateCommon.psm1
   - Added standard exception code.
@@ -177,7 +250,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### 2.0.0.0
 
-- Breaking Change - Updated xPfxImport Store parameter is now a key value making it mandatory
+- Breaking Change - Updated xPfxImport Store parameter is now a key value making
+  it mandatory
 - Updated xPfxImport with new Ensure support
 - Updated xPfxImport with support for the CurrentUser value
 - Updated xPfxImport with validationset for the Store parameter
@@ -204,10 +278,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 Request and Accept a certificate from an Active Directory Root Certificate Authority.
 
-This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword to $true.
-Storing passwords in plain text is not a good practice and is presented only for simplicity and demonstration purposes.
+This example is allowing storage of credentials in plain text by setting
+PSDscAllowPlainTextPassword to $true.
+Storing passwords in plain text is not a good practice and is presented only for
+simplicity and demonstration purposes.
 To learn how to securely store credentials through the use of certificates,
-please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
+please refer to the following [TechNet topic](https://technet.microsoft.com/en-us/library/dn781430.aspx).
 
 ```powershell
 configuration Example
@@ -239,6 +315,7 @@ configuration Example
             KeyUsage                  = '0xa0'
             CertificateTemplate       = 'WebServer'
             AutoRenew                 = $true
+            FriendlyName              = 'SSL Cert for Web Server'
             Credential                = $Credential
         }
     }
@@ -247,13 +324,15 @@ configuration Example
 
 #### Request an SSL Certificate with alternative DNS names
 
-Request and Accept a certificate from an Active Directory Root Certificate Authority. This certificate
-is issued using an subject alternate name with multiple DNS addresses.
+Request and Accept a certificate from an Active Directory Root Certificate Authority.
+This certificate is issued using an subject alternate name with multiple DNS addresses.
 
-This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword to $true.
-Storing passwords in plain text is not a good practice and is presented only for simplicity and demonstration purposes.
+This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword
+to $true.
+Storing passwords in plain text is not a good practice and is presented only for
+simplicity and demonstration purposes.
 To learn how to securely store credentials through the use of certificates,
-please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
+please refer to the following [TechNet topic](https://technet.microsoft.com/en-us/library/dn781430.aspx).
 
 ```powershell
 configuration Example
@@ -286,6 +365,7 @@ configuration Example
             CertificateTemplate       = 'WebServer'
             SubjectAltName            = 'dns=fabrikam.com&dns=contoso.com'
             AutoRenew                 = $true
+            FriendlyName              = 'SSL Cert for Web Server'
             Credential                = $Credential
         }
     }
