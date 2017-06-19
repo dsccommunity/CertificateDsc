@@ -17,4 +17,5 @@ class MSFT_xCertReq : OMI_BaseResource
     [Write, Description("The URL to the Certification Enrollment Policy Service.")] String CepURL;
     [Write, Description("The URL to the Certification Enrollment Service.")] String CesURL;
     [Write, Description("Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication")] Boolean UseMachineContext;
+    [Write, Description("Specifies a friendly name for the certificate.")] String FriendlyName;
 };

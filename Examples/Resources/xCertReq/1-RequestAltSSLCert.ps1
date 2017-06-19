@@ -38,6 +38,7 @@ configuration Example
             CertificateTemplate       = 'WebServer'
             SubjectAltName            = 'dns=fabrikam.com&dns=contoso.com'
             AutoRenew                 = $true
+            FriendlyName              = 'SSL Cert for Web Server'
             Credential                = $Credential
         }
     }
