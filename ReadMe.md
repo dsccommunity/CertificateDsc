@@ -147,6 +147,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - Added markdownlint.json file to enable line length rule checking in VSCode
   with [MarkdownLint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
   installed.
+- Added the VS Code PowerShell extension formatting settings that cause PowerShell
+  files to be formatted as per the DSC Resource kit style guidelines.
 
 ### 2.7.0.0
 
