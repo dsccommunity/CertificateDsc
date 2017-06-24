@@ -146,8 +146,10 @@ function Test-Thumbprint
             {
                 if ($hash -cmatch "^[a-fA-F0-9]{$($algorithm.HexLength)}$")
                 {
-                    Write-Verbose -Message ($LocalizedData.InvalidHashError `
-                        -f $hash,$algorithm.Hash)
+                    Write-Verbose `
+                        -Message ($LocalizedData.InvalidHashError -f $hash,$algorithm.Hash) `
+                        -Verbose
+
                     $isValid = $true
                 }
             }
@@ -300,8 +302,9 @@ function Find-Certificate
     # Join all the filters together
     $certFilterScript = '(' + ($certFilters -join ' -and ') + ')'
 
-    Write-Verbose -Message ($LocalizedData.SearchingForCertificateUsingFilters `
-        -f $store,$certFilterScript)
+    Write-Verbose `
+        -Message ($LocalizedData.SearchingForCertificateUsingFilters -f $store,$certFilterScript) `
+        -Verbose
 
     $certs = Get-ChildItem -Path $certPath |
         Where-Object -FilterScript ([ScriptBlock]::Create($certFilterScript))
@@ -345,7 +348,10 @@ function Get-CdpContainer
         $configContext = 'CN=Configuration,{0}' -f ([System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName[0])
     }
 
-    Write-Verbose -Message ($LocalizedData.ConfigurationNamingContext -f $configContext)
+    Write-Verbose `
+        -Message ($LocalizedData.ConfigurationNamingContext -f $configContext) `
+        -Verbose
+
     $cdpContainer = [ADSI]('LDAP://CN=CDP,CN=Public Key Services,CN=Services,{0}' -f $configContext)
 
     return $cdpContainer
@@ -372,8 +378,10 @@ function Find-CertificateAuthority
         $DomainName
     )
 
-    Write-Verbose -Message 'Starting to locate CA'
-    
+    Write-Verbose `
+        -Message ($LocalizedData.StartLocateCA) `
+        -Verbose
+
     try
     {
         $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
@@ -383,20 +391,20 @@ function Find-CertificateAuthority
         Write-Error -Message ($LocalizedData.DomainContactError -f $DomainName, $PSItem.Exception.Message) -TargetObject $DomainName
         return
     }
-                
+
     $caFound = $false
     foreach ($item in $cdpContainer.Children)
-    {        
+    {
         if (-not $caFound)
-        {            
+        {
             $machine = ($item.distinguishedName -split '=|,')[1]
             $caName = ($item.Children.distinguishedName -split '=|,')[1]
-            
+
             $certificateAuthority = [psobject]@{
                 CARootName = $caName
                 CAServerFQDN = $machine
             }
-                        
+
             $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
             $locatorInfo.FileName = 'certutil.exe'
             $locatorInfo.Arguments = "-ping $machine\$caName"
@@ -414,18 +422,23 @@ function Find-CertificateAuthority
             $locatorOut = $locatorProcess.StandardOutput.ReadToEnd()
             $null = $locatorProcess.WaitForExit()
 
-            Write-Verbose -Message ($LocalizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut)
-            
+            Write-Verbose `
+                -Message ($LocalizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut) `
+                -Verbose
+
             if ($locatorProcess.ExitCode -eq 0 )
             {
                 $caFound = $true
             }
         }
     }
-    
+
     if ($caFound)
     {
-        Write-Verbose -Message ($LocalizedData.CaFoundMessage -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName)
+        Write-Verbose `
+            -Message ($LocalizedData.CaFoundMessage -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName) `
+            -Verbose
+
         return $certificateAuthority
     }
     else
@@ -471,7 +484,7 @@ function Get-CertificateTemplateName
 
     if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)
     {
-        $templateName = ($Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.20.2' }).Format(0)        
+        $templateName = ($Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.20.2' }).Format(0)
     }
 
     return $templateName
@@ -503,18 +516,18 @@ function Get-CertificateSan
     {
         return
     }
-    
+
     $subjectAlternativeName = $null
-    
+
     $sanExtension = $Certificate.Extensions | Where-Object { $_.Oid.FriendlyName -match 'subject alternative name' }
-    
+
     if ($null -eq $sanExtension)
     {
         return $subjectAlternativeName
     }
 
-    $sanObjects = New-Object -ComObject X509Enrollment.CX509ExtensionAlternativeNames            
-    $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)            
+    $sanObjects = New-Object -ComObject X509Enrollment.CX509ExtensionAlternativeNames
+    $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)
     $sanObjects.InitializeDecode(1, $altNamesStr)
 
     if ($sanObjects.AlternativeNames.Count -gt 0)
