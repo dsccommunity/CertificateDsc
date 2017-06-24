@@ -379,7 +379,7 @@ function Find-CertificateAuthority
     )
 
     Write-Verbose `
-        -Message ($LocalizedData.StartLocateCA) `
+        -Message ($LocalizedData.StartLocateCAMessage) `
         -Verbose
 
     try
