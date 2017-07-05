@@ -79,9 +79,9 @@ function Get-TargetResource
 
     if ((Test-Path $certificateStore) -eq $false)
     {
-        New-InvalidArgumentError `
-            -ErrorId 'CertificateStoreNotFound' `
-            -ErrorMessage ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore)
+        New-InvalidArgumentException `
+            -Message ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore) `
+            -ArgumentName 'Store'
     }
 
     $checkEnsure = [Bool] (

@@ -151,6 +151,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   files to be formatted as per the DSC Resource kit style guidelines.
 - Fixed verbose preference not being passed to CertificateDsc.Common functions -
   fixes [Issue 70](https://github.com/PowerShell/xCertificate/issues/70).
+- Converted all calls to `New-InvalidArgumentError` function to `New-InvalidArgumentException`
+  found in `CertificateDsc.ResourceHelper` - fixes [Issue 68](https://github.com/PowerShell/xCertificate/issues/68)
 
 ### 2.7.0.0
 
