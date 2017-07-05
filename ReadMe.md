@@ -149,6 +149,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   installed.
 - Added the VS Code PowerShell extension formatting settings that cause PowerShell
   files to be formatted as per the DSC Resource kit style guidelines.
+- Fixed verbose preference not being passed to CertificateDsc.Common functions -
+  fixes [Issue 70](https://github.com/PowerShell/xCertificate/issues/70).
 
 ### 2.7.0.0
 
