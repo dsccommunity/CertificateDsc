@@ -252,7 +252,7 @@ function Find-Certificate
     {
         # The Certificte Path is not valid
         New-InvalidArgumentException `
-            -Message ($LocalizedData.CertificatePathError -f $certPath)
+            -Message ($LocalizedData.CertificatePathError -f $certPath) `
             -ArgumnentName 'Store'
     } # if
 
