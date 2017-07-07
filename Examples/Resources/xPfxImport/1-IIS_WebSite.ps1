@@ -31,6 +31,7 @@ Configuration Example
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
+            Location   = 'LocalMachine'
             Store      = 'WebHosting'
             Credential = $Credential
             DependsOn  = '[WindowsFeature]IIS'
@@ -51,7 +52,7 @@ Configuration Example
                         CertificateStoreName = 'WebHosting'
                         HostName = "www.example.com"
                     }
-            DependsOn       = '[WindowsFeature]Web-Server','[xPfxImport]CompanyCert'
+            DependsOn       = '[WindowsFeature]IIS','[xPfxImport]CompanyCert'
         }
     }
 }

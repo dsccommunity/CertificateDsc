@@ -1,6 +1,9 @@
 # xCertificate
 
-[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xcertificate/branch/master)
+| Branch | Build Status | Code Coverage |
+| --- | --- | --- |
+| master | [![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xCertificate/branch/master) | [![codecov](https://codecov.io/gh/PowerShell/xCertificate/branch/master/graph/badge.svg)](https://codecov.io/gh/PowerShell/xCertificate/branch/master) |
+| dev | [![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/dev?svg=true)](https://ci.appveyor.com/project/PowerShell/xCertificate/branch/dev) | [![codecov](https://codecov.io/gh/PowerShell/xCertificate/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/xCertificate/branch/dev) |
 
 The **xCertificate** module is a part of the Windows PowerShell Desired State
 Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This
@@ -148,6 +151,9 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+
+- Add CodeCov.io code coverage reporting.
+- Opted into 'Common Tests - Validate Example Files'.
 
 ### 2.8.0.0
 
