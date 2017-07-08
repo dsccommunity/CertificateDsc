@@ -652,22 +652,6 @@ try
         }
 
         Describe "$DSCResourceName\Find-CertificateAuthority" {
-            Mock `
-                -CommandName New-Object `
-                -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
-                -MockWith {
-                    $retObj = New-Object -TypeName psobject -Property @{
-                        StartInfo = $null
-                        ExitCode = 0
-                        StandardOutput = New-Object psobject | Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {} -PassThru
-                    }
-
-                    $retObj | Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
-
-                    return $retObj
-                }
-
             Context 'Function is executed with domain connectivity' {
                 Mock `
                     -CommandName Get-CdpContainer `
@@ -776,6 +760,124 @@ try
                 It 'Should call exepcted mocks' {
                     Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
                     Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 0
+                }
+            }
+        }
+
+        Describe "$DSCResourceName\Test-CertificateAuthority" {
+            Mock `
+                -CommandName New-Object `
+                -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                -MockWith {
+                    $retObj = New-Object -TypeName psobject -Property @{
+                        FileName = ''
+                        Arguments = ''
+                        RedirectStandardError = $false
+                        RedirectStandardOutput = $true
+                        UseShellExecute = $false
+                        CreateNoWindow = $true
+                    }
+
+                    return $retObj
+                }
+
+            Context 'Function is executed with CA online' {
+                Mock `
+                    -CommandName New-Object `
+                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                    -MockWith {
+                        $retObj = New-Object -TypeName psobject -Property @{
+                            StartInfo = $null
+                            ExitCode = 0
+                            StandardOutput = New-Object -TypeName psobject |
+                                Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                                return @"
+Connecting to LabRootCA1\CA1 ...
+Server "CA1" ICertRequest2 interface is alive (32ms)
+CertUtil: -ping command completed successfully.
+"@
+                            } -PassThru
+                        }
+
+                        $retObj |
+                            Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
+
+                        return $retObj
+                    }
+
+                It 'Should not throw' {
+                    $script:result = Test-CertificateAuthority `
+                        -CARootName 'LabRootCA1' `
+                        -CAServerFQDN 'CA1' `
+                        -Verbose
+                }
+
+                It 'Should return true' {
+                    $script:result | Should Be $True
+                }
+
+                It 'Should call exepcted mocks' {
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                        -Exactly -Times 1
+
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'Function is executed with CA offline' {
+                Mock `
+                    -CommandName New-Object `
+                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                    -MockWith {
+                        $retObj = New-Object -TypeName psobject -Property @{
+                            StartInfo = $null
+                            ExitCode = -2147024809
+                            StandardOutput = New-Object -TypeName psobject |
+                                Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                                return @"
+Connecting to LabRootCA1\CA2 ...
+Server could not be reached: The parameter is incorrect. 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER) -- (31ms)
+
+CertUtil: -ping command FAILED: 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER)
+CertUtil: The parameter is incorrect.
+"@
+                            } -PassThru
+                        }
+
+                        $retObj |
+                            Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
+
+                        return $retObj
+                    }
+
+                It 'Should not throw' {
+                    $script:result = Test-CertificateAuthority `
+                        -CARootName 'LabRootCA1' `
+                        -CAServerFQDN 'CA2' `
+                        -Verbose
+                }
+
+                It 'Should return false' {
+                    $script:result | Should Be $false
+                }
+
+                It 'Should call exepcted mocks' {
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                        -Exactly -Times 1
+
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                        -Exactly -Times 1
                 }
             }
         }

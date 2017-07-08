@@ -8,9 +8,10 @@ ConvertFrom-StringData @'
     DomainNotJoinedError                = The computer is not joined to a domain.
     DomainContactError                  = The domain '{0}' could not be contacted. The following error was received: '{1}'
     StartLocateCAMessage                = Starting to locate CA.
+    StartPingCAMessage                  = Starting to ping CA.
     NoCaFoundError                      = No Certificate Authority could be found.
-    CaPingMessage                       = certutil exited with code {0} and the following output:`r`n{1}
+    CaPingMessage                       = certutil exited with code {0} and the following output: {1}
     CaFoundMessage                      = Found certificate authority '{0}\{1}'.
     CaOnlineMessage                     = Certificate authority '{0}\{1}' is online.
-    CaOffloneMessage                    = Certificate authority '{0}\{1}' is offline.
+    CaOfflineMessage                    = Certificate authority '{0}\{1}' is offline.
 '@

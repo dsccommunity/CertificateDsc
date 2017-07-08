@@ -453,7 +453,7 @@ function Test-CertificateAuthority
     )
 
     Write-Verbose `
-        -Message ($LocalizedData.StartTestCAMessage) `
+        -Message ($LocalizedData.StartPingCAMessage) `
         -Verbose
 
     $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
