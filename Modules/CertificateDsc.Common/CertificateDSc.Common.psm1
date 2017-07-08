@@ -61,9 +61,9 @@ function Test-CertificatePath
             }
             else
             {
-                New-InvalidArgumentError `
-                    -ErrorId 'CannotFindRootedPath' `
-                    -ErrorMessage ($LocalizedData.FileNotFoundError -f $pathNode)
+                New-InvalidArgumentException `
+                    -Message ($LocalizedData.FileNotFoundError -f $pathNode) `
+                    -ArgumentName 'Path'
             }
         }
     }
@@ -160,9 +160,8 @@ function Test-Thumbprint
             }
             else
             {
-                New-InvalidArgumentError `
-                    -ErrorId 'CannotFindRootedPath' `
-                    -ErrorMessage ($LocalizedData.InvalidHashError -f $hash)
+                New-InvalidOperationException `
+                    -Message ($LocalizedData.InvalidHashError -f $hash)
             }
         }
     }
@@ -252,9 +251,9 @@ function Find-Certificate
     if (-not (Test-Path -Path $certPath))
     {
         # The Certificte Path is not valid
-        New-InvalidArgumentError `
-            -ErrorId 'CannotFindCertificatePath' `
-            -ErrorMessage ($LocalizedData.CertificatePathError -f $certPath)
+        New-InvalidArgumentException `
+            -Message ($LocalizedData.CertificatePathError -f $certPath) `
+            -ArgumnentName 'Store'
     } # if
 
     # Assemble the filter to use to select the certificate
@@ -537,37 +536,3 @@ function Get-CertificateSan
 
     return $subjectAlternativeName
 }
-
-<#
-    .SYNOPSIS
-    Throws an InvalidArgument custom exception.
-
-    .PARAMETER ErrorId
-    The error Id of the exception.
-
-    .PARAMETER ErrorMessage
-    The error message text to set in the exception.
-#>
-function New-InvalidArgumentError
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ErrorId,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ErrorMessage
-    )
-
-    $exception = New-Object -TypeName System.ArgumentException `
-        -ArgumentList $ErrorMessage
-    $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidArgument
-    $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord `
-        -ArgumentList $exception, $ErrorId, $errorCategory, $null
-    throw $errorRecord
-} # end function New-InvalidArgumentError
