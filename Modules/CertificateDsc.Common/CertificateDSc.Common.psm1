@@ -396,36 +396,17 @@ function Find-CertificateAuthority
     {
         if (-not $caFound)
         {
-            $machine = ($item.distinguishedName -split '=|,')[1]
-            $caName = ($item.Children.distinguishedName -split '=|,')[1]
+            $caServerFQDN = ($item.distinguishedName -split '=|,')[1]
+            $caRootName = ($item.Children.distinguishedName -split '=|,')[1]
 
-            $certificateAuthority = [psobject]@{
-                CARootName = $caName
-                CAServerFQDN = $machine
+            $certificateAuthority = [PSObject] @{
+                CARootName = $caRootName
+                CAServerFQDN = $caServerFQDN
             }
 
-            $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
-            $locatorInfo.FileName = 'certutil.exe'
-            $locatorInfo.Arguments = "-ping $machine\$caName"
-
-            # Certutil does not make use of standard error stream
-            $locatorInfo.RedirectStandardError = $false
-            $locatorInfo.RedirectStandardOutput = $true
-            $locatorInfo.UseShellExecute = $false
-            $locatorInfo.CreateNoWindow = $true
-
-            $locatorProcess = New-Object -TypeName System.Diagnostics.Process
-            $locatorProcess.StartInfo = $locatorInfo
-
-            $null = $locatorProcess.Start()
-            $locatorOut = $locatorProcess.StandardOutput.ReadToEnd()
-            $null = $locatorProcess.WaitForExit()
-
-            Write-Verbose `
-                -Message ($LocalizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut) `
-                -Verbose
-
-            if ($locatorProcess.ExitCode -eq 0 )
+            if (Test-CertificateAuthority `
+                    -CARootName $caRootName `
+                    -CAServerFQDN $caServerFQDN)
             {
                 $caFound = $true
             }
@@ -445,6 +426,73 @@ function Find-CertificateAuthority
         Write-Error -Message ($LocalizedData.NoCaFoundError -f $configContext) -TargetObject $configContext
     }
 } # end function Find-CertificateAuthority
+
+<#
+.SYNOPSIS
+    Test to see if the specified ADCS CA is available.
+
+.PARAMETER CAServerFQDN
+    The FQDN of the ADCS CA to test for availability.
+
+.PARAMETER CARootName
+    The name of the ADCS CA to test for availability.
+#>
+function Test-CertificateAuthority
+{
+    [cmdletBinding()]
+    [OutputType([Boolean])]
+    param(
+        [Parameter()]
+        [System.String]
+        $CAServerFQDN,
+
+        [Parameter()]
+        [System.String]
+        $CARootName
+    )
+
+    Write-Verbose `
+        -Message ($LocalizedData.StartTestCAMessage) `
+        -Verbose
+
+    $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
+    $locatorInfo.FileName = 'certutil.exe'
+    $locatorInfo.Arguments = "-ping `"$CAServerFQDN\$CARootName`""
+
+    # Certutil does not make use of standard error stream
+    $locatorInfo.RedirectStandardError = $false
+    $locatorInfo.RedirectStandardOutput = $true
+    $locatorInfo.UseShellExecute = $false
+    $locatorInfo.CreateNoWindow = $true
+
+    $locatorProcess = New-Object -TypeName System.Diagnostics.Process
+    $locatorProcess.StartInfo = $locatorInfo
+
+    $null = $locatorProcess.Start()
+    $locatorOut = $locatorProcess.StandardOutput.ReadToEnd()
+    $null = $locatorProcess.WaitForExit()
+
+    Write-Verbose `
+        -Message ($LocalizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut) `
+        -Verbose
+
+    if ($locatorProcess.ExitCode -eq 0)
+    {
+        Write-Verbose `
+            -Message ($LocalizedData.CaOnlineMessage -f $CAServerFQDN, $CARootName) `
+            -Verbose
+
+        return $true
+    }
+    else
+    {
+        Write-Verbose `
+            -Message ($LocalizedData.CaOfflineMessage -f $CAServerFQDN, $CARootName) `
+            -Verbose
+
+        return $false
+    }
+} # end function Test-CertificateAuthority
 
 <#
 .SYNOPSIS

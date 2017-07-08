@@ -15,6 +15,7 @@ The **xCertificate** module contains the following resources:
   store.
 - **xCertificateExport**: Used to export a certificate from a Windows certificate
   store.
+- **xWaitForCA**: Used to wait for a CA to become available.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
@@ -130,6 +131,15 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[Boolean]` IsExported** (_Read_): Returns true if the certificate file already
   exists and therefore has been exported.
 
+### xWaitForCA
+
+- **`[String]` CAServerFQDN** (_Key_): The FQDN of the ADCS CA to wait for.
+- **`[String]` CARootName** (_Key_): The name of the ADCS CA to wait for.
+- **`[Uint32]` RetryIntervalSec**: Specifies the number of seconds to wait for
+  the CA to become available. Defaults to 10.
+- **`[Uint32]` RetryCount**: The number of times to loop the retry interval while
+  waiting for the CA. Optional. Defaults to 60.
+
 ## Versions
 
 ### Unreleased
@@ -143,6 +153,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Improved unit test style to match standard layout.
   - Minor corrections to style to be HQRM compliant.
   - Improved Verbose logging by writing all lines of CertReq.exe output.
+  - Fixed CA auto-detection to work when CA name contains a space.
 - Corrected all makrdown rule violations in README.MD.
 - Added markdownlint.json file to enable line length rule checking in VSCode
   with [MarkdownLint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
@@ -153,6 +164,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   fixes [Issue 70](https://github.com/PowerShell/xCertificate/issues/70).
 - Converted all calls to `New-InvalidArgumentError` function to `New-InvalidArgumentException`
   found in `CertificateDsc.ResourceHelper` - fixes [Issue 68](https://github.com/PowerShell/xCertificate/issues/68)
+- xWaitForCA:
+  - Added new resource.
 
 ### 2.7.0.0
 
