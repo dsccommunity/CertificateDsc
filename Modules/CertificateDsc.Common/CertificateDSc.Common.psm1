@@ -340,6 +340,13 @@ function Get-CdpContainer
     if (-not $DomainName)
     {
         $configContext = ([ADSI]'LDAP://RootDSE').configurationNamingContext
+
+        if (-not $configContext)
+        {
+            # The computer is not domain joined
+            New-InvalidOperationException `
+                -Message ($LocalizedData.DomainNotJoinedError)
+        }
     }
     else
     {
@@ -381,15 +388,7 @@ function Find-CertificateAuthority
         -Message ($LocalizedData.StartLocateCAMessage) `
         -Verbose
 
-    try
-    {
-        $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
-    }
-    catch
-    {
-        Write-Error -Message ($LocalizedData.DomainContactError -f $DomainName, $PSItem.Exception.Message) -TargetObject $DomainName
-        return
-    }
+    $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
 
     $caFound = $false
     foreach ($item in $cdpContainer.Children)
@@ -409,6 +408,7 @@ function Find-CertificateAuthority
                     -CAServerFQDN $caServerFQDN)
             {
                 $caFound = $true
+                break
             }
         }
     }
@@ -423,7 +423,8 @@ function Find-CertificateAuthority
     }
     else
     {
-        Write-Error -Message ($LocalizedData.NoCaFoundError -f $configContext) -TargetObject $configContext
+        New-InvalidOperationException `
+            -Message ($LocalizedData.NoCaFoundError)
     }
 } # end function Find-CertificateAuthority
 
