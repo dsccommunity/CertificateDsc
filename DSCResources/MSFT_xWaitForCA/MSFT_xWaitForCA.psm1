@@ -71,7 +71,6 @@ function Get-TargetResource
         ) -join '' )
 
     $returnValue = @{
-        IsSingleInstance = 'Yes'
         CAServerFQDN     = $CAServerFQDN
         CARootName       = $CARootName
         RetryIntervalSec = $RetryIntervalSec
