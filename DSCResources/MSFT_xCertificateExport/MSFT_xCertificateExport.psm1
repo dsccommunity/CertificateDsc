@@ -73,7 +73,7 @@ function Get-TargetResource
     Certificate selector parameter.
 
     .PARAMETER Issuer
-    The issuer of the certiicate to export.
+    The issuer of the certificate to export.
     Certificate selector parameter.
 
     .PARAMETER KeyUsage
@@ -278,7 +278,7 @@ function Set-TargetResource
     Certificate selector parameter.
 
     .PARAMETER Issuer
-    The issuer of the certiicate to export.
+    The issuer of the certificate to export.
     Certificate selector parameter.
 
     .PARAMETER KeyUsage

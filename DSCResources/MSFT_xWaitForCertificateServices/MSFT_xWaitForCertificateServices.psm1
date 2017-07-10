@@ -39,11 +39,11 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER RetryIntervalSeconds
     Specifies the number of seconds to wait for the Active Directory Certificate
-    Service Certificate Authority to become available.
+    Service Certificate Authority to become available. Defaults to 10 seconds.
 
     .PARAMETER RetryCount
     The number of times to loop the retry interval while waiting for the Active
-    Directory Certificate Service Certificate Authority.
+    Directory Certificate Service Certificate Authority. Defaults to 60 retries.
 #>
 function Get-TargetResource
 {
@@ -99,11 +99,11 @@ function Get-TargetResource
 
     .PARAMETER RetryIntervalSeconds
     Specifies the number of seconds to wait for the Active Directory Certificate
-    Service Certificate Authority to become available.
+    Service Certificate Authority to become available. Defaults to 10 seconds.
 
     .PARAMETER RetryCount
     The number of times to loop the retry interval while waiting for the Active
-    Directory Certificate Service Certificate Authority.
+    Directory Certificate Service Certificate Authority. Defaults to 60 retries.
 #>
 function Set-TargetResource
 {
@@ -183,11 +183,11 @@ function Set-TargetResource
 
     .PARAMETER RetryIntervalSeconds
     Specifies the number of seconds to wait for the Active Directory Certificate
-    Service Certificate Authority to become available.
+    Service Certificate Authority to become available. Defaults to 10 seconds.
 
     .PARAMETER RetryCount
     The number of times to loop the retry interval while waiting for the Active
-    Directory Certificate Service Certificate Authority.
+    Directory Certificate Service Certificate Authority. Defaults to 60 retries.
 #>
 function Test-TargetResource
 {

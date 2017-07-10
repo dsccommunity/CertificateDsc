@@ -375,7 +375,7 @@ RenewalCert = $validThumbprint
                 $result = Get-TargetResource @paramsStandard -Verbose
 
                 It 'Should return a hashtable' {
-                    ($result -is [System.Collections.Hashtable]) | Should Be $true
+                    $result | Should BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values' {
@@ -397,7 +397,7 @@ RenewalCert = $validThumbprint
                 $result = Get-TargetResource @paramsAutoDiscovery -Verbose
 
                 It 'Should return a hashtable' {
-                    ($result -is [System.Collections.Hashtable]) | Should Be $true
+                    $result | Should BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values and the CA should be auto-discovered' {

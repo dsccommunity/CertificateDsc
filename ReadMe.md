@@ -140,10 +140,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   Service Certificate Authority to wait for.
 - **`[Uint32]` RetryIntervalSeconds**: Specifies the number of seconds to wait for
   the Active Directory Certificate Service Certificate Authority to become
-  available. Defaults to 10.
+  available. Defaults to 10 seconds.
 - **`[Uint32]` RetryCount**: The number of times to loop the retry interval while
   waiting for the Active Directory Certificate Service Certificate Authority.
-  Optional. Defaults to 60.
+  Optional. Defaults to 60 retries.
 
 ## Versions
 
@@ -175,6 +175,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Added new resource.
 - Cleaned up example format to meet style guidelines and changed examples to
   issue 2048 bit certificates.
+- Fixed spelling error in xCertificateExport Issuer parameter description.
 
 ### 2.7.0.0
 

@@ -187,7 +187,7 @@ function Test-Thumbprint
     The subject alternative name of the certificate to export must contain these values.
 
     .PARAMETER Issuer
-    The issuer of the certiicate to find.
+    The issuer of the certificate to find.
 
     .PARAMETER KeyUsage
     The key usage of the certificate to find must contain these values.
