@@ -15,7 +15,8 @@ The **xCertificate** module contains the following resources:
   store.
 - **xCertificateExport**: Used to export a certificate from a Windows certificate
   store.
-- **xWaitForCA**: Used to wait for a CA to become available.
+- **xWaitForCertificateServices**: Used to wait for a Active Directory Certificate
+  Services Certificate Authority to become available.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
@@ -131,14 +132,18 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[Boolean]` IsExported** (_Read_): Returns true if the certificate file already
   exists and therefore has been exported.
 
-### xWaitForCA
+### xWaitForCertificateServices
 
-- **`[String]` CAServerFQDN** (_Key_): The FQDN of the ADCS CA to wait for.
-- **`[String]` CARootName** (_Key_): The name of the ADCS CA to wait for.
+- **`[String]` CAServerFQDN** (_Key_): The FQDN of the Active Directory Certificate
+  Service Certificate Authority to wait for.
+- **`[String]` CARootName** (_Key_): The name of the Active Directory Certificate
+  Service Certificate Authority to wait for.
 - **`[Uint32]` RetryIntervalSec**: Specifies the number of seconds to wait for
-  the CA to become available. Defaults to 10.
+  the Active Directory Certificate Service Certificate Authority to become
+  available. Defaults to 10.
 - **`[Uint32]` RetryCount**: The number of times to loop the retry interval while
-  waiting for the CA. Optional. Defaults to 60.
+  waiting for the Active Directory Certificate Service Certificate Authority.
+  Optional. Defaults to 60.
 
 ## Versions
 
@@ -166,7 +171,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   found in `CertificateDsc.ResourceHelper` - fixes [Issue 68](https://github.com/PowerShell/xCertificate/issues/68)
 - Replaced all calls to `Write-Error` with calls to `New-InvalidArgumentException`
   and `New-InvalidOperationException`
-- xWaitForCA:
+- xWaitForCertificateServices:
   - Added new resource.
 
 ### 2.7.0.0

@@ -1,9 +1,0 @@
-
-[ClassVersion("1.0.0.0"), FriendlyName("xWaitForCA")]
-class MSFT_xWaitForCA : OMI_BaseResource
-{
-    [Key, Description("The FQDN of the ADCS CA to wait for.")] String CAServerFQDN;
-    [Key, Description("The name of the ADCS CA to wait for.")] String CARootName;
-    [Write, Description("Specifies the number of seconds to wait for the CA to become available.")] Uint32 RetryIntervalSec;
-    [Write, Description("The number of times to loop the retry interval while waiting for the CA.")] Uint32 RetryCount;
-};

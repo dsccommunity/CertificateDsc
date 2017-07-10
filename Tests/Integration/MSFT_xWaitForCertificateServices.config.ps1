@@ -1,8 +1,8 @@
-Configuration MSFT_xWaitForCA_Config {
+Configuration MSFT_xWaitForCertificateServices_Config {
     Import-DscResource -ModuleName xCertificate
 
     node localhost {
-        xWaitForCA Integration_Test {
+        xWaitForCertificateServices Integration_Test {
             CAServerFQDN        = $Node.CAServerFQDN
             CARootName          = $Node.CARootName
             RetryIntervalSec    = $Node.RetryIntervalSec

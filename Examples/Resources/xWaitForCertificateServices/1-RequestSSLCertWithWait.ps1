@@ -26,7 +26,7 @@ configuration Example
     Import-DscResource -ModuleName xCertificate
     Node 'localhost'
     {
-        xWaitForCA RootCA
+        xWaitForCertificateServices RootCA
         {
             CARootName   = 'test-dc01-ca'
             CAServerFQDN = 'dc01.test.pha'
@@ -46,7 +46,7 @@ configuration Example
             AutoRenew           = $true
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
-            DependsOn           = '[xWaitForCA]RootCA'
+            DependsOn           = '[xWaitForCertificateServices]RootCA'
         }
     }
 }

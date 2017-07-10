@@ -6,7 +6,7 @@
 #>
 
 $script:DSCModuleName = 'xCertificate'
-$script:DSCResourceName = 'MSFT_xWaitForCA'
+$script:DSCResourceName = 'MSFT_xWaitForCertificateServices'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0

@@ -21,24 +21,29 @@ Import-Module -Name (Join-Path -Path $modulePath `
 
 # Import Localization Strings
 $localizedData = Get-LocalizedData `
-    -ResourceName 'MSFT_xWaitForCA' `
+    -ResourceName 'MSFT_xWaitForCertificateServices' `
     -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
 
 <#
     .SYNOPSIS
-    Returns the current state of the wait for CA resource.
+    Returns the current state of the wait for Active Directory Certificate
+    Service Certificate Authority resource.
 
     .PARAMETER CAServerFQDN
-    The FQDN of the ADCS CA to wait for. Leave empty to automatically detect.
+    The FQDN of the Active Directory Certificate Service Certificate Authority to wait
+    for. Leave empty to automatically detect.
 
     .PARAMETER CARootName
-    The name of the ADCS CA to wait for. Leave empty to automatically detect.
+    The name of the Active Directory Certificate Service Certificate Authority to wait
+    for. Leave empty to automatically detect.
 
     .PARAMETER RetryIntervalSec
-    Specifies the number of seconds to wait for the CA to become available.
+    Specifies the number of seconds to wait for the Active Directory Certificate
+    Service Certificate Authority to become available.
 
     .PARAMETER RetryCount
-    The number of times to loop the retry interval while waiting for the CA.
+    The number of times to loop the retry interval while waiting for the Active
+    Directory Certificate Service Certificate Authority.
 #>
 function Get-TargetResource
 {
@@ -81,19 +86,24 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Waits for the CA to become available or times out.
+    Waits for the Active Directory Certificate Service Certificate Authority to become
+    available or times out.
 
     .PARAMETER CAServerFQDN
-    The FQDN of the ADCS CA to wait for. Leave empty to automatically detect.
+    The FQDN of the Active Directory Certificate Service Certificate Authority to wait
+    for. Leave empty to automatically detect.
 
     .PARAMETER CARootName
-    The name of the ADCS CA to wait for. Leave empty to automatically detect.
+    The name of the Active Directory Certificate Service Certificate Authority to wait
+    for. Leave empty to automatically detect.
 
     .PARAMETER RetryIntervalSec
-    Specifies the number of seconds to wait for the CA to become available.
+    Specifies the number of seconds to wait for the Active Directory Certificate
+    Service Certificate Authority to become available.
 
     .PARAMETER RetryCount
-    The number of times to loop the retry interval while waiting for the CA.
+    The number of times to loop the retry interval while waiting for the Active
+    Directory Certificate Service Certificate Authority.
 #>
 function Set-TargetResource
 {
@@ -160,19 +170,24 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Waits for the CA to become available or times out.
+    Waits for the Active Directory Certificate Service Certificate Authority to
+    become available or times out.
 
     .PARAMETER CAServerFQDN
-    The FQDN of the ADCS CA to wait for. Leave empty to automatically detect.
+    The FQDN of the Active Directory Certificate Service Certificate Authority to wait
+    for. Leave empty to automatically detect.
 
     .PARAMETER CARootName
-    The name of the ADCS CA to wait for. Leave empty to automatically detect.
+    The name of the Active Directory Certificate Service Certificate Authority to wait
+    for. Leave empty to automatically detect.
 
     .PARAMETER RetryIntervalSec
-    Specifies the number of seconds to wait for the CA to become available.
+    Specifies the number of seconds to wait for the Active Directory Certificate
+    Service Certificate Authority to become available.
 
     .PARAMETER RetryCount
-    The number of times to loop the retry interval while waiting for the CA.
+    The number of times to loop the retry interval while waiting for the Active
+    Directory Certificate Service Certificate Authority.
 #>
 function Test-TargetResource
 {
