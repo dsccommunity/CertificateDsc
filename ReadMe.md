@@ -319,11 +319,11 @@ configuration Example
 {
     param
     (
-        [parameter()]
+        [Parameter()]
         [System.String[]]
         $NodeName = 'localhost',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
         $Credential
@@ -369,11 +369,11 @@ configuration Example
 {
     param
     (
-        [parameter()]
+        [Parameter()]
         [System.String[]]
         $NodeName = 'localhost',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
         $Credential
@@ -414,11 +414,11 @@ Configuration Example
 {
     param
     (
-        [parameter()]
+        [Parameter()]
         [System.String[]]
         $NodeName = 'localhost',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
         $Credential
@@ -449,11 +449,11 @@ Configuration Example
 {
     param
     (
-        [parameter()]
+        [Parameter()]
         [System.String[]]
         $NodeName = 'localhost',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
         $Credential
@@ -509,7 +509,7 @@ Configuration Example
 {
     param
     (
-        [parameter()]
+        [Parameter()]
         [System.String[]]
         $NodeName = 'localhost'
     )
@@ -538,7 +538,7 @@ Configuration Example
 {
     param
     (
-        [parameter()]
+        [Parameter()]
         [System.String[]]
         $NodeName = 'localhost'
     )
@@ -564,11 +564,11 @@ Configuration Example
 {
     param
     (
-        [parameter()]
+        [Parameter()]
         [System.String[]]
         $NodeName = 'localhost',
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
         $Credential

@@ -51,19 +51,19 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $CARootName,
 
-        [parameter()]
+        [Parameter()]
         [System.UInt32]
         $RetryIntervalSeconds = 10,
 
-        [parameter()]
+        [Parameter()]
         [System.UInt32]
         $RetryCount = 60
     )
@@ -110,19 +110,19 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $CARootName,
 
-        [parameter()]
+        [Parameter()]
         [System.UInt32]
         $RetryIntervalSeconds = 10,
 
-        [parameter()]
+        [Parameter()]
         [System.UInt32]
         $RetryCount = 60
     )
@@ -195,19 +195,19 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $CAServerFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $CARootName,
 
-        [parameter()]
+        [Parameter()]
         [System.UInt32]
         $RetryIntervalSeconds = 10,
 
-        [parameter()]
+        [Parameter()]
         [System.UInt32]
         $RetryCount = 60
     )
