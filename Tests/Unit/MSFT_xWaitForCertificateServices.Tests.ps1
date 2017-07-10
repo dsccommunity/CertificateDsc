@@ -87,7 +87,7 @@ try
                     -ParameterFilter { $Seconds -eq $retryIntervalSec }
 
                 $errorRecord = Get-InvalidOperationRecord `
-                    -Message $($localizedData.CANotFoundAfterError -f $ca,$retryCount)
+                    -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $ca,$retryCount)
 
                 It 'Should throw CANotFoundAfterError exception' {
                     { Set-TargetResource @paramsCAOnline -Verbose } | Should Throw $errorRecord
