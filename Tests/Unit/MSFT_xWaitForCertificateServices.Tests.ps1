@@ -43,10 +43,10 @@ try
                 $result = Get-TargetResource @paramsCAOnline -Verbose
 
                 It 'Should return a hashtable' {
-                    ($result -is [hashtable]) | Should Be $true
+                    ($result -is [System.Collections.Hashtable]) | Should Be $true
                 }
 
-                It 'Should contain the input values' {
+                It 'Should contain the same values passed as parameters' {
                     $result.CAServerFQDN         | Should BeExactly $caServerFQDN
                     $result.CARootName           | Should BeExactly $caRootName
                     $result.RetryIntervalSeconds     | Should Be $retryIntervalSec

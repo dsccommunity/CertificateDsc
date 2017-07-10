@@ -458,7 +458,7 @@ function Test-CertificateAuthority
 
     $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
     $locatorInfo.FileName = 'certutil.exe'
-    $locatorInfo.Arguments = "-ping `"$CAServerFQDN\$CARootName`""
+    $locatorInfo.Arguments = ('-ping "{0}\{1}"' -f $CAServerFQDN,$CARootName)
 
     # Certutil does not make use of standard error stream
     $locatorInfo.RedirectStandardError = $false

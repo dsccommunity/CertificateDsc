@@ -68,7 +68,7 @@ try
 
             $result = Get-TargetResource @PresentParams
             It 'should return a hashtable' {
-                ($result -is [hashtable]) | Should Be $true
+                ($result -is [System.Collections.Hashtable]) | Should Be $true
             }
             It 'should contain the input values' {
                 $result.Thumbprint | Should BeExactly $validThumbprint

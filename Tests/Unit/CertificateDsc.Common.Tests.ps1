@@ -687,7 +687,7 @@ try
                     $script:result.CAServerFQDN | Should Be 'CA1'
                 }
 
-                It 'Should call exepcted mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
                     Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
                 }
@@ -726,7 +726,7 @@ try
                     { Find-CertificateAuthority -DomainName contoso.com -Verbose } | Should Throw $errorRecord
                 }
 
-                It 'Should call exepcted mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
                     Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
                 }
@@ -757,7 +757,7 @@ try
                     { Find-CertificateAuthority -DomainName 'somewhere.overtherainbow' -Verbose } | Should Throw $errorRecord
                 }
 
-                It 'Should call exepcted mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
                     Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 0
                 }
@@ -817,7 +817,7 @@ CertUtil: -ping command completed successfully.
                     $script:result | Should Be $True
                 }
 
-                It 'Should call exepcted mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled `
                         -CommandName New-Object `
                         -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
@@ -868,7 +868,7 @@ CertUtil: The parameter is incorrect.
                     $script:result | Should Be $false
                 }
 
-                It 'Should call exepcted mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled `
                         -CommandName New-Object `
                         -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
