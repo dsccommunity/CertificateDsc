@@ -68,11 +68,11 @@ function Get-TargetResource
         $RetryCount = 60
     )
 
-    $caFullName = "$CAServerFQDN\$CARootName"
+    $certificateAuthorityFullName = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.GettingWaitForCertificateAuthorityStatusMessage -f $caFullName)
+            $($localizedData.GettingWaitForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
     $returnValue = @{
@@ -127,14 +127,14 @@ function Set-TargetResource
         $RetryCount = 60
     )
 
-    $caFullName = "$CAServerFQDN\$CARootName"
+    $certificateAuthorityFullName = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $caFullName)
+            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
-    $caFound = $false
+    $certificateAuthorityFound = $false
 
     for ($count = 0; $count -lt $RetryCount; $count++)
     {
@@ -144,27 +144,27 @@ function Set-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CertificateAuthorityFoundMessage -f $caFullName)
+                    $($localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
                 ) -join '' )
 
-            $caFound = $true
+            $certificateAuthorityFound = $true
             break
         }
         else
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CertificateAuthorityNotFoundRetryingMessage -f $caFullName,$RetryIntervalSeconds)
+                    $($localizedData.CertificateAuthorityNotFoundRetryingMessage -f $certificateAuthorityFullName,$RetryIntervalSeconds)
                 ) -join '' )
 
             Start-Sleep -Seconds $RetryIntervalSeconds
         } # if
     } # for
 
-    if (-not $caFound)
+    if (-not $certificateAuthorityFound)
     {
         New-InvalidOperationException `
-            -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $caFullName,$RetryCount)
+            -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $certificateAuthorityFullName,$RetryCount)
     } # if
 } # function Set-TargetResource
 
@@ -212,11 +212,11 @@ function Test-TargetResource
         $RetryCount = 60
     )
 
-    $caFullName = "$CAServerFQDN\$CARootName"
+    $certificateAuthorityFullName = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $caFullName)
+            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
     if (Test-CertificateAuthority `
@@ -225,7 +225,7 @@ function Test-TargetResource
     {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CertificateAuthorityFoundMessage -f $caFullName)
+                    $($localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
                 ) -join '' )
 
         return $true
@@ -233,7 +233,7 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CertificateAuthorityNotFoundMessage -f $caFullName)
+            $($localizedData.CertificateAuthorityNotFoundMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
     return $false
