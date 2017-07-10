@@ -6,18 +6,18 @@ $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot 
 
 # Import the Certificate Common Modules
 Import-Module -Name (Join-Path -Path $modulePath `
-                               -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
-                                                     -ChildPath 'CertificateDsc.Common.psm1'))
+        -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
+            -ChildPath 'CertificateDsc.Common.psm1'))
 
 # Import the Certificate Resource Helper Module
 Import-Module -Name (Join-Path -Path $modulePath `
-                               -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-                                                     -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
+        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
+            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
 
 # Import the Certificate PDT Helper Module
 Import-Module -Name (Join-Path -Path $modulePath `
-                               -ChildPath (Join-Path -Path 'CertificateDsc.PDT' `
-                                                     -ChildPath 'CertificateDsc.PDT.psm1'))
+        -ChildPath (Join-Path -Path 'CertificateDsc.PDT' `
+            -ChildPath 'CertificateDsc.PDT.psm1'))
 
 # Import Localization Strings
 $localizedData = Get-LocalizedData `
@@ -76,10 +76,10 @@ function Get-TargetResource
         ) -join '' )
 
     $returnValue = @{
-        CAServerFQDN     = $CAServerFQDN
-        CARootName       = $CARootName
+        CAServerFQDN         = $CAServerFQDN
+        CARootName           = $CARootName
         RetryIntervalSeconds = $RetryIntervalSeconds
-        RetryCount       = $RetryCount
+        RetryCount           = $RetryCount
     }
     return $returnValue
 } # function Get-TargetResource
@@ -154,7 +154,7 @@ function Set-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CertificateAuthorityNotFoundRetryingMessage -f $certificateAuthorityFullName,$RetryIntervalSeconds)
+                    $($localizedData.CertificateAuthorityNotFoundRetryingMessage -f $certificateAuthorityFullName, $RetryIntervalSeconds)
                 ) -join '' )
 
             Start-Sleep -Seconds $RetryIntervalSeconds
@@ -164,7 +164,7 @@ function Set-TargetResource
     if (-not $certificateAuthorityFound)
     {
         New-InvalidOperationException `
-            -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $certificateAuthorityFullName,$RetryCount)
+            -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $certificateAuthorityFullName, $RetryCount)
     } # if
 } # function Set-TargetResource
 
@@ -220,13 +220,13 @@ function Test-TargetResource
         ) -join '' )
 
     if (Test-CertificateAuthority `
-        -CAServerFQDN $CAServerFQDN `
-        -CARootName $CARootName)
+            -CAServerFQDN $CAServerFQDN `
+            -CARootName $CARootName)
     {
-            Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
-                ) -join '' )
+        Write-Verbose -Message ( @(
+                "$($MyInvocation.MyCommand): "
+                $($localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
+            ) -join '' )
 
         return $true
     }
