@@ -54,7 +54,7 @@ try
                             NodeName         = 'localhost'
                             CAServerFQDN     = $caServerFQDN
                             CARootName       = $caRootName
-                            RetryIntervalSec = 1
+                            RetryIntervalSeconds = 1
                             RetryCount       = 2
                         }
                     )
@@ -97,7 +97,7 @@ try
                         NodeName         = 'localhost'
                         CAServerFQDN     = $caServerFQDN
                         CARootName       = $caRootName
-                        RetryIntervalSec = 1
+                        RetryIntervalSeconds = 1
                         RetryCount       = 2
                     }
                 )

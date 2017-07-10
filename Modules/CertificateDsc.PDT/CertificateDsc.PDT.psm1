@@ -31,11 +31,11 @@ function Get-Arguments
         $FunctionBoundParameters,
 
         [parameter(Mandatory = $true)]
-        [string[]]
+        [System.String[]]
         $ArgumentNames,
 
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NewArgumentNames
     )
 

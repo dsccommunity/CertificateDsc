@@ -37,7 +37,7 @@ $localizedData = Get-LocalizedData `
     The name of the Active Directory Certificate Service Certificate Authority to wait
     for. Leave empty to automatically detect.
 
-    .PARAMETER RetryIntervalSec
+    .PARAMETER RetryIntervalSeconds
     Specifies the number of seconds to wait for the Active Directory Certificate
     Service Certificate Authority to become available.
 
@@ -59,26 +59,26 @@ function Get-TargetResource
         [System.String]
         $CARootName,
 
-        [Parameter()]
+        [parameter()]
         [System.UInt32]
-        $RetryIntervalSec = 10,
+        $RetryIntervalSeconds = 10,
 
-        [Parameter()]
+        [parameter()]
         [System.UInt32]
         $RetryCount = 60
     )
 
-    $ca = "$CAServerFQDN\$CARootName"
+    $caFullName = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.GettingWaitForCAStatusMessage -f $ca)
+            $($localizedData.GettingWaitForCertificateAuthorityStatusMessage -f $caFullName)
         ) -join '' )
 
     $returnValue = @{
         CAServerFQDN     = $CAServerFQDN
         CARootName       = $CARootName
-        RetryIntervalSec = $RetryIntervalSec
+        RetryIntervalSeconds = $RetryIntervalSeconds
         RetryCount       = $RetryCount
     }
     return $returnValue
@@ -97,7 +97,7 @@ function Get-TargetResource
     The name of the Active Directory Certificate Service Certificate Authority to wait
     for. Leave empty to automatically detect.
 
-    .PARAMETER RetryIntervalSec
+    .PARAMETER RetryIntervalSeconds
     Specifies the number of seconds to wait for the Active Directory Certificate
     Service Certificate Authority to become available.
 
@@ -118,20 +118,20 @@ function Set-TargetResource
         [System.String]
         $CARootName,
 
-        [Parameter()]
+        [parameter()]
         [System.UInt32]
-        $RetryIntervalSec = 10,
+        $RetryIntervalSeconds = 10,
 
-        [Parameter()]
+        [parameter()]
         [System.UInt32]
         $RetryCount = 60
     )
 
-    $ca = "$CAServerFQDN\$CARootName"
+    $caFullName = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CheckingForCAStatusMessage -f $ca)
+            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $caFullName)
         ) -join '' )
 
     $caFound = $false
@@ -144,7 +144,7 @@ function Set-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CAFoundMessage -f $ca)
+                    $($localizedData.CertificateAuthorityFoundMessage -f $caFullName)
                 ) -join '' )
 
             $caFound = $true
@@ -154,17 +154,17 @@ function Set-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CANotFoundRetryingMessage -f $ca,$RetryIntervalSec)
+                    $($localizedData.CertificateAuthorityNotFoundRetryingMessage -f $caFullName,$RetryIntervalSeconds)
                 ) -join '' )
 
-            Start-Sleep -Seconds $RetryIntervalSec
+            Start-Sleep -Seconds $RetryIntervalSeconds
         } # if
     } # for
 
     if (-not $caFound)
     {
         New-InvalidOperationException `
-            -Message $($localizedData.CANotFoundAfterError -f $ca,$RetryCount)
+            -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $caFullName,$RetryCount)
     } # if
 } # function Set-TargetResource
 
@@ -181,7 +181,7 @@ function Set-TargetResource
     The name of the Active Directory Certificate Service Certificate Authority to wait
     for. Leave empty to automatically detect.
 
-    .PARAMETER RetryIntervalSec
+    .PARAMETER RetryIntervalSeconds
     Specifies the number of seconds to wait for the Active Directory Certificate
     Service Certificate Authority to become available.
 
@@ -203,20 +203,20 @@ function Test-TargetResource
         [System.String]
         $CARootName,
 
-        [Parameter()]
+        [parameter()]
         [System.UInt32]
-        $RetryIntervalSec = 10,
+        $RetryIntervalSeconds = 10,
 
-        [Parameter()]
+        [parameter()]
         [System.UInt32]
         $RetryCount = 60
     )
 
-    $ca = "$CAServerFQDN\$CARootName"
+    $caFullName = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CheckingForCAStatusMessage -f $ca)
+            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $caFullName)
         ) -join '' )
 
     if (Test-CertificateAuthority `
@@ -225,7 +225,7 @@ function Test-TargetResource
     {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CAOnlineMessage -f $ca)
+                    $($localizedData.CertificateAuthorityFoundMessage -f $caFullName)
                 ) -join '' )
 
         return $true
@@ -233,7 +233,7 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CAOfflineMessage -f $ca)
+            $($localizedData.CertificateAuthorityNotFoundMessage -f $caFullName)
         ) -join '' )
 
     return $false

@@ -138,7 +138,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   Service Certificate Authority to wait for.
 - **`[String]` CARootName** (_Key_): The name of the Active Directory Certificate
   Service Certificate Authority to wait for.
-- **`[Uint32]` RetryIntervalSec**: Specifies the number of seconds to wait for
+- **`[Uint32]` RetryIntervalSeconds**: Specifies the number of seconds to wait for
   the Active Directory Certificate Service Certificate Authority to become
   available. Defaults to 10.
 - **`[Uint32]` RetryCount**: The number of times to loop the retry interval while
@@ -317,18 +317,19 @@ configuration Example
 {
     param
     (
-        [Parameter()]
-        [string[]]
+        [parameter()]
+        [System.String[]]
         $NodeName = 'localhost',
 
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
-    Node 'localhost'
+
+    Node $AllNodes.NodeName
     {
         xCertReq SSLCert
         {
@@ -366,18 +367,19 @@ configuration Example
 {
     param
     (
-        [Parameter()]
-        [string[]]
+        [parameter()]
+        [System.String[]]
         $NodeName = 'localhost',
 
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
-    Node 'localhost'
+
+    Node $AllNodes.NodeName
     {
         xCertReq SSLCert
         {
@@ -410,13 +412,13 @@ Configuration Example
 {
     param
     (
-        [Parameter()]
-        [string[]]
+        [parameter()]
+        [System.String[]]
         $NodeName = 'localhost',
 
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
@@ -445,13 +447,13 @@ Configuration Example
 {
     param
     (
-        [Parameter()]
-        [string[]]
+        [parameter()]
+        [System.String[]]
         $NodeName = 'localhost',
 
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
@@ -505,8 +507,8 @@ Configuration Example
 {
     param
     (
-        [Parameter()]
-        [string[]]
+        [parameter()]
+        [System.String[]]
         $NodeName = 'localhost'
     )
 
@@ -534,8 +536,8 @@ Configuration Example
 {
     param
     (
-        [Parameter()]
-        [string[]]
+        [parameter()]
+        [System.String[]]
         $NodeName = 'localhost'
     )
 
@@ -560,13 +562,13 @@ Configuration Example
 {
     param
     (
-        [Parameter()]
-        [string[]]
+        [parameter()]
+        [System.String[]]
         $NodeName = 'localhost',
 
-        [Parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
@@ -580,6 +582,65 @@ Configuration Example
             FriendlyName = 'Web Site SSL Certificate for www.contoso.com'
             Path         = 'c:\sslcert.cer'
             Password     = $Credential
+        }
+    }
+}
+```
+
+### xWaitForCertificateServices Examples
+
+Request and Accept a certificate from an Active Directory Root Certificate Authority.
+The CA may not be initially available (e.g. it may still be being installed) so
+the config will first wait for it to become available.
+
+This example is allowing storage of credentials in plain text by setting
+PSDscAllowPlainTextPassword to $true.
+Storing passwords in plain text is not a good practice and is presented only for
+simplicity and demonstration purposes.
+To learn how to securely store credentials through the use of certificates,
+please refer to the following TechNet topic:
+https://technet.microsoft.com/en-us/library/dn781430.aspx
+
+```powershell
+configuration Example
+{
+    param
+    (
+        [Parameter()]
+        [System.String[]]
+        $NodeName = 'localhost',
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.PSCredential]
+        $Credential
+    )
+
+    Import-DscResource -ModuleName xCertificate
+
+    Node $AllNodes.NodeName
+    {
+        xWaitForCertificateServices RootCA
+        {
+            CARootName   = 'test-dc01-ca'
+            CAServerFQDN = 'dc01.test.pha'
+        }
+
+        xCertReq SSLCert
+        {
+            CARootName          = 'test-dc01-ca'
+            CAServerFQDN        = 'dc01.test.pha'
+            Subject             = 'foodomain.test.net'
+            KeyLength           = '1024'
+            Exportable          = $true
+            ProviderName        = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                 = '1.3.6.1.5.5.7.3.1'
+            KeyUsage            = '0xa0'
+            CertificateTemplate = 'WebServer'
+            AutoRenew           = $true
+            FriendlyName        = 'SSL Cert for Web Server'
+            Credential          = $Credential
+            DependsOn           = '[xWaitForCertificateServices]RootCA'
         }
     }
 }

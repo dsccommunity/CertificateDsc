@@ -7,12 +7,12 @@ Configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost',
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 

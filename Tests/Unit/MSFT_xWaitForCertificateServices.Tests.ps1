@@ -32,7 +32,7 @@ try
         $paramsCAOnline = @{
             CAServerFQDN     = $caServerFQDN
             CARootName       = $caRootName
-            RetryIntervalSec = $retryIntervalSec
+            RetryIntervalSeconds = $retryIntervalSec
             RetryCount       = $retryCount
         }
 
@@ -49,7 +49,7 @@ try
                 It 'Should contain the input values' {
                     $result.CAServerFQDN         | Should BeExactly $caServerFQDN
                     $result.CARootName           | Should BeExactly $caRootName
-                    $result.RetryIntervalSec     | Should Be $retryIntervalSec
+                    $result.RetryIntervalSeconds     | Should Be $retryIntervalSec
                     $result.RetryCount           | Should Be $retryCount
                 }
             }

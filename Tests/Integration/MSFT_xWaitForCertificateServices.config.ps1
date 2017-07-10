@@ -5,7 +5,7 @@ Configuration MSFT_xWaitForCertificateServices_Config {
         xWaitForCertificateServices Integration_Test {
             CAServerFQDN        = $Node.CAServerFQDN
             CARootName          = $Node.CARootName
-            RetryIntervalSec    = $Node.RetryIntervalSec
+            RetryIntervalSeconds    = $Node.RetryIntervalSeconds
             RetryCount          = $Node.RetryCount
         }
     }
