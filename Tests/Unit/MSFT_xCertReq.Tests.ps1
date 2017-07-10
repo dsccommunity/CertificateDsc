@@ -39,7 +39,7 @@ try
         $caRootName            = 'contoso-CA'
         $validSubject          = 'Test Subject'
         $validIssuer           = "CN=$caRootName, DC=contoso, DC=com"
-        $keyLength             = '1024'
+        $keyLength             = '2048'
         $exportable            = $true
         $providerName          = '"Microsoft RSA SChannel Cryptographic Provider"'
         $oid                   = '1.3.6.1.5.5.7.3.1'
@@ -730,17 +730,17 @@ RenewalCert = $validThumbprint
                     param (
                         [Parameter()]
                         $Path,
-                        
+
                         [Parameter()]
                         $Arguments,
-                        
+
                         [Parameter()]
                         $Credential
                     )
                 }
 
                 function Wait-Win32ProcessStop {
-                    param ( 
+                    param (
                         [Parameter()]
                         $Path,
 

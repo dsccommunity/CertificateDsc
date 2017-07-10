@@ -27,18 +27,18 @@ configuration Example
     {
         xCertReq SSLCert
         {
-            CARootName                = 'test-dc01-ca'
-            CAServerFQDN              = 'dc01.test.pha'
-            Subject                   = 'foodomain.test.net'
-            KeyLength                 = '1024'
-            Exportable                = $true
-            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
-            OID                       = '1.3.6.1.5.5.7.3.1'
-            KeyUsage                  = '0xa0'
-            CertificateTemplate       = 'WebServer'
-            AutoRenew                 = $true
-            FriendlyName              = 'SSL Cert for Web Server'
-            Credential                = $Credential
+            CARootName          = 'test-dc01-ca'
+            CAServerFQDN        = 'dc01.test.pha'
+            Subject             = 'foodomain.test.net'
+            KeyLength           = '2048'
+            Exportable          = $true
+            ProviderName        = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                 = '1.3.6.1.5.5.7.3.1'
+            KeyUsage            = '0xa0'
+            CertificateTemplate = 'WebServer'
+            AutoRenew           = $true
+            FriendlyName        = 'SSL Cert for Web Server'
+            Credential          = $Credential
         }
     }
 }

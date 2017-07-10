@@ -173,6 +173,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   and `New-InvalidOperationException`
 - xWaitForCertificateServices:
   - Added new resource.
+- Cleaned up example format to meet style guidelines and changed examples to
+  issue 2048 bit certificates.
 
 ### 2.7.0.0
 
@@ -336,7 +338,7 @@ configuration Example
             CARootName                = 'test-dc01-ca'
             CAServerFQDN              = 'dc01.test.pha'
             Subject                   = 'foodomain.test.net'
-            KeyLength                 = '1024'
+            KeyLength                 = '2048'
             Exportable                = $true
             ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
             OID                       = '1.3.6.1.5.5.7.3.1'
@@ -386,7 +388,7 @@ configuration Example
             CARootName                = 'test-dc01-ca'
             CAServerFQDN              = 'dc01.test.pha'
             Subject                   = 'contoso.com'
-            KeyLength                 = '1024'
+            KeyLength                 = '2048'
             Exportable                = $true
             ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
             OID                       = '1.3.6.1.5.5.7.3.1'
@@ -631,7 +633,7 @@ configuration Example
             CARootName          = 'test-dc01-ca'
             CAServerFQDN        = 'dc01.test.pha'
             Subject             = 'foodomain.test.net'
-            KeyLength           = '1024'
+            KeyLength           = '2048'
             Exportable          = $true
             ProviderName        = '"Microsoft RSA SChannel Cryptographic Provider"'
             OID                 = '1.3.6.1.5.5.7.3.1'
