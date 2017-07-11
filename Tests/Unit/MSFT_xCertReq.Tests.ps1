@@ -39,7 +39,7 @@ try
         $caRootName            = 'contoso-CA'
         $validSubject          = 'Test Subject'
         $validIssuer           = "CN=$caRootName, DC=contoso, DC=com"
-        $keyLength             = '1024'
+        $keyLength             = '2048'
         $exportable            = $true
         $providerName          = '"Microsoft RSA SChannel Cryptographic Provider"'
         $oid                   = '1.3.6.1.5.5.7.3.1'
@@ -375,7 +375,7 @@ RenewalCert = $validThumbprint
                 $result = Get-TargetResource @paramsStandard -Verbose
 
                 It 'Should return a hashtable' {
-                    ($result -is [hashtable]) | Should Be $true
+                    $result | Should BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values' {
@@ -397,7 +397,7 @@ RenewalCert = $validThumbprint
                 $result = Get-TargetResource @paramsAutoDiscovery -Verbose
 
                 It 'Should return a hashtable' {
-                    ($result -is [hashtable]) | Should Be $true
+                    $result | Should BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values and the CA should be auto-discovered' {
@@ -730,17 +730,17 @@ RenewalCert = $validThumbprint
                     param (
                         [Parameter()]
                         $Path,
-                        
+
                         [Parameter()]
                         $Arguments,
-                        
+
                         [Parameter()]
                         $Credential
                     )
                 }
 
                 function Wait-Win32ProcessStop {
-                    param ( 
+                    param (
                         [Parameter()]
                         $Path,
 

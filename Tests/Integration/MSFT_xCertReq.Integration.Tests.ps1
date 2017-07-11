@@ -52,7 +52,7 @@ try
             $certUtilResult       = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
             $caServerFQDN         = ([regex]::matches($certUtilResult,'Server:[ \t]+`([A-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
             $caRootName           = ([regex]::matches($certUtilResult,'Name:[ \t]+`([\sA-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
-            $keyLength            = '1024'
+            $keyLength            = '2048'
             $exportable           = $true
             $providerName         = '"Microsoft RSA SChannel Cryptographic Provider"'
             $oid                  = '1.3.6.1.5.5.7.3.1'

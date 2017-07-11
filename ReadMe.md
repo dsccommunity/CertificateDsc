@@ -15,6 +15,8 @@ The **xCertificate** module contains the following resources:
   store.
 - **xCertificateExport**: Used to export a certificate from a Windows certificate
   store.
+- **xWaitForCertificateServices**: Used to wait for a Active Directory Certificate
+  Services Certificate Authority to become available.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
@@ -130,6 +132,19 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - **`[Boolean]` IsExported** (_Read_): Returns true if the certificate file already
   exists and therefore has been exported.
 
+### xWaitForCertificateServices
+
+- **`[String]` CAServerFQDN** (_Key_): The FQDN of the Active Directory Certificate
+  Service Certificate Authority to wait for.
+- **`[String]` CARootName** (_Key_): The name of the Active Directory Certificate
+  Service Certificate Authority to wait for.
+- **`[Uint32]` RetryIntervalSeconds**: Specifies the number of seconds to wait for
+  the Active Directory Certificate Service Certificate Authority to become
+  available. Defaults to 10 seconds.
+- **`[Uint32]` RetryCount**: The number of times to loop the retry interval while
+  waiting for the Active Directory Certificate Service Certificate Authority.
+  Optional. Defaults to 60 retries.
+
 ## Versions
 
 ### Unreleased
@@ -143,6 +158,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - Improved unit test style to match standard layout.
   - Minor corrections to style to be HQRM compliant.
   - Improved Verbose logging by writing all lines of CertReq.exe output.
+  - Fixed CA auto-detection to work when CA name contains a space.
 - Corrected all makrdown rule violations in README.MD.
 - Added markdownlint.json file to enable line length rule checking in VSCode
   with [MarkdownLint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
@@ -153,6 +169,13 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   fixes [Issue 70](https://github.com/PowerShell/xCertificate/issues/70).
 - Converted all calls to `New-InvalidArgumentError` function to `New-InvalidArgumentException`
   found in `CertificateDsc.ResourceHelper` - fixes [Issue 68](https://github.com/PowerShell/xCertificate/issues/68)
+- Replaced all calls to `Write-Error` with calls to `New-InvalidArgumentException`
+  and `New-InvalidOperationException`
+- xWaitForCertificateServices:
+  - Added new resource.
+- Cleaned up example format to meet style guidelines and changed examples to
+  issue 2048 bit certificates.
+- Fixed spelling error in xCertificateExport Issuer parameter description.
 
 ### 2.7.0.0
 
@@ -298,24 +321,25 @@ configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost',
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
-    Node 'localhost'
+
+    Node $AllNodes.NodeName
     {
         xCertReq SSLCert
         {
             CARootName                = 'test-dc01-ca'
             CAServerFQDN              = 'dc01.test.pha'
             Subject                   = 'foodomain.test.net'
-            KeyLength                 = '1024'
+            KeyLength                 = '2048'
             Exportable                = $true
             ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
             OID                       = '1.3.6.1.5.5.7.3.1'
@@ -347,24 +371,25 @@ configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost',
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
     Import-DscResource -ModuleName xCertificate
-    Node 'localhost'
+
+    Node $AllNodes.NodeName
     {
         xCertReq SSLCert
         {
             CARootName                = 'test-dc01-ca'
             CAServerFQDN              = 'dc01.test.pha'
             Subject                   = 'contoso.com'
-            KeyLength                 = '1024'
+            KeyLength                 = '2048'
             Exportable                = $true
             ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
             OID                       = '1.3.6.1.5.5.7.3.1'
@@ -391,12 +416,12 @@ Configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost',
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
@@ -426,12 +451,12 @@ Configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost',
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
@@ -486,7 +511,7 @@ Configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost'
     )
 
@@ -515,7 +540,7 @@ Configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost'
     )
 
@@ -541,12 +566,12 @@ Configuration Example
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NodeName = 'localhost',
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $Credential
     )
 
@@ -560,6 +585,65 @@ Configuration Example
             FriendlyName = 'Web Site SSL Certificate for www.contoso.com'
             Path         = 'c:\sslcert.cer'
             Password     = $Credential
+        }
+    }
+}
+```
+
+### xWaitForCertificateServices Examples
+
+Request and Accept a certificate from an Active Directory Root Certificate Authority.
+The CA may not be initially available (e.g. it may still be being installed) so
+the config will first wait for it to become available.
+
+This example is allowing storage of credentials in plain text by setting
+PSDscAllowPlainTextPassword to $true.
+Storing passwords in plain text is not a good practice and is presented only for
+simplicity and demonstration purposes.
+To learn how to securely store credentials through the use of certificates,
+please refer to the following TechNet topic:
+https://technet.microsoft.com/en-us/library/dn781430.aspx
+
+```powershell
+configuration Example
+{
+    param
+    (
+        [Parameter()]
+        [System.String[]]
+        $NodeName = 'localhost',
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.PSCredential]
+        $Credential
+    )
+
+    Import-DscResource -ModuleName xCertificate
+
+    Node $AllNodes.NodeName
+    {
+        xWaitForCertificateServices RootCA
+        {
+            CARootName   = 'test-dc01-ca'
+            CAServerFQDN = 'dc01.test.pha'
+        }
+
+        xCertReq SSLCert
+        {
+            CARootName          = 'test-dc01-ca'
+            CAServerFQDN        = 'dc01.test.pha'
+            Subject             = 'foodomain.test.net'
+            KeyLength           = '2048'
+            Exportable          = $true
+            ProviderName        = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                 = '1.3.6.1.5.5.7.3.1'
+            KeyUsage            = '0xa0'
+            CertificateTemplate = 'WebServer'
+            AutoRenew           = $true
+            FriendlyName        = 'SSL Cert for Web Server'
+            Credential          = $Credential
+            DependsOn           = '[xWaitForCertificateServices]RootCA'
         }
     }
 }

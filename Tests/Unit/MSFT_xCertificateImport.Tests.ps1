@@ -59,8 +59,9 @@ try
 
             $result = Get-TargetResource @PresentParams
             It 'should return a hashtable' {
-                ($result -is [hashtable]) | Should Be $true
+                $result | Should BeOfType System.Collections.Hashtable
             }
+
             It 'should contain the input values' {
                 $result.Thumbprint | Should BeExactly $validThumbprint
                 $result.Path | Should BeExactly $validPath
@@ -72,6 +73,7 @@ try
             It 'should return a bool' {
                 Test-TargetResource @PresentParams | Should BeOfType Boolean
             }
+
             It 'returns false when valid path + thumbprint and certificate is not in store but should be' {
                 Mock Get-TargetResource {
                     return @{

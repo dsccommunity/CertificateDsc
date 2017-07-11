@@ -6,7 +6,7 @@ class MSFT_xCertificateExport : OMI_BaseResource
     [Write,Description("The friendly name of the certificate to export. Certificate selector parameter.")] string FriendlyName;
     [Write,Description("The subject of the certificate to export. Certificate selector parameter.")] string Subject;
     [Write,Description("The subject alternative name of the certificate to export must contain these values. Certificate selector parameter.")] string DNSName[];
-    [Write,Description("The issuer of the certiicate to export. Certificate selector parameter.")] string Issuer;
+    [Write,Description("The issuer of the certificate to export. Certificate selector parameter.")] string Issuer;
     [Write,Description("The key usage of the certificate to export must contain these values. Certificate selector parameter.")] string KeyUsage[];
     [Write,Description("The enhanced key usage of the certificate to export must contain these values. Certificate selector parameter.")] string EnhancedKeyUsage[];
     [Write,Description("The Windows Certificate Store Name to search for the certificate to export from. Certificate selector parameter. Defaults to 'My'.")] string Store;
