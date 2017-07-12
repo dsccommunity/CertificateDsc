@@ -149,6 +149,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### Unreleased
 
+### 2.8.0.0
+
 - xCertReq:
   - Added FriendlyName parameter to xCertReq.
   - Changed exceptions to be raised using New-InvalidOperationException from PSDscResources.
