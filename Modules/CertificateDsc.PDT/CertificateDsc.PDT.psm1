@@ -27,15 +27,15 @@ function Get-Arguments
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         $FunctionBoundParameters,
 
-        [parameter(Mandatory = $true)]
-        [string[]]
+        [Parameter(Mandatory = $true)]
+        [System.String[]]
         $ArgumentNames,
 
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $NewArgumentNames
     )
 
@@ -377,7 +377,7 @@ function Get-Win32Process
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]
         $Path,
@@ -436,7 +436,7 @@ function Get-Win32ProcessOwner
 {
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
         $Process
     )
@@ -516,7 +516,7 @@ function Start-Win32Process
 {
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]
         $Path,
@@ -611,7 +611,7 @@ function Wait-Win32ProcessStart
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]
         $Path,
@@ -662,7 +662,7 @@ function Wait-Win32ProcessStop
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]
         $Path,
@@ -712,7 +712,7 @@ function Wait-Win32ProcessEnd
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]
         $Path,
@@ -730,16 +730,14 @@ function Wait-Win32ProcessEnd
     # Wait for the process to start
     if (-not (Wait-Win32ProcessStart @getArguments))
     {
-        New-InvalidArgumentError `
-            -ErrorId 'ProcessFailedToStartError' `
-            -ErrorMessage ($LocalizedData.ProcessFailedToStartError -f $Path,$Arguments)
+        New-InvalidOperationException `
+            -Message ($LocalizedData.ProcessFailedToStartError -f $Path,$Arguments)
     }
     if (-not (Wait-Win32ProcessStop @getArguments))
     {
         # The process did not stop.
-        New-InvalidArgumentError `
-            -ErrorId 'ProcessFailedToStopError' `
-            -ErrorMessage ($LocalizedData.ProcessFailedToStopError -f $Path,$Arguments)
+        New-InvalidOperationException `
+            -Message ($LocalizedData.ProcessFailedToStopError -f $Path,$Arguments)
     }
 } # end function Wait-Win32ProcessEnd
 

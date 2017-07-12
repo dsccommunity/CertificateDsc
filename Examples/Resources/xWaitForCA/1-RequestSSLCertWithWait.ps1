@@ -1,6 +1,8 @@
 <#
     .EXAMPLE
     Request and Accept a certificate from an Active Directory Root Certificate Authority.
+    The CA may not be initially available (e.g. it may still be being installed) so the config
+    will first wait for it to become available.
 
     This example is allowing storage of credentials in plain text by setting PSDscAllowPlainTextPassword to $true.
     Storing passwords in plain text is not a good practice and is presented only for simplicity and demonstration purposes.
@@ -25,6 +27,12 @@ configuration Example
 
     Node $AllNodes.NodeName
     {
+        xWaitForCertificateServices RootCA
+        {
+            CARootName   = 'test-dc01-ca'
+            CAServerFQDN = 'dc01.test.pha'
+        }
+
         xCertReq SSLCert
         {
             CARootName          = 'test-dc01-ca'
@@ -39,6 +47,7 @@ configuration Example
             AutoRenew           = $true
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
+            DependsOn           = '[xWaitForCertificateServices]RootCA'
         }
     }
 }

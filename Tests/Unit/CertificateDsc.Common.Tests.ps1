@@ -101,21 +101,20 @@ try
 
             $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
             $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
-        
-        Describe "$DSCResourceName\Test-CertificatePath" {
 
+        Describe "$DSCResourceName\Test-CertificatePath" {
             $null | Set-Content -Path $validPath
 
             Context 'a single existing file by parameter' {
                 $result = Test-CertificatePath -Path $validPath
-                It 'should return true' {
+                It 'Should return true' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $true
                 }
             }
 
             Context 'a single missing file by parameter' {
-                It 'should throw an exception' {
+                It 'Should throw an exception' {
                     # directories are not valid
                     { Test-CertificatePath -Path $invalidPath } | Should Throw
                 }
@@ -123,7 +122,7 @@ try
 
             Context 'a single missing file by parameter with -Quiet' {
                 $result = Test-CertificatePath -Path $invalidPath -Quiet
-                It 'should return false' {
+                It 'Should return false' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $false
                 }
@@ -131,14 +130,14 @@ try
 
             Context 'a single existing file by pipeline' {
                 $result = $validPath | Test-CertificatePath
-                It 'should return true' {
+                It 'Should return true' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $true
                 }
             }
 
             Context 'a single missing file by pipeline' {
-                It 'should throw an exception' {
+                It 'Should throw an exception' {
                     # directories are not valid
                     { $invalidPath | Test-CertificatePath } | Should Throw
                 }
@@ -146,7 +145,7 @@ try
 
             Context 'a single missing file by pipeline with -Quiet' {
                 $result =  $invalidPath | Test-CertificatePath -Quiet
-                It 'should return false' {
+                It 'Should return false' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $false
                 }
@@ -154,17 +153,16 @@ try
         }
 
         Describe "$DSCResourceName\Test-Thumbprint" {
-
             Context 'a single valid thumbrpint by parameter' {
                 $result = Test-Thumbprint -Thumbprint $validThumbprint
-                It 'should return true' {
+                It 'Should return true' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $true
                 }
             }
 
             Context 'a single invalid thumbprint by parameter' {
-                It 'should throw an exception' {
+                It 'Should throw an exception' {
                     # directories are not valid
                     { Test-Thumbprint -Thumbprint $invalidThumbprint } | Should Throw
                 }
@@ -172,7 +170,7 @@ try
 
             Context 'a single invalid thumbprint by parameter with -Quiet' {
                 $result = Test-Thumbprint $invalidThumbprint -Quiet
-                It 'should return false' {
+                It 'Should return false' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $false
                 }
@@ -180,14 +178,14 @@ try
 
             Context 'a single valid thumbprint by pipeline' {
                 $result = $validThumbprint | Test-Thumbprint
-                It 'should return true' {
+                It 'Should return true' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $true
                 }
             }
 
             Context 'a single invalid thumborint by pipeline' {
-                It 'should throw an exception' {
+                It 'Should throw an exception' {
                     # directories are not valid
                     { $invalidThumbprint | Test-Thumbprint } | Should Throw
                 }
@@ -195,7 +193,7 @@ try
 
             Context 'a single invalid thumbprint by pipeline with -Quiet' {
                 $result =  $invalidThumbprint | Test-Thumbprint -Quiet
-                It 'should return false' {
+                It 'Should return false' {
                     ($result -is [bool]) | Should Be $true
                     $result | Should Be $false
                 }
@@ -203,7 +201,6 @@ try
         }
 
         Describe "$DSCResourceName\Find-Certificate" {
-
             # Download and dot source the New-SelfSignedCertificateEx script
             . (Install-NewSelfSignedCertificateExScript)
 
@@ -294,360 +291,360 @@ try
             }
 
             Context 'Thumbprint only is passed and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -Thumbprint $validThumbprint } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'Thumbprint only is passed and matching certificate does not exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -Thumbprint $nocertThumbprint } | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'FriendlyName only is passed and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'FriendlyName only is passed and matching certificate does not exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName 'Does Not Exist' } | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'Subject only is passed and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -Subject $certSubject } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'Subject only is passed and matching certificate does not exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -Subject 'CN=Does Not Exist' } | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'Issuer only is passed and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -Issuer $certSubject } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'Issuer only is passed and matching certificate does not exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -Issuer 'CN=Does Not Exist' } | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'DNSName only is passed and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNames } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'DNSName only is passed in reversed order and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNamesReverse } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'DNSName only is passed with only one matching DNS name and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNames[0] } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'DNSName only is passed but an entry is missing and matching certificate does not exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -DnsName $certDNSNamesNoMatch } | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'KeyUsage only is passed and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsage } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'KeyUsage only is passed in reversed order and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsageReverse } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'KeyUsage only is passed with only one matching DNS name and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsage[0] } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'KeyUsage only is passed but an entry is missing and matching certificate does not exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -KeyUsage $certKeyUsageNoMatch } | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed in reversed order and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUReverse } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed with only one matching DNS name and matching certificate exists' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU[0] } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'EnhancedKeyUsage only is passed but an entry is missing and matching certificate does not exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUNoMatch } | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'Thumbprint only is passed and matching certificate does not exist in the store' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -Thumbprint $validThumbprint -Store 'NoCert'} | Should Not Throw
                 }
 
-                It 'should return null' {
+                It 'Should return null' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'FriendlyName only is passed and both valid and expired certificates exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'TwoCerts' } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $validThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'FriendlyName only is passed and only expired certificates exist' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result | Should BeNullOrEmpty
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
             }
 
             Context 'FriendlyName only is passed and only expired certificates exist but allowexpired passed' {
-                It 'should not throw exception' {
+                It 'Should not throw exception' {
                     { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' -AllowExpired:$true } | Should Not Throw
                 }
 
-                It 'should return expected certificate' {
+                It 'Should return expected certificate' {
                     $script:result.Thumbprint | Should Be $expiredThumbprint
                 }
 
-                It 'should call expected mocks' {
+                It 'Should call expected mocks' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
@@ -655,56 +652,233 @@ try
         }
 
         Describe "$DSCResourceName\Find-CertificateAuthority" {
-            Mock -CommandName Get-CdpContainer -MockWith {
-                [CmdletBinding()]
-                param
-                (
-                    $DomainName
-                )
-                return New-Object -TypeName psobject -Property @{
-                    Children = @(
-                        @{
-                            distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                            Children = @{
-                                distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                            }
-                        }
-                    )
-                }
-            }
-
-            Mock -CommandName New-Object -ParameterFilter {$TypeName -eq 'System.Diagnostics.Process'} -MockWith {
-                $retObj = New-Object -TypeName psobject -Property @{
-                    StartInfo = $null
-                    ExitCode = 0
-                    StandardOutput = New-Object psobject | Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {} -PassThru
-                }
-
-                $retObj | Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
-                    Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
-                
-                return $retObj
-            }
-            
             Context 'Function is executed with domain connectivity' {
-                It 'Should return the CA name' {
-                    (Find-CertificateAuthority -DomainName contoso.com).CARootName | Should Be 'LabRootCA1'
+                Mock `
+                    -CommandName Get-CdpContainer `
+                    -MockWith {
+                        [CmdletBinding()]
+                        param
+                        (
+                            $DomainName
+                        )
+                        return New-Object -TypeName psobject -Property @{
+                            Children = @(
+                                @{
+                                    distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                                    Children = @{
+                                        distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                Mock `
+                    -CommandName Test-CertificateAuthority `
+                    -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
+                    -MockWith { return $true }
+
+                It 'Should not throw' {
+                    $script:result = Find-CertificateAuthority -DomainName contoso.com -Verbose
                 }
 
-                It 'Should return the CA server fqdn' {
-                    (Find-CertificateAuthority -DomainName contoso.com).CAServerFQDN | Should Be 'CA1'
+                It 'Should return the expected CA' {
+                    $script:result.CARootName   | Should Be 'LabRootCA1'
+                    $script:result.CAServerFQDN | Should Be 'CA1'
                 }
 
-                It 'Should call Get-CdpContainer twice' {
-                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 2
+                It 'Should call expected mocks' {
+                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                    Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
+                }
+            }
+
+            Context 'Function is executed with domain connectivity but CA is uncontactable' {
+                Mock `
+                    -CommandName Get-CdpContainer `
+                    -MockWith {
+                        [CmdletBinding()]
+                        param
+                        (
+                            $DomainName
+                        )
+                        return New-Object -TypeName psobject -Property @{
+                            Children = @(
+                                @{
+                                    distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                                    Children = @{
+                                        distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                Mock `
+                    -CommandName Test-CertificateAuthority `
+                    -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
+                    -MockWith { return $false }
+
+                $errorRecord = Get-InvalidOperationRecord `
+                    -Message ($LocalizedData.NoCaFoundError)
+
+                It 'Should throw NoCaFoundError exception' {
+                    { Find-CertificateAuthority -DomainName contoso.com -Verbose } | Should Throw $errorRecord
+                }
+
+                It 'Should call expected mocks' {
+                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                    Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
                 }
             }
 
             Context 'Function is executed without domain connectivity' {
+                Mock `
+                    -CommandName Get-CdpContainer `
+                    -MockWith {
+                        [CmdletBinding()]
+                        param
+                        (
+                            $DomainName
+                        )
+                        New-InvalidOperationException `
+                            -Message ($LocalizedData.DomainNotJoinedError)
+                    }
 
-                It 'Should throw' {
-                    { Find-CertificateAuthority -DomainName somewhere.overtherainbow -ErrorAction Stop -Verbose } | Should Throw
-                }                
+                Mock `
+                    -CommandName Test-CertificateAuthority `
+                    -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
+                    -MockWith { return $false }
+
+                $errorRecord = Get-InvalidOperationRecord `
+                    -Message ($LocalizedData.DomainNotJoinedError)
+
+                It 'Should throw DomainNotJoinedError exception' {
+                    { Find-CertificateAuthority -DomainName 'somewhere.overtherainbow' -Verbose } | Should Throw $errorRecord
+                }
+
+                It 'Should call expected mocks' {
+                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                    Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 0
+                }
+            }
+        }
+
+        Describe "$DSCResourceName\Test-CertificateAuthority" {
+            Mock `
+                -CommandName New-Object `
+                -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                -MockWith {
+                    $retObj = New-Object -TypeName psobject -Property @{
+                        FileName = ''
+                        Arguments = ''
+                        RedirectStandardError = $false
+                        RedirectStandardOutput = $true
+                        UseShellExecute = $false
+                        CreateNoWindow = $true
+                    }
+
+                    return $retObj
+                }
+
+            Context 'Function is executed with CA online' {
+                Mock `
+                    -CommandName New-Object `
+                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                    -MockWith {
+                        $retObj = New-Object -TypeName psobject -Property @{
+                            StartInfo = $null
+                            ExitCode = 0
+                            StandardOutput = New-Object -TypeName psobject |
+                                Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                                return @"
+Connecting to LabRootCA1\CA1 ...
+Server "CA1" ICertRequest2 interface is alive (32ms)
+CertUtil: -ping command completed successfully.
+"@
+                            } -PassThru
+                        }
+
+                        $retObj |
+                            Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
+
+                        return $retObj
+                    }
+
+                It 'Should not throw' {
+                    $script:result = Test-CertificateAuthority `
+                        -CARootName 'LabRootCA1' `
+                        -CAServerFQDN 'CA1' `
+                        -Verbose
+                }
+
+                It 'Should return true' {
+                    $script:result | Should Be $True
+                }
+
+                It 'Should call expected mocks' {
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                        -Exactly -Times 1
+
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'Function is executed with CA offline' {
+                Mock `
+                    -CommandName New-Object `
+                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                    -MockWith {
+                        $retObj = New-Object -TypeName psobject -Property @{
+                            StartInfo = $null
+                            ExitCode = -2147024809
+                            StandardOutput = New-Object -TypeName psobject |
+                                Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                                return @"
+Connecting to LabRootCA1\CA2 ...
+Server could not be reached: The parameter is incorrect. 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER) -- (31ms)
+
+CertUtil: -ping command FAILED: 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER)
+CertUtil: The parameter is incorrect.
+"@
+                            } -PassThru
+                        }
+
+                        $retObj |
+                            Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
+                            Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
+
+                        return $retObj
+                    }
+
+                It 'Should not throw' {
+                    $script:result = Test-CertificateAuthority `
+                        -CARootName 'LabRootCA1' `
+                        -CAServerFQDN 'CA2' `
+                        -Verbose
+                }
+
+                It 'Should return false' {
+                    $script:result | Should Be $false
+                }
+
+                It 'Should call expected mocks' {
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                        -Exactly -Times 1
+
+                    Assert-MockCalled `
+                        -CommandName New-Object `
+                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                        -Exactly -Times 1
+                }
             }
         }
 
@@ -724,7 +898,7 @@ try
 
         Describe "$DSCResourceName\Get-CertificateSan" {
             Context 'A certificate with a SAN is used' {
-                It 'Should return the SAN' {                
+                It 'Should return the SAN' {
                     Get-CertificateSan -Certificate $testCertificate | Should Be 'firstsan'
                 }
             }
