@@ -154,6 +154,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 - Add CodeCov.io code coverage reporting.
 - Opted into 'Common Tests - Validate Example Files'.
+- Fixed bugs in examples.
 
 ### 2.8.0.0
 
