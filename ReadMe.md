@@ -455,8 +455,8 @@ Configuration Example
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
-            Store      = 'My'
             Location   = 'LocalMachine'
+            Store      = 'My'
             Credential = $Credential
         }
     }
@@ -497,6 +497,7 @@ Configuration Example
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
+            Location   = 'LocalMachine'
             Store      = 'WebHosting'
             Credential = $Credential
             DependsOn  = '[WindowsFeature]IIS'
@@ -517,7 +518,7 @@ Configuration Example
                         CertificateStoreName = 'WebHosting'
                         HostName = "www.example.com"
                     }
-            DependsOn       = '[WindowsFeature]Web-Server','[xPfxImport]CompanyCert'
+            DependsOn       = '[WindowsFeature]IIS','[xPfxImport]CompanyCert'
         }
     }
 }
@@ -623,8 +624,7 @@ PSDscAllowPlainTextPassword to $true.
 Storing passwords in plain text is not a good practice and is presented only for
 simplicity and demonstration purposes.
 To learn how to securely store credentials through the use of certificates,
-please refer to the following TechNet topic:
-https://technet.microsoft.com/en-us/library/dn781430.aspx
+please refer to the following [TechNet topic](https://technet.microsoft.com/en-us/library/dn781430.aspx).
 
 ```powershell
 configuration Example
