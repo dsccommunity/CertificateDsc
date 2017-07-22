@@ -1,7 +1,5 @@
 # xCertificate
 
-[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xcertificate/branch/master)
-
 The **xCertificate** module is a part of the Windows PowerShell Desired State
 Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This
 module includes DSC resources that simplify administration of certificates on a
@@ -22,6 +20,24 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
 or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any
 additional questions or comments.
+
+## Branches
+
+### master
+
+[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/xCertificate/branch/master)
+[![codecov](https://codecov.io/gh/PowerShell/xCertificate/branch/master/graph/badge.svg)](https://codecov.io/gh/PowerShell/xCertificate/branch/master)
+
+This is the branch containing the latest release - no contributions should be made
+directly to this branch.
+
+### dev
+
+[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/dev?svg=true)](https://ci.appveyor.com/project/PowerShell/xCertificate/branch/dev)[![codecov](https://codecov.io/gh/PowerShell/xCertificate/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/xCertificate/branch/dev)
+
+This is the development branch to which contributions should be proposed by contributors
+as pull requests. This development branch will periodically be merged to the master
+branch, and be released to [PowerShell Gallery](https://www.powershellgallery.com/).
 
 ## Contributing
 
@@ -148,6 +164,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 ## Versions
 
 ### Unreleased
+
+- Add CodeCov.io code coverage reporting.
+- Opted into 'Common Tests - Validate Example Files'.
+- Fixed bugs in examples.
 
 ### 2.8.0.0
 
@@ -435,8 +455,8 @@ Configuration Example
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
-            Store      = 'My'
             Location   = 'LocalMachine'
+            Store      = 'My'
             Credential = $Credential
         }
     }
@@ -477,6 +497,7 @@ Configuration Example
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
+            Location   = 'LocalMachine'
             Store      = 'WebHosting'
             Credential = $Credential
             DependsOn  = '[WindowsFeature]IIS'
@@ -497,7 +518,7 @@ Configuration Example
                         CertificateStoreName = 'WebHosting'
                         HostName = "www.example.com"
                     }
-            DependsOn       = '[WindowsFeature]Web-Server','[xPfxImport]CompanyCert'
+            DependsOn       = '[WindowsFeature]IIS','[xPfxImport]CompanyCert'
         }
     }
 }
@@ -603,8 +624,7 @@ PSDscAllowPlainTextPassword to $true.
 Storing passwords in plain text is not a good practice and is presented only for
 simplicity and demonstration purposes.
 To learn how to securely store credentials through the use of certificates,
-please refer to the following TechNet topic:
-https://technet.microsoft.com/en-us/library/dn781430.aspx
+please refer to the following [TechNet topic](https://technet.microsoft.com/en-us/library/dn781430.aspx).
 
 ```powershell
 configuration Example
