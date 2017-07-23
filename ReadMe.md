@@ -170,7 +170,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - Fixed bugs in examples.
 - Updated License and Manifest Copyright info to be 2017 Microsoft Corporation.
 - xCertReq:
-  - BREAKING CHANGE: Changed default Keylength to 2048 bits to meet [Microsoft Security Advisory](https://support.microsoft.com/en-nz/help/2661254/microsoft-security-advisory-update-for-minimum-certificate-key-length).
+  - BREAKING CHANGE: Changed default Keylength to 2048 bits to meet [Microsoft Security Advisory](https://support.microsoft.com/en-us/help/2661254/microsoft-security-advisory-update-for-minimum-certificate-key-length).
   - Fixed spelling mistakes in MOF files.
 
 ### 2.8.0.0
