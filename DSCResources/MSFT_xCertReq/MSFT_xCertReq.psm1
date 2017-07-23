@@ -70,7 +70,7 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER CesURL
     The URL to the Certification Enrollment Service.
-    
+
     .PARAMETER UseMachineContext
     Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 
@@ -99,7 +99,7 @@ function Get-TargetResource
         [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
-        $KeyLength = '1024',
+        $KeyLength = '2048',
 
         [Parameter()]
         [System.Boolean]
@@ -260,13 +260,13 @@ function Get-TargetResource
 
     .PARAMETER CAType
     The type of CA in use, Standalone/Enterprise.
- 
+
     .PARAMETER CepURL
     The URL to the Certification Enrollment Policy Service.
 
     .PARAMETER CesURL
     The URL to the Certification Enrollment Service.
-    
+
     .PARAMETER UseMachineContext
     Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 
@@ -294,7 +294,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
-        $KeyLength = '1024',
+        $KeyLength = '2048',
 
         [Parameter()]
         [System.Boolean]
@@ -365,7 +365,7 @@ function Set-TargetResource
         $CARootName = $caObject.CARootName
         $CAServerFQDN = $caObject.CAServerFQDN
     }
-    
+
     $ca = "$CAServerFQDN\$CARootName"
 
     Write-Verbose -Message ( @(
@@ -410,7 +410,7 @@ function Set-TargetResource
     $useExistingKeySet   = 'FALSE'
     $providerType        = '12'
     $requestType         = 'CMC'
-    
+
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
     $workingPath = Join-Path -Path $env:Temp -ChildPath "xCertReq-$guid"
@@ -484,7 +484,7 @@ RenewalCert = $Thumbprint
         Syntax: https://technet.microsoft.com/en-us/library/cc736326.aspx
         Reference: https://support2.microsoft.com/default.aspx?scid=kb;EN-US;321051
     #>
-    
+
     # NEW: Create a new request as directed by PolicyFileIn
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
@@ -508,7 +508,7 @@ RenewalCert = $Thumbprint
             $reqPath
         )
     }
-    else 
+    else
     {
         $createRequest = & certreq.exe @('-new','-q',$infPath,$reqPath)
     } # if
@@ -545,12 +545,12 @@ RenewalCert = $Thumbprint
                     '-username', $Credential.UserName,
                     '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW),
                     '-PolicyServer', $CepURL,
-                    '-config', $CesURL,  
+                    '-config', $CesURL,
                     $ReqPath,
                     $CerPath
                 )
             }
-            else 
+            else
             {
                 <#
                     Assemble the command and arguments to pass to the powershell process that
@@ -696,7 +696,7 @@ RenewalCert = $Thumbprint
 
     .PARAMETER CesURL
     The URL to the Certification Enrollment Service.
-    
+
     .PARAMETER UseMachineContext
     Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
 
@@ -725,7 +725,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet("1024","2048","4096","8192")]
         [System.String]
-        $KeyLength = '1024',
+        $KeyLength = '2048',
 
         [Parameter()]
         [System.Boolean]
@@ -796,7 +796,7 @@ function Test-TargetResource
         $CARootName = $caObject.CARootName
         $CAServerFQDN = $caObject.CAServerFQDN
     }
-    
+
     $ca = "$CAServerFQDN\$CARootName"
 
     # If the Subject does not contain a full X500 path, construct just the CN
@@ -876,7 +876,7 @@ function Test-TargetResource
                     $correctDNS += $san.split('=')[1]
                 }
             }
-            
+
             # Find out what SANs are on the current cert
             if ($cert.Extensions.Count -gt 0)
             {

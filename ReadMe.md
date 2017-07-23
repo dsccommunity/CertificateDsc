@@ -56,7 +56,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   this will be in format domain-servername-ca. Leave empty to auto-discover in
   an Active Directory environment.
 - **`[String]` KeyLength**: The bit length of the encryption key to be used.
-  Optional. { *1024* | 2048 | 4096 | 8192 }.
+  Optional. { 1024 | *2048* | 4096 | 8192 }.
 - **`[Boolean]` Exportable**: The option to allow the certificate to be exportable,
   by default it will be true. Optional. Defaults to `$true`.
 - **`[String]` ProviderName**: The selection of provider for the type of encryption
@@ -168,6 +168,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 - Add CodeCov.io code coverage reporting.
 - Opted into 'Common Tests - Validate Example Files'.
 - Fixed bugs in examples.
+- Updated License and Manifest Copyright info to be 2017 Microsoft Corporation.
+- xCertReq:
+  - BREAKING CHANGE: Changed default Keylength to 2048 bits to meet [Microsoft Security Advisory](https://support.microsoft.com/en-nz/help/2661254/microsoft-security-advisory-update-for-minimum-certificate-key-length).
+  - Fixed spelling mistakes in MOF files.
 
 ### 2.8.0.0
 
