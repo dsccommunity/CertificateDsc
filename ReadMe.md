@@ -173,6 +173,10 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - BREAKING CHANGE: Changed default Keylength to 2048 bits to meet
     [Microsoft Security Advisory](https://support.microsoft.com/en-us/help/2661254/microsoft-security-advisory-update-for-minimum-certificate-key-length).
   - Fixed spelling mistakes in MOF files.
+- Added .github support files:
+  - CONTRIBUTING.md
+  - ISSUE_TEMPLATE.md
+  - PULL_REQUEST_TEMPLATE.md
 
 ### 2.8.0.0
 
