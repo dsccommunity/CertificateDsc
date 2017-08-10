@@ -1,4 +1,4 @@
-<#
+﻿<#
     .EXAMPLE
     Exports a certificate as a CERT using the friendly name to identify it.
 #>
