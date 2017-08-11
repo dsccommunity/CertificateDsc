@@ -177,6 +177,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - CONTRIBUTING.md
   - ISSUE_TEMPLATE.md
   - PULL_REQUEST_TEMPLATE.md
+- Opted into Common Tests 'Validate Module Files' and 'Validate Script Files'.
+- Converted files with UTF8 with BOM over to UTF8 - fixes [Issue 87](https://github.com/PowerShell/xCertificate/issues/87).
 
 ### 2.8.0.0
 
