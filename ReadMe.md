@@ -177,6 +177,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
   - CONTRIBUTING.md
   - ISSUE_TEMPLATE.md
   - PULL_REQUEST_TEMPLATE.md
+- CertificateDSc.Common:
+  - Fixed an issue where an invalid dn syntax is provided for LDAP connection.
 
 ### 2.8.0.0
 
