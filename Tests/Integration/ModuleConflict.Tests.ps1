@@ -28,7 +28,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 try
 {
     Describe "$($script:DSCModuleName)_CommonModuleConflict" {
-        
+
         foreach ($moduleToTest in $script:ModulesToTest)
         {
             It "Should be able to install DSC Resource module '$moduleToTest'" {
