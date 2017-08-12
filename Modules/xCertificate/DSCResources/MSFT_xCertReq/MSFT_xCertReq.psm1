@@ -4,18 +4,18 @@ $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot 
 
 # Import the Certificate Common Modules
 Import-Module -Name (Join-Path -Path $modulePath `
-                               -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
-                                                     -ChildPath 'CertificateDsc.Common.psm1'))
+        -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
+            -ChildPath 'CertificateDsc.Common.psm1'))
 
 # Import the Certificate Resource Helper Module
 Import-Module -Name (Join-Path -Path $modulePath `
-                               -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-                                                     -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
+        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
+            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
 
 # Import the Certificate PDT Helper Module
 Import-Module -Name (Join-Path -Path $modulePath `
-                               -ChildPath (Join-Path -Path 'CertificateDsc.PDT' `
-                                                     -ChildPath 'CertificateDsc.PDT.psm1'))
+        -ChildPath (Join-Path -Path 'CertificateDsc.PDT' `
+            -ChildPath 'CertificateDsc.PDT.psm1'))
 
 # Import Localization Strings
 $localizedData = Get-LocalizedData `
@@ -97,7 +97,7 @@ function Get-TargetResource
         $CARootName,
 
         [Parameter()]
-        [ValidateSet("1024","2048","4096","8192")]
+        [ValidateSet("1024", "2048", "4096", "8192")]
         [System.String]
         $KeyLength = '2048',
 
@@ -164,7 +164,7 @@ function Get-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
         $CARootName = $caObject.CARootName
@@ -175,14 +175,14 @@ function Get-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingCertReqStatusMessage -f $Subject,$CA)
+            $($LocalizedData.GettingCertReqStatusMessage -f $Subject, $CA)
         ) -join '' )
 
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-            $_.Subject -eq "CN=$Subject" -and `
+        $_.Subject -eq "CN=$Subject" -and `
             $_.Issuer.split(',')[0] -eq "CN=$CARootName"
-        }
+    }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $cert = $cert |
@@ -193,21 +193,21 @@ function Get-TargetResource
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateExistsMessage -f $Subject,$ca,$cert.Thumbprint)
+                $($LocalizedData.CertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
             ) -join '' )
 
         $returnValue = @{
-            Subject              = $Cert.Subject.split(',')[0].replace('CN=','')
-            CAServerFQDN         = $caObject.CAServerFQDN
-            CARootName           = $Cert.Issuer.split(',')[0].replace('CN=','')
-            KeyLength            = $Cert.Publickey.Key.KeySize
-            Exportable           = $Cert.PrivateKey.CspKeyContainerInfo.Exportable
-            ProviderName         = $Cert.PrivateKey.CspKeyContainerInfo.ProviderName
-            OID                  = $null # This value can't be determined from the cert
-            KeyUsage             = $null # This value can't be determined from the cert
-            CertificateTemplate  = Get-CertificateTemplateName -Certificate $Cert
-            SubjectAltName       = Get-CertificateSan -Certificate $Cert
-            FriendlyName         = $Cert.FriendlyName
+            Subject             = $Cert.Subject.split(',')[0].replace('CN=', '')
+            CAServerFQDN        = $caObject.CAServerFQDN
+            CARootName          = $Cert.Issuer.split(',')[0].replace('CN=', '')
+            KeyLength           = $Cert.Publickey.Key.KeySize
+            Exportable          = $Cert.PrivateKey.CspKeyContainerInfo.Exportable
+            ProviderName        = $Cert.PrivateKey.CspKeyContainerInfo.ProviderName
+            OID                 = $null # This value can't be determined from the cert
+            KeyUsage            = $null # This value can't be determined from the cert
+            CertificateTemplate = Get-CertificateTemplateName -Certificate $Cert
+            SubjectAltName      = Get-CertificateSan -Certificate $Cert
+            FriendlyName        = $Cert.FriendlyName
         }
     }
     else
@@ -292,7 +292,7 @@ function Set-TargetResource
         $CARootName,
 
         [Parameter()]
-        [ValidateSet("1024","2048","4096","8192")]
+        [ValidateSet("1024", "2048", "4096", "8192")]
         [System.String]
         $KeyLength = '2048',
 
@@ -359,7 +359,7 @@ function Set-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
         $CARootName = $caObject.CARootName
@@ -370,7 +370,7 @@ function Set-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.StartingCertReqMessage -f $Subject,$ca)
+            $($LocalizedData.StartingCertReqMessage -f $Subject, $ca)
         ) -join '' )
 
     # If the Subject does not contain a full X500 path, construct just the CN
@@ -384,10 +384,10 @@ function Set-TargetResource
     {
         $certs = Get-Childitem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
-                $_.Subject -eq $Subject -and `
+            $_.Subject -eq $Subject -and `
                 $_.Issuer.split(',')[0] -eq "CN=$CARootName" -and `
                 $_.NotAfter -lt (Get-Date).AddDays(30)
-            }
+        }
 
         # If multiple certs have the same subject and were issued by the CA and are 30 days from expiration, return the newest
         $firstCert = $certs |
@@ -401,23 +401,23 @@ function Set-TargetResource
         Information that will be used in the INF file to generate the certificate request
         In future versions, select variables from the list below could be moved to parameters!
     #>
-    $Subject             = "`"$Subject`""
-    $keySpec             = '1'
-    $machineKeySet       = 'TRUE'
-    $smime               = 'FALSE'
-    $privateKeyArchive   = 'FALSE'
-    $userProtected       = 'FALSE'
-    $useExistingKeySet   = 'FALSE'
-    $providerType        = '12'
-    $requestType         = 'CMC'
+    $Subject = "`"$Subject`""
+    $keySpec = '1'
+    $machineKeySet = 'TRUE'
+    $smime = 'FALSE'
+    $privateKeyArchive = 'FALSE'
+    $userProtected = 'FALSE'
+    $useExistingKeySet = 'FALSE'
+    $providerType = '12'
+    $requestType = 'CMC'
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
     $workingPath = Join-Path -Path $env:Temp -ChildPath "xCertReq-$guid"
-    $infPath = [System.IO.Path]::ChangeExtension($workingPath,'.inf')
-    $reqPath = [System.IO.Path]::ChangeExtension($workingPath,'.req')
-    $cerPath = [System.IO.Path]::ChangeExtension($workingPath,'.cer')
-    $rspPath = [System.IO.Path]::ChangeExtension($workingPath,'.rsp')
+    $infPath = [System.IO.Path]::ChangeExtension($workingPath, '.inf')
+    $reqPath = [System.IO.Path]::ChangeExtension($workingPath, '.req')
+    $cerPath = [System.IO.Path]::ChangeExtension($workingPath, '.cer')
+    $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
 
     # Create INF file
     $requestDetails = @"
@@ -488,7 +488,7 @@ RenewalCert = $Thumbprint
     # NEW: Create a new request as directed by PolicyFileIn
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.CreateRequestCertificateMessage -f $infPath,$reqPath)
+            $($LocalizedData.CreateRequestCertificateMessage -f $infPath, $reqPath)
         ) -join '' )
 
     <#
@@ -510,7 +510,7 @@ RenewalCert = $Thumbprint
     }
     else
     {
-        $createRequest = & certreq.exe @('-new','-q',$infPath,$reqPath)
+        $createRequest = & certreq.exe @('-new', '-q', $infPath, $reqPath)
     } # if
 
     Write-Verbose -Message ( @(
@@ -528,7 +528,7 @@ RenewalCert = $Thumbprint
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.SubmittingRequestCertificateMessage -f $reqPath,$cerPath,$ca)
+                $($LocalizedData.SubmittingRequestCertificateMessage -f $reqPath, $cerPath, $ca)
             ) -join '' )
 
         if ($Credential)
@@ -537,7 +537,7 @@ RenewalCert = $Thumbprint
                 If enrollment server is specified the request will be towards
                 the specified URLs instead, using credentials for authentication.
             #>
-            if($CepURL -and $CesURL)
+            if ($CepURL -and $CesURL)
             {
                 $credPW = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
                 $submitRequest = & certreq.exe @(
@@ -556,20 +556,20 @@ RenewalCert = $Thumbprint
                     Assemble the command and arguments to pass to the powershell process that
                     will request the certificate
                 #>
-                $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath,'.out')
+                $certReqOutPath = [System.IO.Path]::ChangeExtension($workingPath, '.out')
                 $command = "$PSHOME\PowerShell.exe"
 
-                if($UseMachineContext)
+                if ($UseMachineContext)
                 {
                     $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
-                    " @('-submit','-q','-adminforcemachine','-config','$ca','$reqPath','$cerPath')" + `
-                    " | Set-Content -Path '$certReqOutPath'"""
+                        " @('-submit','-q','-adminforcemachine','-config','$ca','$reqPath','$cerPath')" + `
+                        " | Set-Content -Path '$certReqOutPath'"""
                 }
                 else
                 {
                     $arguments = "-Command ""& $env:SystemRoot\system32\certreq.exe" + `
-                    " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
-                    " | Set-Content -Path '$certReqOutPath'"""
+                        " @('-submit','-q','-config','$ca','$reqPath','$cerPath')" + `
+                        " | Set-Content -Path '$certReqOutPath'"""
                 }
 
                 <#
@@ -583,9 +583,9 @@ RenewalCert = $Thumbprint
                     -Credential $Credential
 
                 Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.SubmittingRequestProcessCertificateMessage)
-                ) -join '' )
+                        "$($MyInvocation.MyCommand): "
+                        $($LocalizedData.SubmittingRequestProcessCertificateMessage)
+                    ) -join '' )
 
                 $null = Wait-Win32ProcessStop `
                     -Path $command `
@@ -606,7 +606,7 @@ RenewalCert = $Thumbprint
         }
         else
         {
-            $submitRequest = & certreq.exe @('-submit','-q','-config',$CA,$ReqPath,$CerPath)
+            $submitRequest = & certreq.exe @('-submit', '-q', '-config', $CA, $ReqPath, $CerPath)
         } # if
 
         Write-Verbose -Message ( @(
@@ -625,10 +625,10 @@ RenewalCert = $Thumbprint
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.AcceptingRequestCertificateMessage -f $cerPath,$ca)
+                $($LocalizedData.AcceptingRequestCertificateMessage -f $cerPath, $ca)
             ) -join '' )
 
-        $acceptRequest = & certreq.exe @('-accept','-machine','-q',$cerPath)
+        $acceptRequest = & certreq.exe @('-accept', '-machine', '-q', $cerPath)
 
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
@@ -723,7 +723,7 @@ function Test-TargetResource
         $CARootName,
 
         [Parameter()]
-        [ValidateSet("1024","2048","4096","8192")]
+        [ValidateSet("1024", "2048", "4096", "8192")]
         [System.String]
         $KeyLength = '2048',
 
@@ -790,7 +790,7 @@ function Test-TargetResource
     )
 
     # The certificate authority, accessible on the local area network
-    if([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
+    if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
     {
         $caObject = Find-CertificateAuthority
         $CARootName = $caObject.CARootName
@@ -807,23 +807,23 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.TestingCertReqStatusMessage -f $Subject,$ca)
+            $($LocalizedData.TestingCertReqStatusMessage -f $Subject, $ca)
         ) -join '' )
 
     # Exception for standard template DomainControllerAuthentication
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-            $_.Subject -eq $Subject -and `
+        $_.Subject -eq $Subject -and `
             $_.Issuer.split(',')[0] -eq "CN=$CARootName"
-        }
+    }
 
     if ($CertificateTemplate -eq 'DomainControllerAuthentication')
     {
         $cert = Get-Childitem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
-                (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
                 $_.Issuer.split(',')[0] -eq "CN=$CARootName"
-            }
+        }
     }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
@@ -835,16 +835,17 @@ function Test-TargetResource
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateExistsMessage -f $Subject,$ca,$cert.Thumbprint)
+                $($LocalizedData.CertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
             ) -join '' )
 
-        if ($AutoRenew) {
+        if ($AutoRenew)
+        {
             if ($Cert.NotAfter -le (Get-Date).AddDays(-30))
             {
                 # The certificate was found but it is expiring within 30 days or has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.ExpiringCertificateMessage -f $Subject,$ca,$cert.Thumbprint)
+                        $($LocalizedData.ExpiringCertificateMessage -f $Subject, $ca, $cert.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
@@ -856,7 +857,7 @@ function Test-TargetResource
                 # The certificate has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.ExpiredCertificateMessage -f $Subject,$ca,$cert.Thumbprint)
+                        $($LocalizedData.ExpiredCertificateMessage -f $Subject, $ca, $cert.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
@@ -897,7 +898,8 @@ function Test-TargetResource
                     return $false
                 }
             }
-            else {
+            else
+            {
                 # There are no SANs and there should be
                 return $false
             }
@@ -906,9 +908,9 @@ function Test-TargetResource
         if ($CertificateTemplate -ne (Get-CertificateTemplateName -Certificate $cert))
         {
             Write-Verbose -Message ( @(
-                        "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.CertTemplateMismatch -f $Subject,$ca,$cert.Thumbprint,(Get-CertificateTemplateName -Certificate $cert))
-                    ) -join '' )
+                    "$($MyInvocation.MyCommand): "
+                    $($LocalizedData.CertTemplateMismatch -f $Subject, $ca, $cert.Thumbprint, (Get-CertificateTemplateName -Certificate $cert))
+                ) -join '' )
             return $false
         } # if
 
@@ -916,16 +918,16 @@ function Test-TargetResource
         if ($FriendlyName -ne $cert.FriendlyName)
         {
             Write-Verbose -Message ( @(
-                        "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.CertFriendlyNameMismatch -f $Subject,$ca,$cert.Thumbprint,$cert.FriendlyName)
-                    ) -join '' )
+                    "$($MyInvocation.MyCommand): "
+                    $($LocalizedData.CertFriendlyNameMismatch -f $Subject, $ca, $cert.Thumbprint, $cert.FriendlyName)
+                ) -join '' )
             return $false
         } # if
 
         # The certificate was found and is OK - so no change required.
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.ValidCertificateExistsMessage -f $Subject,$ca,$cert.Thumbprint)
+                $($LocalizedData.ValidCertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
             ) -join '' )
         return $true
     } # if
@@ -933,7 +935,7 @@ function Test-TargetResource
     # A valid certificate was not found
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.NoValidCertificateMessage -f $Subject,$ca)
+            $($LocalizedData.NoValidCertificateMessage -f $Subject, $ca)
         ) -join '' )
     return $false
 } # end function Test-TargetResource
