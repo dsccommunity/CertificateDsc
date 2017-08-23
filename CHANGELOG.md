@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0.0
+
 - Add CodeCov.io code coverage reporting.
 - Opted into 'Common Tests - Validate Example Files'.
 - Fixed bugs in examples.
