@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added `Documentation and Examples` section to Readme.md file - see
+  [issue #98](https://github.com/PowerShell/xCertificate/issues/98).
+
 ## 3.0.0.0
 
 - Add CodeCov.io code coverage reporting.
