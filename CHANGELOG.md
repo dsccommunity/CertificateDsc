@@ -52,6 +52,8 @@
 - Cleaned up example format to meet style guidelines and changed examples to
   issue 2048 bit certificates.
 - Fixed spelling error in xCertificateExport Issuer parameter description.
+- Prevent unit tests from DSCResource.Tests from running during test
+  execution - fixes [Issue 100](https://github.com/PowerShell/xCertificate/issues/100).
 
 ## 2.7.0.0
 
