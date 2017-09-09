@@ -4,6 +4,8 @@
 
 - Added `Documentation and Examples` section to Readme.md file - see
   [issue #98](https://github.com/PowerShell/xCertificate/issues/98).
+- Changed description in Credential parameter of xPfxImport resource
+  to correctly generate parameter documentation in Wiki - see [Issue #103](https://github.com/PowerShell/xCertificate/issues/103).
 
 ## 3.0.0.0
 
