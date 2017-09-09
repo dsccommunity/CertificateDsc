@@ -6,6 +6,8 @@
   [issue #98](https://github.com/PowerShell/xCertificate/issues/98).
 - Changed description in Credential parameter of xPfxImport resource
   to correctly generate parameter documentation in Wiki - see [Issue #103](https://github.com/PowerShell/xCertificate/issues/103).
+- Changed description in Credential parameter of xCertReq resource
+  to clarify that a PSCredential object should be used.
 
 ## 3.0.0.0
 

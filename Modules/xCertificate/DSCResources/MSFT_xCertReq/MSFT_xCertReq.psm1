@@ -57,7 +57,7 @@ $localizedData = Get-LocalizedData `
     The subject alternative name used to createthe certificate.
 
     .PARAMETER Credential
-    The credentials that will be used to access the template in the Certificate Authority.
+    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
@@ -253,7 +253,7 @@ function Get-TargetResource
     The subject alternative name used to createthe certificate.
 
     .PARAMETER Credential
-    The credentials that will be used to access the template in the Certificate Authority.
+    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
@@ -683,7 +683,7 @@ RenewalCert = $Thumbprint
     The subject alternative name used to createthe certificate.
 
     .PARAMETER Credential
-    The credentials that will be used to access the template in the Certificate Authority.
+    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
