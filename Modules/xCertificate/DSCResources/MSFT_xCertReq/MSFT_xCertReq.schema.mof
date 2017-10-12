@@ -12,7 +12,7 @@ class MSFT_xCertReq : OMI_BaseResource
     [Write, Description("The Keyusage is a restriction method that determines what a certificate can be used for.")] String KeyUsage;
     [Write, Description("The template used for the definition of the certificate.")] String CertificateTemplate;
     [Write, Description("The subject alternative name used to create the certificate.")] String SubjectAltName;
-    [Write, Description("The credentials that will be used to access the template in the Certificate Authority."), EmbeddedInstance("MSFT_Credential")] String Credential;
+    [Write, Description("The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Write, Description("Determines if the resource will also renew a certificate within 7 days of expiration.")] Boolean AutoRenew;
     [Write, Description("The URL to the Certification Enrollment Policy Service.")] String CepURL;
     [Write, Description("The URL to the Certification Enrollment Service.")] String CesURL;
