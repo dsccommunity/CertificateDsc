@@ -8,6 +8,7 @@
   to correctly generate parameter documentation in Wiki - see [Issue #103](https://github.com/PowerShell/xCertificate/issues/103).
 - Changed description in Credential parameter of xCertReq resource
   to clarify that a PSCredential object should be used.
+- Added detection for FIPS mode in Test-Thumbprint - see [Issue #107](https://github.com/PowerShell/xCertificate/issues/107).
 
 ## 3.0.0.0
 

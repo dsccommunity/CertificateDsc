@@ -113,12 +113,26 @@ function Test-Thumbprint
 
     Begin
     {
+        # Get FIPS registry key
+        $fips = (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' | Select-Object -ExpandProperty 'Enabled')
+
         # Get a list of Hash Providers
-        $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
-            Where-Object -FilterScript {
+        if ($fips -eq $true)
+        {
+            $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
+                Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+            }
+        }
+        else
+        {
+            $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
+                Where-Object -FilterScript {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
             }
+        }
 
         # Get a list of all Valid Hash types and lengths into an array
         $validHashes = @()
