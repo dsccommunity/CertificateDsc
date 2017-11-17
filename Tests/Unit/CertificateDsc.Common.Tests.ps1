@@ -891,7 +891,7 @@ CertUtil: The parameter is incorrect.
 
             Context 'A certificate with no template name is used' {
                 It 'Should return null' {
-                    Get-CertificateTemplateName -Certificate $testCertificateWithoutSan | Should -Be $null
+                    Get-CertificateTemplateName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
                 }
             }
         }
@@ -905,7 +905,7 @@ CertUtil: The parameter is incorrect.
 
             Context 'A certificate without SAN is used' {
                 It 'Should return null' {
-                    Get-CertificateSan -Certificate $testCertificateWithoutSan | Should -Be $null
+                    Get-CertificateSan -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
                 }
             }
         }
