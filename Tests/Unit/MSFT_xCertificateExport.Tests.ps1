@@ -165,7 +165,7 @@ try
 
                 It 'should return IsExported true' {
                     $Result = Get-TargetResource -Path $certificatePath -Verbose
-                    $Result.IsExported | Should Be $true
+                    $Result.IsExported | Should -Be $true
                 }
 
                 It 'should call the expected mocks' {
@@ -181,7 +181,7 @@ try
 
                 It 'should return IsExported false' {
                     $Result = Get-TargetResource -Path $certificatePath -Verbose
-                    $Result.IsExported | Should Be $false
+                    $Result.IsExported | Should -Be $false
                 }
 
                 It 'should call the expected mocks' {
@@ -205,7 +205,7 @@ try
                     -CommandName Export-PfxCertificate
 
                 It 'should not throw exception' {
-                    { Set-TargetResource @validCertificateNotFoundParameters -Verbose } | Should Not Throw
+                    { Set-TargetResource @validCertificateNotFoundParameters -Verbose } | Should -Not -Throw
                 }
 
                 It 'should call the expected mocks' {
@@ -237,7 +237,7 @@ try
                     -CommandName Export-PfxCertificate
 
                 It 'should not throw exception' {
-                    { Set-TargetResource @validCertificateParameters -Verbose } | Should Not Throw
+                    { Set-TargetResource @validCertificateParameters -Verbose } | Should -Not -Throw
                 }
 
                 It 'should call the expected mocks' {
@@ -272,7 +272,7 @@ try
                     -MockWith $mockExportPfxCertificate
 
                 It 'should not throw exception' {
-                    { Set-TargetResource @validPfxParameters -Verbose } | Should Not Throw
+                    { Set-TargetResource @validPfxParameters -Verbose } | Should -Not -Throw
                 }
 
                 It 'should call the expected mocks' {
@@ -298,7 +298,7 @@ try
                     -CommandName New-Object
 
                 It 'should return true' {
-                    Test-TargetResource @validCertificateNotFoundParameters -Verbose | Should Be $true
+                    Test-TargetResource @validCertificateNotFoundParameters -Verbose | Should -Be $true
                 }
 
                 It 'should call the expected mocks' {
@@ -317,7 +317,7 @@ try
                     -CommandName New-Object
 
                 It 'should return false' {
-                    Test-TargetResource @validCertificateParameters -Verbose | Should Be $false
+                    Test-TargetResource @validCertificateParameters -Verbose | Should -Be $false
                 }
 
                 It 'should call the expected mocks' {
@@ -336,7 +336,7 @@ try
                     -CommandName New-Object
 
                 It 'should return true' {
-                    Test-TargetResource @validCertificateParameters -Verbose | Should Be $true
+                    Test-TargetResource @validCertificateParameters -Verbose | Should -Be $true
                 }
 
                 It 'should call the expected mocks' {
@@ -356,7 +356,7 @@ try
                     -MockWith { $importedCertificateMatch }
 
                 It 'should return true' {
-                    Test-TargetResource @validCertificateMatchSourceParameters -Verbose | Should Be $true
+                    Test-TargetResource @validCertificateMatchSourceParameters -Verbose | Should -Be $true
                 }
 
                 It 'should call the expected mocks' {
@@ -376,7 +376,7 @@ try
                     -MockWith { $importedCertificateNoMatch }
 
                 It 'should return false' {
-                    Test-TargetResource @validCertificateMatchSourceParameters -Verbose | Should Be $false
+                    Test-TargetResource @validCertificateMatchSourceParameters -Verbose | Should -Be $false
                 }
 
                 It 'should call the expected mocks' {
@@ -396,7 +396,7 @@ try
                     -MockWith { $importedCertificateMatch }
 
                 It 'should return true' {
-                    Test-TargetResource @validPfxMatchSourceParameters -Verbose | Should Be $true
+                    Test-TargetResource @validPfxMatchSourceParameters -Verbose | Should -Be $true
                 }
 
                 It 'should call the expected mocks' {
@@ -416,7 +416,7 @@ try
                     -MockWith { $importedCertificateNoMatch }
 
                 It 'should return false' {
-                    Test-TargetResource @validPfxMatchSourceParameters -Verbose | Should Be $false
+                    Test-TargetResource @validPfxMatchSourceParameters -Verbose | Should -Be $false
                 }
 
                 It 'should call the expected mocks' {

@@ -375,21 +375,21 @@ RenewalCert = $validThumbprint
                 $result = Get-TargetResource @paramsStandard -Verbose
 
                 It 'Should return a hashtable' {
-                    $result | Should BeOfType System.Collections.Hashtable
+                    $result | Should -BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values' {
-                    $result.Subject              | Should BeExactly $validSubject
-                    $result.CAServerFQDN         | Should BeNullOrEmpty
-                    $result.CARootName           | Should BeExactly $caRootName
-                    $result.KeyLength            | Should BeNullOrEmpty
-                    $result.Exportable           | Should BeNullOrEmpty
-                    $result.ProviderName         | Should BeNullOrEmpty
-                    $result.OID                  | Should BeNullOrEmpty
-                    $result.KeyUsage             | Should BeNullOrEmpty
-                    $result.CertificateTemplate  | Should BeExactly $certificateTemplate
-                    $result.SubjectAltName       | Should BeNullOrEmpty
-                    $result.FriendlyName         | Should BeExactly $friendlyName
+                    $result.Subject              | Should -BeExactly $validSubject
+                    $result.CAServerFQDN         | Should -BeNullOrEmpty
+                    $result.CARootName           | Should -BeExactly $caRootName
+                    $result.KeyLength            | Should -BeNullOrEmpty
+                    $result.Exportable           | Should -BeNullOrEmpty
+                    $result.ProviderName         | Should -BeNullOrEmpty
+                    $result.OID                  | Should -BeNullOrEmpty
+                    $result.KeyUsage             | Should -BeNullOrEmpty
+                    $result.CertificateTemplate  | Should -BeExactly $certificateTemplate
+                    $result.SubjectAltName       | Should -BeNullOrEmpty
+                    $result.FriendlyName         | Should -BeExactly $friendlyName
                 }
             }
 
@@ -397,21 +397,21 @@ RenewalCert = $validThumbprint
                 $result = Get-TargetResource @paramsAutoDiscovery -Verbose
 
                 It 'Should return a hashtable' {
-                    $result | Should BeOfType System.Collections.Hashtable
+                    $result | Should -BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values and the CA should be auto-discovered' {
-                    $result.Subject              | Should BeExactly $validSubject
-                    $result.CAServerFQDN         | Should BeExactly $caServerFQDN
-                    $result.CARootName           | Should BeExactly $caRootName
-                    $result.KeyLength            | Should BeNullOrEmpty
-                    $result.Exportable           | Should BeNullOrEmpty
-                    $result.ProviderName         | Should BeNullOrEmpty
-                    $result.OID                  | Should BeNullOrEmpty
-                    $result.KeyUsage             | Should BeNullOrEmpty
-                    $result.CertificateTemplate  | Should BeExactly $certificateTemplate
-                    $result.SubjectAltName       | Should BeNullOrEmpty
-                    $result.FriendlyName         | Should BeExactly $friendlyName
+                    $result.Subject              | Should -BeExactly $validSubject
+                    $result.CAServerFQDN         | Should -BeExactly $caServerFQDN
+                    $result.CARootName           | Should -BeExactly $caRootName
+                    $result.KeyLength            | Should -BeNullOrEmpty
+                    $result.Exportable           | Should -BeNullOrEmpty
+                    $result.ProviderName         | Should -BeNullOrEmpty
+                    $result.OID                  | Should -BeNullOrEmpty
+                    $result.KeyUsage             | Should -BeNullOrEmpty
+                    $result.CertificateTemplate  | Should -BeExactly $certificateTemplate
+                    $result.SubjectAltName       | Should -BeNullOrEmpty
+                    $result.FriendlyName         | Should -BeExactly $friendlyName
                 }
 
                 It 'Should call the mocked function Find-CertificateAuthority once' {
@@ -445,7 +445,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsNoCred  -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsNoCred  -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -472,7 +472,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -502,7 +502,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -537,7 +537,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -567,7 +567,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsAutoRenewNoCred -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -603,7 +603,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsKeyLength4096AutoRenewNoCred -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsKeyLength4096AutoRenewNoCred -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -647,7 +647,7 @@ RenewalCert = $validThumbprint
                     -Message ($LocalizedData.CertificateReqNotFoundError -f 'xCertReq-Test.req')
 
                 It 'Should throw CertificateReqNotFoundError exception' {
-                    { Set-TargetResource @paramsNoCred -Verbose } | Should Throw $errorRecord
+                    { Set-TargetResource @paramsNoCred -Verbose } | Should -Throw $errorRecord
                 }
 
                 It 'Should call expected mocks' {
@@ -683,7 +683,7 @@ RenewalCert = $validThumbprint
                     -Message ($LocalizedData.CertificateCerNotFoundError -f 'xCertReq-Test.cer')
 
                 It 'Should throw CertificateCerNotFoundError exception' {
-                    { Set-TargetResource @paramsNoCred -Verbose } | Should Throw $errorRecord
+                    { Set-TargetResource @paramsNoCred -Verbose } | Should -Throw $errorRecord
                 }
 
                 It 'Should call expected mocks' {
@@ -757,7 +757,7 @@ RenewalCert = $validThumbprint
                 Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsStandard -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsStandard -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -803,7 +803,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsSubjectAltNameNoCred -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsSubjectAltNameNoCred -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -835,7 +835,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsStandaloneWebEnrollment -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsStandaloneWebEnrollment -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -867,7 +867,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsEnterpriseWebEnrollment -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsEnterpriseWebEnrollment -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -913,7 +913,7 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsAutoDiscovery -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsAutoDiscovery -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -961,7 +961,7 @@ RenewalCert = $validThumbprint
                 }
 
             It 'Should return a bool' {
-                Test-TargetResource @paramsStandard -Verbose | Should BeOfType Boolean
+                Test-TargetResource @paramsStandard -Verbose | Should -BeOfType Boolean
             }
 
             Context 'A valid certificate does not exist' {
@@ -969,7 +969,7 @@ RenewalCert = $validThumbprint
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { }
 
-                    Test-TargetResource @paramsStandard -Verbose | Should Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
                 }
             }
 
@@ -982,7 +982,7 @@ RenewalCert = $validThumbprint
 
                     Mock Get-CertificateSan -MockWith { $subjectAltName }
 
-                    Test-TargetResource @paramsStandard -Verbose | Should Be $true
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
                 }
             }
 
@@ -995,7 +995,7 @@ RenewalCert = $validThumbprint
 
                     Mock Get-CertificateSan -MockWith { $subjectAltName }
 
-                    Test-TargetResource @paramsAutoRenew -Verbose | Should Be $true
+                    Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $true
                 }
             }
 
@@ -1006,7 +1006,7 @@ RenewalCert = $validThumbprint
 
                     Mock Get-CertificateTemplateName -MockWith { $certificateTemplate }
 
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should Be $true
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $true
                 }
             }
 
@@ -1017,7 +1017,7 @@ RenewalCert = $validThumbprint
 
                     Mock Get-CertificateTemplateName -MockWith { $certificateTemplate }
 
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should Be $false
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
                 }
             }
 
@@ -1028,7 +1028,7 @@ RenewalCert = $validThumbprint
 
                     Mock Get-CertificateTemplateName -MockWith { $certificateTemplate }
 
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should Be $false
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
                 }
             }
 
@@ -1039,13 +1039,13 @@ RenewalCert = $validThumbprint
 
                     Mock Get-CertificateTemplateName -MockWith { $certificateTemplate }
 
-                    Test-TargetResource @paramsStandard -Verbose | Should Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
                 }
             }
 
             Context 'When Auto auto-discover of the CA is enabled' {
                 It 'Should return false' {
-                    Test-TargetResource @paramsAutoDiscovery -Verbose | Should Be $false
+                    Test-TargetResource @paramsAutoDiscovery -Verbose | Should -Be $false
                 }
 
                 It 'Should execute the auto-discovery function' {

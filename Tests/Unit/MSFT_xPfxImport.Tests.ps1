@@ -68,19 +68,19 @@ try
 
             $result = Get-TargetResource @PresentParams
             It 'should return a hashtable' {
-                $result | Should BeOfType System.Collections.Hashtable
+                $result | Should -BeOfType System.Collections.Hashtable
             }
 
             It 'should contain the input values' {
-                $result.Thumbprint | Should BeExactly $validThumbprint
-                $result.Path | Should BeExactly $validPath
+                $result.Thumbprint | Should -BeExactly $validThumbprint
+                $result.Path | Should -BeExactly $validPath
             }
         }
         Describe "$DSCResourceName\Test-TargetResource" {
             $null | Set-Content -Path $validPath
 
             It 'should return a bool' {
-                Test-TargetResource @PresentParams | Should BeOfType Boolean
+                Test-TargetResource @PresentParams | Should -BeOfType Boolean
             }
 
             It 'returns false when valid path + thumbprint and certificate is not in store but should be' {
@@ -91,7 +91,7 @@ try
                         Ensure     = 'Absent'
                     }
                 }
-                Test-TargetResource @PresentParams | Should Be $false
+                Test-TargetResource @PresentParams | Should -Be $false
             }
             It 'returns true when valid path + thumbprint and PFX is not in store and should not be' {
                 Mock Get-TargetResource {
@@ -101,7 +101,7 @@ try
                         Ensure     = 'Absent'
                     }
                 }
-                Test-TargetResource @AbsentParams | Should Be $true
+                Test-TargetResource @AbsentParams | Should -Be $true
             }
             It 'returns true when valid path + thumbprint and PFX is in store and should be' {
                 Mock Get-TargetResource {
@@ -111,7 +111,7 @@ try
                         Ensure     = 'Present'
                     }
                 }
-                Test-TargetResource @PresentParams | Should Be $true
+                Test-TargetResource @PresentParams | Should -Be $true
             }
             It 'returns false when valid path + thumbprint and PFX is in store but should not be' {
                 Mock Get-TargetResource {
@@ -121,7 +121,7 @@ try
                         Ensure     = 'Present'
                     }
                 }
-                Test-TargetResource @AbsentParams | Should Be $false
+                Test-TargetResource @AbsentParams | Should -Be $false
             }
         }
         Describe "$DSCResourceName\Set-TargetResource" {
