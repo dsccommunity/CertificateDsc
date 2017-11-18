@@ -8,6 +8,7 @@
   to correctly generate parameter documentation in Wiki - see [Issue #103](https://github.com/PowerShell/xCertificate/issues/103).
 - Changed description in Credential parameter of xCertReq resource
   to clarify that a PSCredential object should be used.
+- Updated tests to meet Pester V4 guidelines - fixes [Issue #105](https://github.com/PowerShell/xCertificate/issues/105).
 
 ## 3.0.0.0
 

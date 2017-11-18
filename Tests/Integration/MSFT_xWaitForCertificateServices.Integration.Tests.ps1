@@ -67,11 +67,11 @@ try
                             -ConfigurationData $configData
 
                         Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-                    } | Should Not Throw
+                    } | Should -Not -Throw
                 }
 
                 It 'Should be able to call Get-DscConfiguration without throwing' {
-                    { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+                    { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
                 }
 
                 It 'Should have set the resource and all the parameters should match' {
@@ -79,8 +79,8 @@ try
                         $_.ConfigurationName -eq "$($script:DSCResourceName)_Config"
                     }
 
-                    $current.CAServerFQDN | Should Be $caServerFQDN
-                    $current.CARootName   | Should Be $caRootName
+                    $current.CAServerFQDN | Should -Be $caServerFQDN
+                    $current.CARootName   | Should -Be $caRootName
                 }
             }
             #endregion
@@ -110,11 +110,11 @@ try
                         -ConfigurationData $configData
 
                     Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-                } | Should Not Throw
+                } | Should -Not -Throw
             }
 
             It 'Should be able to call Get-DscConfiguration without throwing' {
-                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
             }
 
             It 'Should have set the resource and all the parameters should match' {
@@ -122,8 +122,8 @@ try
                     $_.ConfigurationName -eq "$($script:DSCResourceName)_Config"
                 }
 
-                $current.CAServerFQDN | Should Be $caServerFQDN
-                $current.CARootName   | Should Be $caRootName
+                $current.CAServerFQDN | Should -Be $caServerFQDN
+                $current.CARootName   | Should -Be $caRootName
             }
         }
         #endregion

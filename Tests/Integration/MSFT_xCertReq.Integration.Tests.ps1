@@ -103,11 +103,11 @@ try
                         -ConfigurationData $configData
 
                     Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-                } | Should Not Throw
+                } | Should -Not -Throw
             }
 
             It 'Should be able to call Get-DscConfiguration without throwing' {
-                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
             }
 
             It 'Should have set the resource and all the parameters should match' {
@@ -117,13 +117,13 @@ try
                         $_.Subject -eq "CN=$($subject)" -and `
                         $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
                     }
-                $CertificateNew.Subject                        | Should Be "CN=$($subject)"
-                $CertificateNew.Issuer.split(',')[0]           | Should Be "CN=$($caRootName)"
-                $CertificateNew.Publickey.Key.KeySize          | Should Be $keyLength
-                $CertificateNew.FriendlyName                   | Should Be $friendlyName
-                $CertificateNew.DnsNameList[0]                 | Should Be $dns1
-                $CertificateNew.DnsNameList[1]                 | Should Be $dns2
-                $CertificateNew.EnhancedKeyUsageList.ObjectId  | Should Be $oid
+                $CertificateNew.Subject                        | Should -Be "CN=$($subject)"
+                $CertificateNew.Issuer.split(',')[0]           | Should -Be "CN=$($caRootName)"
+                $CertificateNew.Publickey.Key.KeySize          | Should -Be $keyLength
+                $CertificateNew.FriendlyName                   | Should -Be $friendlyName
+                $CertificateNew.DnsNameList[0]                 | Should -Be $dns1
+                $CertificateNew.DnsNameList[1]                 | Should -Be $dns2
+                $CertificateNew.EnhancedKeyUsageList.ObjectId  | Should -Be $oid
             }
         }
         #endregion

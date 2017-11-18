@@ -43,14 +43,14 @@ try
                 $result = Get-TargetResource @paramsCAOnline -Verbose
 
                 It 'Should return a hashtable' {
-                    $result | Should BeOfType System.Collections.Hashtable
+                    $result | Should -BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the same values passed as parameters' {
-                    $result.CAServerFQDN         | Should BeExactly $caServerFQDN
-                    $result.CARootName           | Should BeExactly $caRootName
-                    $result.RetryIntervalSeconds | Should Be $retryIntervalSec
-                    $result.RetryCount           | Should Be $retryCount
+                    $result.CAServerFQDN         | Should -BeExactly $caServerFQDN
+                    $result.CARootName           | Should -BeExactly $caRootName
+                    $result.RetryIntervalSeconds | Should -Be $retryIntervalSec
+                    $result.RetryCount           | Should -Be $retryCount
                 }
             }
         }
@@ -65,7 +65,7 @@ try
                     -ParameterFilter { $CAServerFQDN -eq $caServerFQDN -and $CARootName -eq $caRootName }
 
                 It 'Should not throw' {
-                    { Set-TargetResource @paramsCAOnline -Verbose } | Should Not Throw
+                    { Set-TargetResource @paramsCAOnline -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should call expected mocks' {
@@ -90,7 +90,7 @@ try
                     -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $ca,$retryCount)
 
                 It 'Should throw CANotFoundAfterError exception' {
-                    { Set-TargetResource @paramsCAOnline -Verbose } | Should Throw $errorRecord
+                    { Set-TargetResource @paramsCAOnline -Verbose } | Should -Throw $errorRecord
                 }
 
                 It 'Should call expected mocks' {
@@ -116,11 +116,11 @@ try
                     -ParameterFilter { $CAServerFQDN -eq $caServerFQDN -and $CARootName -eq $caRootName }
 
                 It 'Should not throw' {
-                    { $script:result = Test-TargetResource @paramsCAOnline -Verbose } | Should Not Throw
+                    { $script:result = Test-TargetResource @paramsCAOnline -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should return true' {
-                    $script:result | Should Be $true
+                    $script:result | Should -Be $true
                 }
 
                 It 'Should call expected mocks' {
@@ -138,11 +138,11 @@ try
                     -ParameterFilter { $CAServerFQDN -eq $caServerFQDN -and $CARootName -eq $caRootName }
 
                 It 'Should not throw' {
-                    { $script:result = Test-TargetResource @paramsCAOnline -Verbose } | Should Not Throw
+                    { $script:result = Test-TargetResource @paramsCAOnline -Verbose } | Should -Not -Throw
                 }
 
                 It 'Should return false' {
-                    $script:result | Should Be $false
+                    $script:result | Should -Be $false
                 }
 
                 It 'Should call expected mocks' {
