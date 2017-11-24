@@ -916,7 +916,7 @@ CertUtil: The parameter is incorrect.
 
             Context 'Get-Command returns the command' {
                 It 'Should not throw' {
-                    { $null = Test-CommandExists -Name $testCommandName } | Should Not Throw
+                    { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
                 }
 
                 It 'Should retrieve the command with the specified name' {
@@ -928,7 +928,7 @@ CertUtil: The parameter is incorrect.
                 }
 
                 It 'Should return true' {
-                    Test-CommandExists -Name $testCommandName | Should Be $true
+                    Test-CommandExists -Name $testCommandName | Should -Be $true
                 }
             }
 
@@ -936,7 +936,7 @@ CertUtil: The parameter is incorrect.
                 Mock -CommandName 'Get-Command' -MockWith { return $null }
 
                 It 'Should not throw' {
-                    { $null = Test-CommandExists -Name $testCommandName } | Should Not Throw
+                    { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
                 }
 
                 It 'Should retrieve the command with the specified name' {
@@ -948,7 +948,7 @@ CertUtil: The parameter is incorrect.
                 }
 
                 It 'Should return false' {
-                    Test-CommandExists -Name $testCommandName | Should Be $false
+                    Test-CommandExists -Name $testCommandName | Should -Be $false
                 }
             }
         }

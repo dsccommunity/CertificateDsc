@@ -103,7 +103,7 @@ try
                     $importedCert.HasPrivateKey | Should -Be $true
                 }
 
-                It 'Should not be exportable' {
+                It 'Should not be exportable and should throw the expected exception message' {
                     $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $certificate.Thumbprint)
                     { $null = Export-PfxCertificate `
                         -Cert $importedCert `

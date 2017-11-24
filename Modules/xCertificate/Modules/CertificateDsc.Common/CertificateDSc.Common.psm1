@@ -651,7 +651,8 @@ function Import-CertificateEx
 
 <#
     .SYNOPSIS
-        This function imports a Pfx publiic - private certificate to the specific Certificate Store Location.
+        This function imports a Pfx public - private certificate to the specific
+        Certificate Store Location.
 
     .PARAMETER FilePath
         The path to the certificate file to import.
@@ -660,10 +661,10 @@ function Import-CertificateEx
         The Certificate Store and Location Path to import the certificate to.
 
     .PARAMETER Exportable
-        The paremter controls if certificate will be able to export the private key.
+        The parameter controls if certificate will be able to export the private key.
 
     .PARAMETER Password
-        The password that the Certificate located at the FilePath needs to be imported.
+        The password that the certificate located at the FilePath needs to be imported.
   #>
 
 function Import-PfxCertificateEx
@@ -692,7 +693,6 @@ function Import-PfxCertificateEx
     $store = Split-Path -Path $CertStoreLocation -Leaf
 
     $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
-    [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
 
     $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
 
