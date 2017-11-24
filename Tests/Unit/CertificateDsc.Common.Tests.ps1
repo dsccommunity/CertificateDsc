@@ -4,9 +4,9 @@ $script:ModuleName = 'CertificateDsc.Common'
 # Unit Test Template Version: 1.1.0
 [String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\xCertificate'
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -74,7 +74,7 @@ try
             -----END CERTIFICATE-----
             "
 
-            $cerFileWithoutSan = "
+        $cerFileWithoutSan = "
             -----BEGIN CERTIFICATE-----
             MIIDBjCCAe6gAwIBAgIQRQyErZRGrolI5DfZCJDaTTANBgkqhkiG9w0BAQsFADAW
             MRQwEgYDVQQDDAtTb21lU2VydmVyMjAeFw0xNzA1MDkxNjI0MTZaFw0xODA1MDkx
@@ -96,11 +96,11 @@ try
             -----END CERTIFICATE-----
             "
 
-            $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
-            $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
+        $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
+        $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
 
-            $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
-            $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
+        $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
+        $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
 
         Describe "$DSCResourceName\Test-CertificatePath" {
             $null | Set-Content -Path $validPath
@@ -144,7 +144,7 @@ try
             }
 
             Context 'a single missing file by pipeline with -Quiet' {
-                $result =  $invalidPath | Test-CertificatePath -Quiet
+                $result = $invalidPath | Test-CertificatePath -Quiet
                 It 'Should return false' {
                     ($result -is [bool]) | Should -Be $true
                     $result | Should -Be $false
@@ -192,7 +192,7 @@ try
             }
 
             Context 'a single invalid thumbprint by pipeline with -Quiet' {
-                $result =  $invalidThumbprint | Test-Thumbprint -Quiet
+                $result = $invalidThumbprint | Test-Thumbprint -Quiet
                 It 'Should return false' {
                     ($result -is [bool]) | Should -Be $true
                     $result | Should -Be $false
@@ -208,11 +208,11 @@ try
             $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
             $certDNSNamesReverse = @('www.contoso.com', 'www.fabrikam.com')
             $certDNSNamesNoMatch = $certDNSNames + @('www.nothere.com')
-            $certKeyUsage = @('DigitalSignature','DataEncipherment')
-            $certKeyUsageReverse = @('DataEncipherment','DigitalSignature')
+            $certKeyUsage = @('DigitalSignature', 'DataEncipherment')
+            $certKeyUsageReverse = @('DataEncipherment', 'DigitalSignature')
             $certKeyUsageNoMatch = $certKeyUsage + @('KeyEncipherment')
-            $certEKU = @('Server Authentication','Client authentication')
-            $certEKUReverse = @('Client authentication','Server Authentication')
+            $certEKU = @('Server Authentication', 'Client authentication')
+            $certEKUReverse = @('Client authentication', 'Server Authentication')
             $certEKUNoMatch = $certEKU + @('Encrypting File System')
             $certSubject = 'CN=contoso, DC=com'
             $certFriendlyName = 'Contoso Test Cert'
@@ -656,22 +656,22 @@ try
                 Mock `
                     -CommandName Get-CdpContainer `
                     -MockWith {
-                        [CmdletBinding()]
-                        param
-                        (
-                            $DomainName
-                        )
-                        return New-Object -TypeName psobject -Property @{
-                            Children = @(
-                                @{
-                                    distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                    Children = @{
-                                        distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                    }
+                    [CmdletBinding()]
+                    param
+                    (
+                        $DomainName
+                    )
+                    return New-Object -TypeName psobject -Property @{
+                        Children = @(
+                            @{
+                                distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                                Children          = @{
+                                    distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
+                }
 
                 Mock `
                     -CommandName Test-CertificateAuthority `
@@ -697,22 +697,22 @@ try
                 Mock `
                     -CommandName Get-CdpContainer `
                     -MockWith {
-                        [CmdletBinding()]
-                        param
-                        (
-                            $DomainName
-                        )
-                        return New-Object -TypeName psobject -Property @{
-                            Children = @(
-                                @{
-                                    distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                    Children = @{
-                                        distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                    }
+                    [CmdletBinding()]
+                    param
+                    (
+                        $DomainName
+                    )
+                    return New-Object -TypeName psobject -Property @{
+                        Children = @(
+                            @{
+                                distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                                Children          = @{
+                                    distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
+                }
 
                 Mock `
                     -CommandName Test-CertificateAuthority `
@@ -736,14 +736,14 @@ try
                 Mock `
                     -CommandName Get-CdpContainer `
                     -MockWith {
-                        [CmdletBinding()]
-                        param
-                        (
-                            $DomainName
-                        )
-                        New-InvalidOperationException `
-                            -Message ($LocalizedData.DomainNotJoinedError)
-                    }
+                    [CmdletBinding()]
+                    param
+                    (
+                        $DomainName
+                    )
+                    New-InvalidOperationException `
+                        -Message ($LocalizedData.DomainNotJoinedError)
+                }
 
                 Mock `
                     -CommandName Test-CertificateAuthority `
@@ -769,42 +769,42 @@ try
                 -CommandName New-Object `
                 -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
                 -MockWith {
-                    $retObj = New-Object -TypeName psobject -Property @{
-                        FileName = ''
-                        Arguments = ''
-                        RedirectStandardError = $false
-                        RedirectStandardOutput = $true
-                        UseShellExecute = $false
-                        CreateNoWindow = $true
-                    }
-
-                    return $retObj
+                $retObj = New-Object -TypeName psobject -Property @{
+                    FileName               = ''
+                    Arguments              = ''
+                    RedirectStandardError  = $false
+                    RedirectStandardOutput = $true
+                    UseShellExecute        = $false
+                    CreateNoWindow         = $true
                 }
+
+                return $retObj
+            }
 
             Context 'Function is executed with CA online' {
                 Mock `
                     -CommandName New-Object `
                     -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
                     -MockWith {
-                        $retObj = New-Object -TypeName psobject -Property @{
-                            StartInfo = $null
-                            ExitCode = 0
-                            StandardOutput = New-Object -TypeName psobject |
-                                Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
-                                return @"
+                    $retObj = New-Object -TypeName psobject -Property @{
+                        StartInfo      = $null
+                        ExitCode       = 0
+                        StandardOutput = New-Object -TypeName psobject |
+                            Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                            return @"
 Connecting to LabRootCA1\CA1 ...
 Server "CA1" ICertRequest2 interface is alive (32ms)
 CertUtil: -ping command completed successfully.
 "@
-                            } -PassThru
-                        }
-
-                        $retObj |
-                            Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
-                            Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
-
-                        return $retObj
+                        } -PassThru
                     }
+
+                    $retObj |
+                        Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
+                        Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
+
+                    return $retObj
+                }
 
                 It 'Should not throw' {
                     $script:result = Test-CertificateAuthority `
@@ -835,27 +835,27 @@ CertUtil: -ping command completed successfully.
                     -CommandName New-Object `
                     -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
                     -MockWith {
-                        $retObj = New-Object -TypeName psobject -Property @{
-                            StartInfo = $null
-                            ExitCode = -2147024809
-                            StandardOutput = New-Object -TypeName psobject |
-                                Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
-                                return @"
+                    $retObj = New-Object -TypeName psobject -Property @{
+                        StartInfo      = $null
+                        ExitCode       = -2147024809
+                        StandardOutput = New-Object -TypeName psobject |
+                            Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                            return @"
 Connecting to LabRootCA1\CA2 ...
 Server could not be reached: The parameter is incorrect. 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER) -- (31ms)
 
 CertUtil: -ping command FAILED: 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER)
 CertUtil: The parameter is incorrect.
 "@
-                            } -PassThru
-                        }
-
-                        $retObj |
-                            Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
-                            Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
-
-                        return $retObj
+                        } -PassThru
                     }
+
+                    $retObj |
+                        Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
+                        Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
+
+                    return $retObj
+                }
 
                 It 'Should not throw' {
                     $script:result = Test-CertificateAuthority `
@@ -906,6 +906,49 @@ CertUtil: The parameter is incorrect.
             Context 'A certificate without SAN is used' {
                 It 'Should return null' {
                     Get-CertificateSan -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
+                }
+            }
+        }
+        Describe 'Test-CommandExists' {
+            $testCommandName = 'TestCommandName'
+
+            Mock -CommandName 'Get-Command' -MockWith { return $Name }
+
+            Context 'Get-Command returns the command' {
+                It 'Should not throw' {
+                    { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
+                }
+
+                It 'Should retrieve the command with the specified name' {
+                    $getCommandParameterFilter = {
+                        return $Name -eq $testCommandName
+                    }
+
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                }
+
+                It 'Should return true' {
+                    Test-CommandExists -Name $testCommandName | Should -Be $true
+                }
+            }
+
+            Context 'Get-Command returns null' {
+                Mock -CommandName 'Get-Command' -MockWith { return $null }
+
+                It 'Should not throw' {
+                    { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
+                }
+
+                It 'Should retrieve the command with the specified name' {
+                    $getCommandParameterFilter = {
+                        return $Name -eq $testCommandName
+                    }
+
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                }
+
+                It 'Should return false' {
+                    Test-CommandExists -Name $testCommandName | Should -Be $false
                 }
             }
         }
