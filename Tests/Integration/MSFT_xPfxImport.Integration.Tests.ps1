@@ -68,11 +68,11 @@ try
                     -Credential $testCredential
 
                 Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-            } | Should Not Throw
+            } | Should -Not -Throw
         }
 
         It 'Should be able to call Get-DscConfiguration without throwing' {
-            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
         }
         #endregion
 
@@ -80,9 +80,9 @@ try
             # Get the Certificate details
             $CertificateNew = Get-Item `
                 -Path "Cert:\LocalMachine\My\$($Certificate.Thumbprint)"
-            $CertificateNew                             | Should BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
-            $CertificateNew.Thumbprint                  | Should Be $Certificate.Thumbprint
-            $CertificateNew.Subject                     | Should Be $Certificate.Subject
+            $CertificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+            $CertificateNew.Thumbprint                  | Should -Be $Certificate.Thumbprint
+            $CertificateNew.Subject                     | Should -Be $Certificate.Subject
         }
     }
     #endregion
@@ -101,11 +101,11 @@ try
                     -Thumbprint $Certificate.Thumbprint
 
                 Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-            } | Should Not Throw
+            } | Should -Not -Throw
         }
 
         It 'Should be able to call Get-DscConfiguration without throwing' {
-            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+            { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
         }
         #endregion
 
@@ -114,7 +114,7 @@ try
             $CertificateNew = Get-Item `
                 -Path "Cert:\LocalMachine\My\$($Certificate.Thumbprint)" `
                 -ErrorAction SilentlyContinue
-            $CertificateNew                             | Should BeNullOrEmpty
+            $CertificateNew                             | Should -BeNullOrEmpty
         }
     }
     #endregion

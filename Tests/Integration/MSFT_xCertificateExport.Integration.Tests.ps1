@@ -86,22 +86,22 @@ try
                         -ConfigurationData $ConfigData
 
                     Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-                } | Should Not Throw
+                } | Should -Not -Throw
             }
 
             It 'Should be able to call Get-DscConfiguration without throwing' {
-                { $script:currentCertificate = Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+                { $script:currentCertificate = Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
             }
             #endregion
 
             It 'Should have exported a Cert certificate' {
-                $script:currentCertificate.IsExported | Should Be $true
+                $script:currentCertificate.IsExported | Should -Be $true
             }
 
             It 'Should have set the resource and the thumbprint of the exported certificate should match' {
                 $exportedCertificate = New-Object -TypeName 'System.Security.Cryptography.X509Certificates.X509Certificate2Collection'
                 $exportedCertificate.Import($script:certificatePath)
-                $exportedCertificate[0].Thumbprint | Should Be $script:validCertificateThumbprint
+                $exportedCertificate[0].Thumbprint | Should -Be $script:validCertificateThumbprint
             }
         }
 
@@ -135,22 +135,22 @@ try
                         -ConfigurationData $ConfigData
 
                     Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-                } | Should Not Throw
+                } | Should -Not -Throw
             }
 
             It 'Should be able to call Get-DscConfiguration without throwing' {
-                { $script:currentPFX = Get-DscConfiguration -Verbose -ErrorAction Stop } | Should Not Throw
+                { $script:currentPFX = Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
             }
             #endregion
 
             It 'Should have exported a PFX certificate' {
-                $script:currentPFX.IsExported | Should Be $true
+                $script:currentPFX.IsExported | Should -Be $true
             }
 
             It 'Should have set the resource and the thumbprint of the exported certificate should match' {
                 $exportedCertificate = New-Object -TypeName 'System.Security.Cryptography.X509Certificates.X509Certificate2Collection'
                 $exportedCertificate.Import($script:certificatePath,$pfxPassword,[System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
-                $exportedCertificate[0].Thumbprint | Should Be $script:validCertificateThumbprint
+                $exportedCertificate[0].Thumbprint | Should -Be $script:validCertificateThumbprint
             }
         }
 

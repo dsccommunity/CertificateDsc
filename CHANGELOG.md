@@ -8,6 +8,10 @@
   to correctly generate parameter documentation in Wiki - see [Issue #103](https://github.com/PowerShell/xCertificate/issues/103).
 - Changed description in Credential parameter of xCertReq resource
   to clarify that a PSCredential object should be used.
+- Updated tests to meet Pester V4 guidelines - fixes [Issue #105](https://github.com/PowerShell/xCertificate/issues/105).
+- Add support for Windows Server 2008 R2 which does not contain PKI
+  module so is missing `Import-PfxCertificate` and `Import-Certificate`
+  cmdlets - fixes [Issue #46](https://github.com/PowerShell/xCertificate/issues/46).
 - Added detection for FIPS mode in Test-Thumbprint - see [Issue #107](https://github.com/PowerShell/xCertificate/issues/107).
 
 ## 3.0.0.0

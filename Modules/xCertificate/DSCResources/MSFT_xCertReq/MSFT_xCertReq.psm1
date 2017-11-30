@@ -54,7 +54,7 @@ $localizedData = Get-LocalizedData `
     The template used for the definiton of the certificate.
 
     .PARAMETER SubjectAltName
-    The subject alternative name used to createthe certificate.
+    The subject alternative name used to creat ethe certificate.
 
     .PARAMETER Credential
     The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
@@ -250,7 +250,7 @@ function Get-TargetResource
     The template used for the definiton of the certificate.
 
     .PARAMETER SubjectAltName
-    The subject alternative name used to createthe certificate.
+    The subject alternative name used to create the certificate.
 
     .PARAMETER Credential
     The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
@@ -680,7 +680,7 @@ RenewalCert = $Thumbprint
     The template used for the definiton of the certificate.
 
     .PARAMETER SubjectAltName
-    The subject alternative name used to createthe certificate.
+    The subject alternative name used to create the certificate.
 
     .PARAMETER Credential
     The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.

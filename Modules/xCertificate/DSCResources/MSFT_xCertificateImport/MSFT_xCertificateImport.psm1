@@ -246,13 +246,21 @@ function Set-TargetResource
                     $($LocalizedData.ImportingCertficateMessage -f $Path,$certificateStore)
                 ) -join '' )
 
-            $param = @{
+            $importCertificateParameters = @{
                 CertStoreLocation = $certificateStore
                 FilePath          = $Path
                 Verbose           = $VerbosePreference
             }
 
-            Import-Certificate @param
+            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
+            if (Test-CommandExists -Name 'Import-Certificate')
+            {
+                Import-Certificate @importCertificateParameters
+            }
+            else
+            {
+                Import-CertificateEx @importCertificateParameters
+            }
         }
     }
     elseif ($Ensure -ieq 'Absent')

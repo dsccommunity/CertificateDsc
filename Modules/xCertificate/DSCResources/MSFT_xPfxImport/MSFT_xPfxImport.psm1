@@ -290,16 +290,26 @@ function Set-TargetResource
                     $($LocalizedData.ImportingPfxMessage -f $Path, $certificateStore)
                 ) -join '' )
 
-            $param = @{
+            $importPfxCertificateParameters = @{
                 Exportable        = $Exportable
                 CertStoreLocation = $certificateStore
                 FilePath          = $Path
             }
+
             if ($Credential)
             {
-                $param['Password'] = $Credential.Password
+                $importPfxCertificateParameters['Password'] = $Credential.Password
             }
-            Import-PfxCertificate @param
+
+            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
+            if (Test-CommandExists -Name 'Import-PfxCertificate')
+            {
+                Import-PfxCertificate @importPfxCertificateParameters
+            }
+            else
+            {
+                Import-PfxCertificateEx @importPfxCertificateParameters
+            }
         }
     }
     elseif ($Ensure -ieq 'Absent')
