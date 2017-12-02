@@ -527,7 +527,7 @@ function Get-CertificateTemplateName
     {
         $temp = $Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7' }
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
-        $templateName = $Matches.TemplateName -replace ' '
+        $templateName = $Matches.TemplateName
     }
 
     if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)

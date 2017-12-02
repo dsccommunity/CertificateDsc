@@ -446,7 +446,7 @@ FriendlyName = "$FriendlyName"
     $requestDetails += @"
 
 [RequestAttributes]
-CertificateTemplate = $CertificateTemplate
+CertificateTemplate = `"$CertificateTemplate`"
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
@@ -455,7 +455,7 @@ OID = $OID
     {
         $requestDetails = $requestDetails.Replace(@"
 [RequestAttributes]
-CertificateTemplate = $CertificateTemplate
+CertificateTemplate = `"$CertificateTemplate`"
 [EnhancedKeyUsageExtension]
 "@, '[EnhancedKeyUsageExtension]')
     }
