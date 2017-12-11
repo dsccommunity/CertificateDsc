@@ -114,7 +114,7 @@ function Test-Thumbprint
     Begin
     {
         # Get FIPS registry key
-        $fips = (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' | Select-Object -ExpandProperty 'Enabled')
+        $fips =  [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty 'Enabled')
 
         # Get a list of Hash Providers
         if ($fips -eq $true)
