@@ -38,9 +38,8 @@ try
         $script:pfxPath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.pfx'
         $null = Remove-Item -Path $script:pfxPath -Force -ErrorAction SilentlyContinue
         $pfxPlainTextPassword = 'P@ssword!1'
-        $pfxPassword = ConvertTo-SecureString -String $pfxPlainTextPassword -AsPlainText -Force
         $pfxCredential = New-Object -TypeName System.Management.Automation.PSCredential `
-            -ArgumentList ('Dummy',$pfxPassword)
+            -ArgumentList ('Dummy',(ConvertTo-SecureString -String $pfxPlainTextPassword -AsPlainText -Force))
 
         # Generate the Valid certificate for testing
         $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
@@ -149,7 +148,7 @@ try
 
             It 'Should have set the resource and the thumbprint of the exported certificate should match' {
                 $exportedCertificate = New-Object -TypeName 'System.Security.Cryptography.X509Certificates.X509Certificate2Collection'
-                $exportedCertificate.Import($script:certificatePath,$pfxPassword,[System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
+                $exportedCertificate.Import($script:certificatePath,$pfxCredential.Password,[System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
                 $exportedCertificate[0].Thumbprint | Should -Be $script:validCertificateThumbprint
             }
         }

@@ -443,7 +443,7 @@ function Test-TargetResource
                 }
                 elseif ($Type -eq 'PFX')
                 {
-                    $exportedCertificate.Import($Path, $Password, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
+                    $exportedCertificate.Import($Path, $Password.Password, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
                 } # if
 
                 if ($certificateThumbprintToExport -notin $exportedCertificate.Thumbprint)

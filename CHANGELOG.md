@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- xCertificateExport:
+  - Fixed bug causing pfx export with matchsource enabled to fail
 - Added `Documentation and Examples` section to Readme.md file - see
   [issue #98](https://github.com/PowerShell/xCertificate/issues/98).
 - Changed description in Credential parameter of xPfxImport resource
