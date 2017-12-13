@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- xCertReq:
+  - Fixed behaviour to allow certificate templates with spaces in the name
 - Added `Documentation and Examples` section to Readme.md file - see
   [issue #98](https://github.com/PowerShell/xCertificate/issues/98).
 - Changed description in Credential parameter of xPfxImport resource
