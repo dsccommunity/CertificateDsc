@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.1.0.0
+
 - xCertReq:
   - Fixed behaviour to allow certificate templates with spaces in the name
 - Added `Documentation and Examples` section to Readme.md file - see
