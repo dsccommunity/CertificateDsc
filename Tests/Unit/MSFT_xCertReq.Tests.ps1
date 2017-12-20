@@ -332,14 +332,14 @@ RequestType = CMC
 KeyUsage = $keyUsage
 FriendlyName = "$friendlyName"
 [RequestAttributes]
-CertificateTemplate = $certificateTemplate
+CertificateTemplate = "$certificateTemplate"
 [EnhancedKeyUsageExtension]
 OID = $oid
 "@
 
         $certInfNoTemplate = $certInf.Replace(@"
 [RequestAttributes]
-CertificateTemplate = $certificateTemplate
+CertificateTemplate = "$certificateTemplate"
 [EnhancedKeyUsageExtension]
 "@, '[EnhancedKeyUsageExtension]')
 

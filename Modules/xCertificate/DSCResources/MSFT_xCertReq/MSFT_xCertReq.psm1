@@ -446,7 +446,7 @@ FriendlyName = "$FriendlyName"
     $requestDetails += @"
 
 [RequestAttributes]
-CertificateTemplate = $CertificateTemplate
+CertificateTemplate = "$CertificateTemplate"
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
@@ -455,7 +455,7 @@ OID = $OID
     {
         $requestDetails = $requestDetails.Replace(@"
 [RequestAttributes]
-CertificateTemplate = $CertificateTemplate
+CertificateTemplate = "$CertificateTemplate"
 [EnhancedKeyUsageExtension]
 "@, '[EnhancedKeyUsageExtension]')
     }
@@ -466,7 +466,7 @@ CertificateTemplate = $CertificateTemplate
         $requestDetails += @"
 
 [Extensions]
-2.5.29.17 = `"{text}$SubjectAltName`"
+2.5.29.17 = "{text}$SubjectAltName"
 "@
     }
     if ($thumbprint)
