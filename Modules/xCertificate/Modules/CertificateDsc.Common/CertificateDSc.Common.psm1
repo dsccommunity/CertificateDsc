@@ -1,7 +1,7 @@
 # Import the Networking Resource Helper Module
 Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
-                               -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-                                                     -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
+        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
+            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
 
 # Import Localization Strings
 $localizedData = Get-LocalizedData `
@@ -38,7 +38,7 @@ function Test-CertificatePath
     param
     (
         [Parameter(Mandatory = $true,
-                   ValueFromPipeline)]
+            ValueFromPipeline)]
         [String[]]
         $Path,
 
@@ -101,7 +101,7 @@ function Test-Thumbprint
     param
     (
         [Parameter(Mandatory = $true,
-                   ValueFromPipeline)]
+            ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [String[]]
         $Thumbprint,
@@ -116,9 +116,9 @@ function Test-Thumbprint
         # Get a list of Hash Providers
         $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
             Where-Object -FilterScript {
-                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            }
+            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+            ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+        }
 
         # Get a list of all Valid Hash types and lengths into an array
         $validHashes = @()
@@ -128,10 +128,10 @@ function Test-Thumbprint
             $validHash = New-Object `
                 -TypeName PSObject `
                 -Property @{
-                    Hash      = $hashProvider.BaseType.Name
-                    BitSize   = $bitSize
-                    HexLength = $bitSize / 4
-                }
+                Hash      = $hashProvider.BaseType.Name
+                BitSize   = $bitSize
+                HexLength = $bitSize / 4
+            }
             $validHashes += @( $validHash )
         }
     }
@@ -147,7 +147,7 @@ function Test-Thumbprint
                 if ($hash -cmatch "^[a-fA-F0-9]{$($algorithm.HexLength)}$")
                 {
                     Write-Verbose `
-                        -Message ($LocalizedData.InvalidHashError -f $hash,$algorithm.Hash) `
+                        -Message ($LocalizedData.InvalidHashError -f $hash, $algorithm.Hash) `
                         -Verbose
 
                     $isValid = $true
@@ -302,7 +302,7 @@ function Find-Certificate
     $certFilterScript = '(' + ($certFilters -join ' -and ') + ')'
 
     Write-Verbose `
-        -Message ($LocalizedData.SearchingForCertificateUsingFilters -f $store,$certFilterScript) `
+        -Message ($LocalizedData.SearchingForCertificateUsingFilters -f $store, $certFilterScript) `
         -Verbose
 
     $certs = Get-ChildItem -Path $certPath |
@@ -399,7 +399,7 @@ function Find-CertificateAuthority
             $caRootName = ($item.Children.distinguishedName -split '=|,')[1]
 
             $certificateAuthority = [PSObject] @{
-                CARootName = $caRootName
+                CARootName   = $caRootName
                 CAServerFQDN = $caServerFQDN
             }
 
@@ -458,7 +458,7 @@ function Test-CertificateAuthority
 
     $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
     $locatorInfo.FileName = 'certutil.exe'
-    $locatorInfo.Arguments = ('-ping "{0}\{1}"' -f $CAServerFQDN,$CARootName)
+    $locatorInfo.Arguments = ('-ping "{0}\{1}"' -f $CAServerFQDN, $CARootName)
 
     # Certutil does not make use of standard error stream
     $locatorInfo.RedirectStandardError = $false
@@ -527,7 +527,7 @@ function Get-CertificateTemplateName
     {
         $temp = $Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7' }
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
-        $templateName = $Matches.TemplateName -replace ' '
+        $templateName = $Matches.TemplateName
     }
 
     if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)
@@ -584,4 +584,137 @@ function Get-CertificateSan
     }
 
     return $subjectAlternativeName
+}
+
+<#
+    .SYNOPSIS
+      Tests whether or not the command with the specified name exists.
+
+    .PARAMETER Name
+      The name of the command to test for.
+#>
+function Test-CommandExists
+{
+    [OutputType([System.Boolean])]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Name
+    )
+
+    $command = Get-Command -Name $Name -ErrorAction 'SilentlyContinue'
+    return ($null -ne $command)
+}
+
+<#
+    .SYNOPSIS
+        This function imports a 509 public key certificate to the specific Store.
+
+    .PARAMETER FilePath
+        The path to the certificate file to import.
+
+    .PARAMETER CertStoreLocation
+        The Certificate Store and Location Path to import the certificate to.
+#>
+
+function Import-CertificateEx
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $CertStoreLocation
+    )
+
+    $location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
+    $store = Split-Path -Path $CertStoreLocation -Leaf
+
+    $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
+    $cert.Import($FilePath)
+
+    $certStore = New-Object `
+        -TypeName System.Security.Cryptography.X509Certificates.X509Store `
+        -ArgumentList ($store, $location)
+
+    $certStore.Open('MaxAllowed')
+    $certStore.Add($cert)
+    $certStore.Close()
+}
+
+<#
+    .SYNOPSIS
+        This function imports a Pfx public - private certificate to the specific
+        Certificate Store Location.
+
+    .PARAMETER FilePath
+        The path to the certificate file to import.
+
+    .PARAMETER CertStoreLocation
+        The Certificate Store and Location Path to import the certificate to.
+
+    .PARAMETER Exportable
+        The parameter controls if certificate will be able to export the private key.
+
+    .PARAMETER Password
+        The password that the certificate located at the FilePath needs to be imported.
+  #>
+
+function Import-PfxCertificateEx
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $CertStoreLocation,
+
+        [Parameter(Mandatory = $false)]
+        [Switch]
+        $Exportable,
+
+        [Parameter(Mandatory = $false)]
+        [System.Security.SecureString]
+        $Password
+    )
+
+    $location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
+    $store = Split-Path -Path $CertStoreLocation -Leaf
+
+    $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
+
+    $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+
+    if ($Exportable)
+    {
+        $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+    }
+
+    if ($Password)
+    {
+        $cert.Import($FilePath, $Password, $flags)
+    }
+    else
+    {
+        $cert.Import($FilePath, $flags)
+    }
+
+    $certStore = New-Object `
+        -TypeName System.Security.Cryptography.X509Certificates.X509Store `
+        -ArgumentList @($store, $location)
+
+    $certStore.Open('MaxAllowed')
+    $certStore.Add($cert)
+    $certStore.Close()
 }

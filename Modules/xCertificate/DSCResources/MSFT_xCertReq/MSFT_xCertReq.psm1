@@ -54,10 +54,10 @@ $localizedData = Get-LocalizedData `
     The template used for the definiton of the certificate.
 
     .PARAMETER SubjectAltName
-    The subject alternative name used to createthe certificate.
+    The subject alternative name used to creat ethe certificate.
 
     .PARAMETER Credential
-    The credentials that will be used to access the template in the Certificate Authority.
+    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
@@ -250,10 +250,10 @@ function Get-TargetResource
     The template used for the definiton of the certificate.
 
     .PARAMETER SubjectAltName
-    The subject alternative name used to createthe certificate.
+    The subject alternative name used to create the certificate.
 
     .PARAMETER Credential
-    The credentials that will be used to access the template in the Certificate Authority.
+    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.
@@ -446,7 +446,7 @@ FriendlyName = "$FriendlyName"
     $requestDetails += @"
 
 [RequestAttributes]
-CertificateTemplate = $CertificateTemplate
+CertificateTemplate = "$CertificateTemplate"
 [EnhancedKeyUsageExtension]
 OID = $OID
 "@
@@ -455,7 +455,7 @@ OID = $OID
     {
         $requestDetails = $requestDetails.Replace(@"
 [RequestAttributes]
-CertificateTemplate = $CertificateTemplate
+CertificateTemplate = "$CertificateTemplate"
 [EnhancedKeyUsageExtension]
 "@, '[EnhancedKeyUsageExtension]')
     }
@@ -466,7 +466,7 @@ CertificateTemplate = $CertificateTemplate
         $requestDetails += @"
 
 [Extensions]
-2.5.29.17 = `"{text}$SubjectAltName`"
+2.5.29.17 = "{text}$SubjectAltName"
 "@
     }
     if ($thumbprint)
@@ -680,10 +680,10 @@ RenewalCert = $Thumbprint
     The template used for the definiton of the certificate.
 
     .PARAMETER SubjectAltName
-    The subject alternative name used to createthe certificate.
+    The subject alternative name used to create the certificate.
 
     .PARAMETER Credential
-    The credentials that will be used to access the template in the Certificate Authority.
+    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
 
     .PARAMETER AutoRenew
     Determines if the resource will also renew a certificate within 7 days of expiration.

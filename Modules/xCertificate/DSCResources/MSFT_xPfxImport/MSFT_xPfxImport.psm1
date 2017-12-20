@@ -37,7 +37,7 @@ $localizedData = Get-LocalizedData `
     Determines whether the private key is exportable from the machine after it has been imported.
 
     .PARAMETER Credential
-    A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    A `PSCredential` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
@@ -142,7 +142,7 @@ function Get-TargetResource
     Determines whether the private key is exportable from the machine after it has been imported.
 
     .PARAMETER Credential
-    A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    A `PSCredential` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
@@ -226,7 +226,7 @@ function Test-TargetResource
     Determines whether the private key is exportable from the machine after it has been imported.
 
     .PARAMETER Credential
-    A [PSCredential] object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    A `PSCredential` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
@@ -290,16 +290,26 @@ function Set-TargetResource
                     $($LocalizedData.ImportingPfxMessage -f $Path, $certificateStore)
                 ) -join '' )
 
-            $param = @{
+            $importPfxCertificateParameters = @{
                 Exportable        = $Exportable
                 CertStoreLocation = $certificateStore
                 FilePath          = $Path
             }
+
             if ($Credential)
             {
-                $param['Password'] = $Credential.Password
+                $importPfxCertificateParameters['Password'] = $Credential.Password
             }
-            Import-PfxCertificate @param
+
+            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
+            if (Test-CommandExists -Name 'Import-PfxCertificate')
+            {
+                Import-PfxCertificate @importPfxCertificateParameters
+            }
+            else
+            {
+                Import-PfxCertificateEx @importPfxCertificateParameters
+            }
         }
     }
     elseif ($Ensure -ieq 'Absent')
