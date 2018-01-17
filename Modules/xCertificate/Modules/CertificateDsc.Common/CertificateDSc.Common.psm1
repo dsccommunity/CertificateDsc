@@ -528,6 +528,25 @@ function Get-CertificateTemplateName
         $temp = $Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7' }
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
         $templateName = $Matches.TemplateName
+
+        # If the template name is empty, try to get it by it's OID
+        if ([string]::IsNullOrEmpty($templateName))
+        {
+            # Extract the template OID
+            $null = $temp.Format(0) -match 'Template=(?<TemplateOid>[0-9.]*)\,'
+            $templateOid = $Matches.TemplateOid
+
+            if (![string]::IsNullOrEmpty($templateOid))
+            {
+                # Query the domain for all template entries with their OIDs
+                $domain = ([ADSI] "LDAP://RootDSE").Get("rootDomainNamingContext")
+                $result = (dsquery.exe * "CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,$domain" -scope subtree -attr cn msPKI-Cert-Template-OID)
+
+                # Now extract the matching line from all results and the extract the template name itself
+                $null = ($result -match $tempateOid)[0] -match "[\s]*(?<TemplateName>.*)    $tempateOid"
+                $templateName = ([String] $Matches.TemplateName).Trim()
+            }
+        }
     }
 
     if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)
