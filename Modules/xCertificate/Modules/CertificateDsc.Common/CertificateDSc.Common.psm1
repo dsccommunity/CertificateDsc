@@ -543,7 +543,7 @@ function Get-CertificateTemplateName
                 $result = (dsquery.exe * "CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,$domain" -scope subtree -attr cn msPKI-Cert-Template-OID)
 
                 # Now extract the matching line from all results and the extract the template name itself
-                $null = ($result -match $tempateOid)[0] -match "[\s]*(?<TemplateName>.*)    $tempateOid"
+                $null = ($result -match $templateOid)[0] -match "[\s]*(?<TemplateName>.*)    $templateOid"
                 $templateName = ([String] $Matches.TemplateName).Trim()
             }
         }
