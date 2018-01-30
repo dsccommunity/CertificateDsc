@@ -530,21 +530,23 @@ function Get-CertificateTemplateName
         $templateName = $Matches.TemplateName
 
         # If the template name is empty, try to get it by it's OID
-        if ([string]::IsNullOrEmpty($templateName))
+        if ([System.String]::IsNullOrEmpty($templateName))
         {
             # Extract the template OID
             $null = $temp.Format(0) -match 'Template=(?<TemplateOid>[0-9.]*)\,'
             $templateOid = $Matches.TemplateOid
 
-            if (![string]::IsNullOrEmpty($templateOid))
+            if (![System.String]::IsNullOrEmpty($templateOid))
             {
-                # Query the domain for all template entries with their OIDs
-                $domain = ([ADSI] "LDAP://RootDSE").Get("rootDomainNamingContext")
-                $result = (dsquery.exe * "CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,$domain" -scope subtree -attr cn msPKI-Cert-Template-OID)
+                # Query the domain for all template entries with their OIDs. Use
+                # Select-Object to extract the first array element in the cn and
+                # msPKI-Cert-Template-OID properties.
+                $domain    = ([adsi] "LDAP://RootDSE").Get("rootDomainNamingContext")
+                $templates = ([adsi] "LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,$domain").Children |
+                                 Select-Object @{ N = 'Name'; E = { $_.cn[0] } }, @{ N = 'Oid'; E = { $_.'msPKI-Cert-Template-OID'[0] } }
 
-                # Now extract the matching line from all results and the extract the template name itself
-                $null = ($result -match $templateOid)[0] -match "[\s]*(?<TemplateName>.*)    $templateOid"
-                $templateName = ([String] $Matches.TemplateName).Trim()
+                # Now extract the template name for the matching OID
+                $templateName = $templates | Where-Object { $_.Oid -eq $templateOid } | Select-Object -ExpandProperty 'Name'
             }
         }
     }
