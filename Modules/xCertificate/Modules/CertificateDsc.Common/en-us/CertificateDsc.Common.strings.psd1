@@ -14,4 +14,5 @@ ConvertFrom-StringData @'
     CaFoundMessage                      = Found certificate authority '{0}\{1}'.
     CaOnlineMessage                     = Certificate authority '{0}\{1}' is online.
     CaOfflineMessage                    = Certificate authority '{0}\{1}' is offline.
+    TemplateNameResolutionError         = Failed to resolve the template name in Active Directory: {0}
 '@
