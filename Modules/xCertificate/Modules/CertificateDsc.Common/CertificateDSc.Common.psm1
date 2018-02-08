@@ -528,6 +528,36 @@ function Get-CertificateTemplateName
         $temp = $Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7' }
         $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
         $templateName = $Matches.TemplateName
+
+        # If the template name is empty, try to get it by it's OID
+        if ([System.String]::IsNullOrEmpty($templateName))
+        {
+            # Extract the template OID
+            $null = $temp.Format(0) -match 'Template=(?<TemplateOid>[0-9.]*)\,'
+            $templateOid = $Matches.TemplateOid
+
+            if (![System.String]::IsNullOrEmpty($templateOid))
+            {
+                <#
+                    Query the domain for all template entries with their OIDs.
+                    Use Select-Object to extract the first array element in the
+                    cn and msPKI-Cert-Template-OID properties.
+                #>
+                try
+                {
+                    $domain    = ([adsi] "LDAP://RootDSE").Get("rootDomainNamingContext")
+                    $templates = ([adsi] "LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,$domain").Children |
+                                    Select-Object -Property @{ N = 'Name'; E = { $_.cn[0] } }, @{ N = 'Oid'; E = { $_.'msPKI-Cert-Template-OID'[0] } }
+
+                    # Now extract the template name for the matching OID
+                    $templateName = $templates | Where-Object -FilterScript { $_.Oid -eq $templateOid } | Select-Object -ExpandProperty 'Name'
+                }
+                catch
+                {
+                    Write-Warning -Message ($LocalizedData.TemplateNameResolutionError -f $_)
+                }
+            }
+        }
     }
 
     if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)

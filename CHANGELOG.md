@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.2.0.0
+
+- Get-CertificateTemplateName: Fix missing template name
+
 ## 3.1.0.0
 
 - xCertReq:
