@@ -124,15 +124,29 @@ function Test-Thumbprint
         $validHashes = @()
         foreach ($hashProvider in $hashProviders)
         {
-            $bitSize = ( New-Object -TypeName $hashProvider ).HashSize
-            $validHash = New-Object `
-                -TypeName PSObject `
-                -Property @{
-                Hash      = $hashProvider.BaseType.Name
-                BitSize   = $bitSize
-                HexLength = $bitSize / 4
+            try
+            {
+                $bitSize = ( New-Object -TypeName $hashProvider -ErrorAction Stop ).HashSize
+                $validHash = New-Object `
+                    -TypeName PSObject `
+                    -Property @{
+                    Hash      = $hashProvider.BaseType.Name
+                    BitSize   = $bitSize
+                    HexLength = $bitSize / 4
+                }
+                $validHashes += @( $validHash )
+                }
+            catch
+            {
+                if($PSItem.FullyQualifiedErrorId -eq 'ConstructorInvokedThrowException,Microsoft.PowerShell.Commands.NewObjectCommand')
+                {
+                    Write-Warning -Message "$($hashProvider.Name) is not supported"
+                }
+                else
+                {
+                    throw $PSItem
+                }
             }
-            $validHashes += @( $validHash )
         }
     }
 
