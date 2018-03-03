@@ -1,9 +1,9 @@
-$script:DSCModuleName      = 'xCertificate'
-$script:DSCResourceName    = 'MSFT_xCertificateImport'
+$script:DSCModuleName      = 'CertificateDsc'
+$script:DSCResourceName    = 'MSFT_CertificateImport'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\xCertificate'
+[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
      (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -21,7 +21,7 @@ $TestEnvironment = Initialize-TestEnvironment `
 try
 {
     InModuleScope $script:DSCResourceName {
-        $DSCResourceName = 'MSFT_xCertificateImport'
+        $DSCResourceName = 'MSFT_CertificateImport'
         $validThumbprint = (
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and

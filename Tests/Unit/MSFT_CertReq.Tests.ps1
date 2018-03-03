@@ -1,12 +1,12 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
 
-$script:DSCModuleName      = 'xCertificate'
-$script:DSCResourceName    = 'MSFT_xCertReq'
+$script:DSCModuleName      = 'Certificate'
+$script:DSCResourceName    = 'MSFT_CertReq'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\xCertificate'
+[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
      (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -423,20 +423,20 @@ RenewalCert = $validThumbprint
 
         #region Set-TargetResource
         Describe "$dscResourceName\Set-TargetResource" {
-            Mock -CommandName Join-Path -MockWith { 'xCertReq-Test' } `
+            Mock -CommandName Join-Path -MockWith { 'CertReq-Test' } `
                 -ParameterFilter { $Path -eq $env:Temp }
 
             Mock -CommandName Test-Path -MockWith { $true } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
             Mock -CommandName Test-Path -MockWith { $true } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
             Mock -CommandName CertReq.exe
 
             Mock -CommandName Set-Content `
                 -ParameterFilter {
-                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInf
                 }
 
@@ -452,14 +452,14 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
@@ -479,17 +479,17 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
@@ -509,17 +509,17 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
@@ -529,7 +529,7 @@ RenewalCert = $validThumbprint
 
             Mock -CommandName Set-Content `
                 -ParameterFilter {
-                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInfRenew
                 }
             Context 'autorenew is true, credentials not passed and expiring certificate exists' {
@@ -544,17 +544,17 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfRenew
                         }
 
@@ -574,17 +574,17 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfRenew
                         }
 
@@ -594,7 +594,7 @@ RenewalCert = $validThumbprint
 
             Mock -CommandName Set-Content `
                 -ParameterFilter {
-                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInfKeyRenew
                 }
 
@@ -610,32 +610,32 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.inf' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.inf' }
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfKeyRenew
                         }
                 }
             }
 
             Mock -CommandName Test-Path -MockWith { $false } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
             Mock -CommandName Set-Content `
                 -ParameterFilter {
-                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInf
                 }
 
@@ -644,7 +644,7 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 $errorRecord = Get-InvalidOperationRecord `
-                    -Message ($LocalizedData.CertificateReqNotFoundError -f 'xCertReq-Test.req')
+                    -Message ($LocalizedData.CertificateReqNotFoundError -f 'CertReq-Test.req')
 
                 It 'Should throw CertificateReqNotFoundError exception' {
                     { Set-TargetResource @paramsNoCred -Verbose } | Should -Throw $errorRecord
@@ -654,14 +654,14 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 0 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
@@ -670,17 +670,17 @@ RenewalCert = $validThumbprint
             }
 
             Mock -CommandName Test-Path -MockWith { $true } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
             Mock -CommandName Test-Path -MockWith { $false } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
             Context 'Autorenew is false, credentials not passed, certificate creation failed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 $errorRecord = Get-InvalidOperationRecord `
-                    -Message ($LocalizedData.CertificateCerNotFoundError -f 'xCertReq-Test.cer')
+                    -Message ($LocalizedData.CertificateCerNotFoundError -f 'CertReq-Test.cer')
 
                 It 'Should throw CertificateCerNotFoundError exception' {
                     { Set-TargetResource @paramsNoCred -Verbose } | Should -Throw $errorRecord
@@ -690,14 +690,14 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
@@ -706,23 +706,23 @@ RenewalCert = $validThumbprint
             }
 
             Mock -CommandName Test-Path -MockWith { $true } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
             Mock -CommandName Test-Path -MockWith { $true } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
             Mock -CommandName Test-Path -MockWith { $true } `
-                -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
             Context 'autorenew is false, credentials passed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 Mock -CommandName Get-Content -Mockwith { 'Output' } `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                 Mock -CommandName Remove-Item `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                 Mock -CommandName Import-Module
 
@@ -752,9 +752,9 @@ RenewalCert = $validThumbprint
                     )
                 }
 
-                Mock -CommandName Start-Win32Process -ModuleName MSFT_xCertReq
+                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq
 
-                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq
 
                 It 'Should not throw' {
                     { Set-TargetResource @paramsStandard -Verbose } | Should -Not -Throw
@@ -764,37 +764,37 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                     Assert-MockCalled -CommandName Get-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                     Assert-MockCalled -CommandName Remove-Item -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.out' }
                 }
             }
 
             Mock -CommandName Set-Content `
                 -ParameterFilter {
-                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInfSubjectAltName
                 }
 
@@ -810,14 +810,14 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfSubjectAltName
                         }
 
@@ -827,7 +827,7 @@ RenewalCert = $validThumbprint
 
             Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
                 Mock -CommandName Set-Content -ParameterFilter {
-                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInfNoTemplate
                 }
 
@@ -842,14 +842,14 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfNoTemplate
                         }
 
@@ -859,7 +859,7 @@ RenewalCert = $validThumbprint
 
             Context 'enterprise CA, URL for CEP and CES passed, credentials passed' {
                 Mock -CommandName Set-Content -ParameterFilter {
-                    $Path -eq 'xCertReq-Test.inf' -and `
+                    $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInf
                 }
 
@@ -874,14 +874,14 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
@@ -894,10 +894,10 @@ RenewalCert = $validThumbprint
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
                 Mock -CommandName Get-Content -Mockwith { 'Output' } `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                 Mock -CommandName Remove-Item `
-                    -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                    -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                 Mock -CommandName Import-Module
 
@@ -920,31 +920,31 @@ RenewalCert = $validThumbprint
                     Assert-MockCalled -CommandName Join-Path -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.req' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.cer' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName Set-Content -Exactly 1 `
                         -ParameterFilter {
-                            $Path -eq 'xCertReq-Test.inf' -and `
+                            $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_xCertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly 1
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                     Assert-MockCalled -CommandName Get-Content -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                     Assert-MockCalled -CommandName Remove-Item -Exactly 1 `
-                        -ParameterFilter { $Path -eq 'xCertReq-Test.out' }
+                        -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                     Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
                 }

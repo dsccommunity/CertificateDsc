@@ -1,9 +1,9 @@
-$script:DSCModuleName      = 'xCertificate'
-$script:DSCResourceName    = 'MSFT_xCertificateExport'
+$script:DSCModuleName      = 'CertificateDsc'
+$script:DSCResourceName    = 'MSFT_CertificateExport'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\xCertificate'
+[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
      (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -21,10 +21,10 @@ $TestEnvironment = Initialize-TestEnvironment `
 try
 {
     InModuleScope $script:DSCResourceName {
-        $DSCResourceName = 'MSFT_xCertificateExport'
+        $DSCResourceName = 'MSFT_CertificateExport'
 
-        $certificatePath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.cer'
-        $pfxPath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.pfx'
+        $certificatePath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.cer'
+        $pfxPath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.pfx'
         $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
         $certificateKeyUsage = @('DigitalSignature','DataEncipherment')
         $certificateEKU = @('Server Authentication','Client authentication')
