@@ -1,5 +1,5 @@
-[ClassVersion("0.1.0.0"), FriendlyName("xCertReq")]
-class MSFT_xCertReq : OMI_BaseResource
+[ClassVersion("0.1.0.0"), FriendlyName("CertReq")]
+class MSFT_CertReq : OMI_BaseResource
 {
     [Key, Description("Provide the text string to use as the subject of the certificate.")] String Subject;
     [Write, Description("The type of CA in use, Standalone/Enterprise.")] String CAType;

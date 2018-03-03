@@ -1,5 +1,5 @@
-[ClassVersion("1.0.0.0"), FriendlyName("xCertificateExport")]
-class MSFT_xCertificateExport : OMI_BaseResource
+[ClassVersion("1.0.0.0"), FriendlyName("CertificateExport")]
+class MSFT_CertificateExport : OMI_BaseResource
 {
     [Key,Description("The path to the file you that will contain the exported certificate.")] string Path;
     [Write,Description("The thumbprint of the certificate to export. Certificate selector parameter.")] string Thumbprint;
