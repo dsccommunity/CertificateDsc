@@ -11,11 +11,11 @@ Configuration Example
         $NodeName = 'localhost'
     )
 
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName CertificateDsc
 
     Node $AllNodes.NodeName
     {
-        xCertificateExport SSLCert
+        CertificateExport SSLCert
         {
             Type         = 'CERT'
             FriendlyName = 'Web Site SSL Certificate for www.contoso.com'

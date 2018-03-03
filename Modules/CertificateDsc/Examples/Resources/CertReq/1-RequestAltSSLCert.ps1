@@ -22,11 +22,11 @@ configuration Example
         $Credential
     )
 
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName CertificateDsc
 
     Node $AllNodes.NodeName
     {
-        xCertReq SSLCert
+        CertReq SSLCert
         {
             CARootName          = 'test-dc01-ca'
             CAServerFQDN        = 'dc01.test.pha'

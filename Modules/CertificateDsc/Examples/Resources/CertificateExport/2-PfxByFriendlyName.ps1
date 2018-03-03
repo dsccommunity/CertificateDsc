@@ -16,11 +16,11 @@ Configuration Example
         $Credential
     )
 
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName CertificateDsc
 
     Node $AllNodes.NodeName
     {
-        xCertificateExport SSLCert
+        CertificateExport SSLCert
         {
             Type         = 'PFX'
             FriendlyName = 'Web Site SSL Certificate for www.contoso.com'

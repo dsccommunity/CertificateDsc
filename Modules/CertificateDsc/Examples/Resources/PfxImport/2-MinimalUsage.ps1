@@ -16,11 +16,11 @@ Configuration Example
         $Credential
     )
 
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName Certificate
 
     Node $AllNodes.NodeName
     {
-        xPfxImport CompanyCert
+        PfxImport CompanyCert
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'

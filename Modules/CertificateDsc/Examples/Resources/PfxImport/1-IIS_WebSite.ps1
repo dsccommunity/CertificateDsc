@@ -16,7 +16,7 @@ Configuration Example
         $Credential
     )
 
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName CertificateDsc
     Import-DscResource -ModuleName xWebAdministration
 
     Node $AllNodes.NodeName
@@ -27,7 +27,7 @@ Configuration Example
             Name   = 'Web-Server'
         }
 
-        xPfxImport CompanyCert
+        PfxImport CompanyCert
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Path       = '\\Server\Share\Certificates\CompanyCert.pfx'
@@ -52,7 +52,7 @@ Configuration Example
                         CertificateStoreName = 'WebHosting'
                         HostName = "www.example.com"
                     }
-            DependsOn       = '[WindowsFeature]IIS','[xPfxImport]CompanyCert'
+            DependsOn       = '[WindowsFeature]IIS','[PfxImport]CompanyCert'
         }
     }
 }
