@@ -12,7 +12,7 @@
     CompanyName       = 'Microsoft Corporation'
 
     # Copyright statement for this module
-    Copyright         = '(c) 2017 Microsoft Corporation. All rights reserved.'
+    Copyright         = '(c) 2018 Microsoft Corporation. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description       = 'This module includes DSC resources that simplify administration of certificates on a Windows Server'
@@ -41,10 +41,10 @@
             Tags         = @('DesiredStateConfiguration', 'DSC', 'DSCResourceKit', 'DSCResource')
 
             # A URL to the license for this module.
-            LicenseUri   = 'https://github.com/PowerShell/xCertificate/blob/master/LICENSE'
+            LicenseUri   = 'https://github.com/PowerShell/CertificateDsc/blob/master/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri   = 'https://github.com/PowerShell/xCertificate'
+            ProjectUri   = 'https://github.com/PowerShell/CertificateDsc'
 
             # A URL to an icon representing this module.
             # IconUri = ''
