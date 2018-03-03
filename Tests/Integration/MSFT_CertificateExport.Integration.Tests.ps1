@@ -1,9 +1,9 @@
-$script:DSCModuleName   = 'xCertificate'
-$script:DSCResourceName = 'MSFT_xCertificateExport'
+$script:DSCModuleName   = 'CertificateDsc'
+$script:DSCResourceName = 'MSFT_CertificateExport'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\xCertificate'
+[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
      (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -31,11 +31,11 @@ try
         . (Install-NewSelfSignedCertificateExScript)
 
         # Prepare CER certificate properties
-        $script:certificatePath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.cer'
+        $script:certificatePath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.cer'
         $null = Remove-Item -Path $script:certificatePath -Force -ErrorAction SilentlyContinue
 
         # Prepare PFX certificate properties
-        $script:pfxPath = Join-Path -Path $env:Temp -ChildPath 'xCertificateExportTestCert.pfx'
+        $script:pfxPath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.pfx'
         $null = Remove-Item -Path $script:pfxPath -Force -ErrorAction SilentlyContinue
         $pfxPlainTextPassword = 'P@ssword!1'
         $pfxPassword = ConvertTo-SecureString -String $pfxPlainTextPassword -AsPlainText -Force

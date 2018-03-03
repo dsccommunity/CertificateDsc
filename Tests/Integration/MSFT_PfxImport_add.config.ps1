@@ -1,13 +1,13 @@
-Configuration MSFT_xPfxImport_Add_Config {
+Configuration MSFT_PfxImport_Add_Config {
     param
     (
         $Thumbprint,
         $Path,
         $Credential
     )
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName CertificateDsc
     node localhost {
-        xPfxImport Integration_Test {
+        PfxImport Integration_Test {
             Thumbprint   = $Thumbprint
             Path         = $Path
             Location     = 'LocalMachine'

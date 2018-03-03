@@ -1,8 +1,8 @@
-Configuration MSFT_xCertReq_Config {
-    Import-DscResource -ModuleName xCertificate
+Configuration MSFT_CertReq_Config {
+    Import-DscResource -ModuleName CertificateDsc
 
     node localhost {
-        xCertReq Integration_Test {
+        CertReq Integration_Test {
             Subject             = $Node.Subject
             CAServerFQDN        = $Node.CAServerFQDN
             CARootName          = $Node.CARootName

@@ -1,12 +1,12 @@
-Configuration MSFT_xPfxImport_Remove_Config {
+Configuration MSFT_PfxImport_Remove_Config {
     param
     (
         $Thumbprint,
         $Path
     )
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName CertificateDsc
     node localhost {
-        xPfxImport Integration_Test {
+        PfxImport Integration_Test {
             Thumbprint = $Thumbprint
             Path       = $Path
             Location   = 'LocalMachine'

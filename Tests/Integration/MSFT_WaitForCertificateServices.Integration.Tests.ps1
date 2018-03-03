@@ -5,12 +5,12 @@
  Therefore, automation of these tests shouldn't be performed using a production CA.
 #>
 
-$script:DSCModuleName = 'xCertificate'
-$script:DSCResourceName = 'MSFT_xWaitForCertificateServices'
+$script:DSCModuleName = 'CertificateDsc'
+$script:DSCResourceName = 'MSFT_WaitForCertificateServices'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\xCertificate'
+[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {

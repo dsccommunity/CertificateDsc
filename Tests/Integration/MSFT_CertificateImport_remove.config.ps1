@@ -1,12 +1,12 @@
-Configuration MSFT_xCertificateImport_Remove_Config {
+Configuration MSFT_CertificateImport_Remove_Config {
     param
     (
         $Thumbprint,
         $Path
     )
-    Import-DscResource -ModuleName xCertificate
+    Import-DscResource -ModuleName CertificateDsc
     node localhost {
-        xCertificateImport Integration_Test {
+        CertificateImport Integration_Test {
             Thumbprint = $Thumbprint
             Path       = $Path
             Location   = 'LocalMachine'

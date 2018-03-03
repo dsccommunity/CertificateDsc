@@ -1,9 +1,9 @@
-Configuration MSFT_xCertificateExport_Config {
-    Import-DscResource -ModuleName xCertificate
+Configuration MSFT_CertificateExport_Config {
+    Import-DscResource -ModuleName CertificateDsc
     node localhost {
         if ($Node.Type -in @('Cert','P7B','SST'))
         {
-            xCertificateExport Integration_Test {
+            CertificateExport Integration_Test {
                 Path             = $Node.Path
                 FriendlyName     = $Node.FriendlyName
                 Subject          = $Node.Subject
@@ -17,7 +17,7 @@ Configuration MSFT_xCertificateExport_Config {
         }
         elseif ($Node.Type -eq 'PFX')
         {
-            xCertificateExport Integration_Test {
+            CertificateExport Integration_Test {
                 Path             = $Node.Path
                 FriendlyName     = $Node.FriendlyName
                 Subject          = $Node.Subject
