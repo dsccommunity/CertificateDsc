@@ -7,6 +7,7 @@
   - Changed all MSFT_xResourceName to MSFT_ResourceName.
   - Updated DSCResources, Examples, Modules and Tests for new naming.
   - Updated Year to 2018 in License and Manifest.
+  - Updated README.md from xCertificate to CertifcateDsc
 
 ## 3.2.0.0
 
