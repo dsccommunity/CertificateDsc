@@ -50,7 +50,7 @@ configuration Example
             AutoRenew           = $true
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
-            DependsOn           = '[xWaitForCertificateServices]RootCA'
+            DependsOn           = '[WaitForCertificateServices]RootCA'
         }
     }
 }
