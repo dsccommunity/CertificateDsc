@@ -8,6 +8,8 @@
   - Updated DSCResources, Examples, Modules and Tests for new naming.
   - Updated Year to 2018 in License and Manifest.
   - Updated README.md from xCertificate to CertifcateDsc
+  - Removed unnecessary code from:
+   - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
 
 ## 3.2.0.0
 

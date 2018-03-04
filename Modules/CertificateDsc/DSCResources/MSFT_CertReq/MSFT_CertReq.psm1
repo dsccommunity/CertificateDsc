@@ -417,7 +417,6 @@ function Set-TargetResource
     $infPath = [System.IO.Path]::ChangeExtension($workingPath, '.inf')
     $reqPath = [System.IO.Path]::ChangeExtension($workingPath, '.req')
     $cerPath = [System.IO.Path]::ChangeExtension($workingPath, '.cer')
-    $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
 
     # Create INF file
     $requestDetails = @"
