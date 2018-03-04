@@ -16,7 +16,7 @@ Configuration Example
         $Credential
     )
 
-    Import-DscResource -ModuleName Certificate
+    Import-DscResource -ModuleName CertificateDsc
 
     Node $AllNodes.NodeName
     {
