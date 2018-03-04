@@ -1,7 +1,7 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
 
-$script:DSCModuleName      = 'Certificate'
+$script:DSCModuleName      = 'CertificateDsc'
 $script:DSCResourceName    = 'MSFT_CertReq'
 
 #region HEADER
