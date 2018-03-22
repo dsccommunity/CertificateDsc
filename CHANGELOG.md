@@ -10,6 +10,7 @@
   - Updated README.md from xCertificate to CertifcateDsc
   - Removed unnecessary code from:
     - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
+      - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
 
 ## 3.2.0.0
 
