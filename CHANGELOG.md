@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- BREAKING CHANGE
+  - Renamed xCertificate to CertificateDsc - fixes [Issue #114](https://github.com/PowerShell/xCertificate/issues/114).
+  - Changed all MSFT_xResourceName to MSFT_ResourceName.
+  - Updated DSCResources, Examples, Modules and Tests for new naming.
+  - Updated Year to 2018 in License and Manifest.
+  - Updated README.md from xCertificate to CertifcateDsc
+  - Removed unnecessary code from:
+    - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
+      - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
+
 ## 3.2.0.0
 
 - Get-CertificateTemplateName: Fix missing template name
