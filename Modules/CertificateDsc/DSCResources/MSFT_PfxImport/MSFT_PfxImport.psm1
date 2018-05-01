@@ -25,7 +25,7 @@ $localizedData = Get-LocalizedData `
     The thumbprint (unique identifier) of the PFX file you're importing.
 
     .PARAMETER Path
-    The Windows Certificate Store Location to import the PFX file to.
+    The path to the PFX file you want to import.
 
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
@@ -82,37 +82,59 @@ function Get-TargetResource
         $Ensure = 'Present'
     )
 
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
+    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
             $($LocalizedData.GettingPfxStatusMessage -f $Thumbprint, $certificateStore)
         ) -join '' )
 
-    if ((Test-Path $certificateStore) -eq $false)
+    if ((Test-Path -Path $certificateStore) -eq $false)
     {
         New-InvalidArgumentException `
             -Message ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore) `
             -ArgumentName 'Store'
     }
 
-    $checkEnsure = [Bool](
-        $certificateStore |
-            Get-ChildItem |
-            Where-Object -FilterScript {$_.Thumbprint -ieq $Thumbprint}
-    )
-    if ($checkEnsure)
+    # Look up the certificate
+    $certificatePath = Join-Path -Path $certificateStore -ChildPath $Thumbprint
+    $certificate = Get-ChildItem -Path $certificatePath -ErrorAction SilentlyContinue
+
+    if ($certificate)
     {
-        $Ensure = 'Present'
+        if ($certificate.HasPrivateKey)
+        {
+            # If the certificate is found and has a private key then consider it Present
+            Write-Verbose -Message ( @(
+                "$($MyInvocation.MyCommand): "
+                $($LocalizedData.CertificateInstalledMessage -f $Thumbprint, $certificateStore)
+            ) -join '' )
+
+            $Ensure = 'Present'
+        }
+        else
+        {
+            # The certificate is found but the private key is missing so it is Absent
+            Write-Verbose -Message ( @(
+                "$($MyInvocation.MyCommand): "
+                $($LocalizedData.CertificateInstalledNoPrivateKeyMessage -f $Thumbprint, $certificateStore)
+            ) -join '' )
+
+            $Ensure = 'Absent'
+        }
     }
     else
     {
+        # The certificate is not found
+        Write-Verbose -Message ( @(
+            "$($MyInvocation.MyCommand): "
+            $($LocalizedData.CertificateNotInstalledMessage -f $Thumbprint, $certificateStore)
+        ) -join '' )
+
         $Ensure = 'Absent'
     }
 
-    @{
+    return @{
         Thumbprint = $Thumbprint
         Path       = $Path
         Location   = $Location
@@ -130,7 +152,7 @@ function Get-TargetResource
     The thumbprint (unique identifier) of the PFX file you're importing.
 
     .PARAMETER Path
-    The Windows Certificate Store Location to import the PFX file to.
+    The path to the PFX file you want to import.
 
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
@@ -150,7 +172,7 @@ function Get-TargetResource
 function Test-TargetResource
 {
     [CmdletBinding()]
-    [OutputType([Boolean])]
+    [OutputType([System.Boolean])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -189,20 +211,18 @@ function Test-TargetResource
 
     $result = @(Get-TargetResource @PSBoundParameters)
 
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
+    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
             $($LocalizedData.TestingPfxStatusMessage -f $Thumbprint, $certificateStore)
         ) -join '' )
 
-
     if ($Ensure -ne $result.Ensure)
     {
         return $false
     }
+
     return $true
 } # end function Test-TargetResource
 
@@ -214,7 +234,7 @@ function Test-TargetResource
     The thumbprint (unique identifier) of the PFX file you're importing.
 
     .PARAMETER Path
-    The Windows Certificate Store Location to import the PFX file to.
+    The path to the PFX file you want to import.
 
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
@@ -270,9 +290,7 @@ function Set-TargetResource
         $Ensure = 'Present'
     )
 
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
+    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "

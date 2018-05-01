@@ -40,10 +40,21 @@ try
 
         $testUsername = 'DummyUsername'
         $testPassword = 'DummyPassword'
-        $testCredential = New-Object System.Management.Automation.PSCredential $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
+        $testCredential = New-Object `
+            -TypeName System.Management.Automation.PSCredential `
+            -ArgumentList $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
 
         $validPath = "TestDrive:\$testFile"
         $validCertPath = "Cert:\LocalMachine\My"
+        $validCertFullPath = '{0}\{1}' -f $validCertPath, $validThumbprint
+
+        $validCertificateWithPrivateKey = @{
+            HasPrivateKey = $true
+        }
+
+        $validCertificateWithoutPrivateKey = @{
+            HasPrivateKey = $false
+        }
 
         $PresentParams = @{
             Thumbprint = $validThumbprint
@@ -53,6 +64,7 @@ try
             Store      = 'My'
             Exportable = $True
             Credential = $testCredential
+            Verbose    = $True
         }
 
         $AbsentParams = @{
@@ -61,113 +73,221 @@ try
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
             Store      = 'My'
+            Verbose    = $True
         }
 
         Describe "$DSCResourceName\Get-TargetResource" {
             $null | Set-Content -Path $validPath
 
-            $result = Get-TargetResource @PresentParams
-            It 'should return a hashtable' {
-                $result | Should -BeOfType System.Collections.Hashtable
+            Context 'When yhe certificate exists with a private key' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith {
+                        $validCertificateWithPrivateKey
+                    } `
+                    -ParameterFilter {
+                        $Path -eq $validCertFullPath
+                    }
+
+                $result = Get-TargetResource @PresentParams
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values' {
+                    $result.Thumbprint | Should -BeExactly $validThumbprint
+                    $result.Path | Should -BeExactly $validPath
+                    $result.Ensure | Should -BeExactly 'Present'
+                }
+
+                It 'Should call the exected mocks' {
+                    Assert-MockCalled `
+                        -CommandName Get-ChildItem `
+                        -ParameterFilter { $Path -eq $validCertFullPath } `
+                        -Exactly -Times 1
+                }
             }
 
-            It 'should contain the input values' {
-                $result.Thumbprint | Should -BeExactly $validThumbprint
-                $result.Path | Should -BeExactly $validPath
+            Context 'When the certificate exists without private key' {
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith {
+                        $validCertificateWithoutPrivateKey
+                    } `
+                    -ParameterFilter {
+                        $Path -eq $validCertFullPath
+                    }
+
+                $null | Set-Content -Path $validPath
+
+                $result = Get-TargetResource @PresentParams
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values' {
+                    $result.Thumbprint | Should -BeExactly $validThumbprint
+                    $result.Path | Should -BeExactly $validPath
+                    $result.Ensure | Should -BeExactly 'Absent'
+                }
+
+                It 'Should call the exected mocks' {
+                    Assert-MockCalled `
+                        -CommandName Get-ChildItem `
+                        -ParameterFilter { $Path -eq $validCertFullPath } `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'When the certificate does not exist' {
+                Mock -CommandName Get-ChildItem
+
+                $null | Set-Content -Path $validPath
+
+                $result = Get-TargetResource @PresentParams
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values' {
+                    $result.Thumbprint | Should -BeExactly $validThumbprint
+                    $result.Path | Should -BeExactly $validPath
+                    $result.Ensure | Should -BeExactly 'Absent'
+                }
+
+                It 'Should call the exected mocks' {
+                    Assert-MockCalled `
+                        -CommandName Get-ChildItem `
+                        -Exactly -Times 1
+                }
             }
         }
+
         Describe "$DSCResourceName\Test-TargetResource" {
             $null | Set-Content -Path $validPath
 
-            It 'should return a bool' {
+            It 'Should return a bool' {
                 Test-TargetResource @PresentParams | Should -BeOfType Boolean
             }
 
-            It 'returns false when valid path + thumbprint and certificate is not in store but should be' {
-                Mock Get-TargetResource {
-                    return @{
-                        Thumbprint = $validThumbprint
-                        Path       = $validPath
-                        Ensure     = 'Absent'
+            Context 'When valid path and thumbprint and certificate is not in store but should be' {
+                It 'Should return false' {
+                    Mock -CommandName Get-TargetResource {
+                        return @{
+                            Thumbprint = $validThumbprint
+                            Path       = $validPath
+                            Ensure     = 'Absent'
+                        }
                     }
+
+                    Test-TargetResource @PresentParams | Should -Be $false
                 }
-                Test-TargetResource @PresentParams | Should -Be $false
             }
-            It 'returns true when valid path + thumbprint and PFX is not in store and should not be' {
-                Mock Get-TargetResource {
-                    return @{
-                        Thumbprint = $validThumbprint
-                        Path       = $validPath
-                        Ensure     = 'Absent'
+
+            Context 'When valid path and thumbprint and PFX is not in store and should not be' {
+                It 'Should return true' {
+                    Mock -CommandName Get-TargetResource {
+                        return @{
+                            Thumbprint = $validThumbprint
+                            Path       = $validPath
+                            Ensure     = 'Absent'
+                        }
                     }
+
+                    Test-TargetResource @AbsentParams | Should -Be $true
                 }
-                Test-TargetResource @AbsentParams | Should -Be $true
             }
-            It 'returns true when valid path + thumbprint and PFX is in store and should be' {
-                Mock Get-TargetResource {
-                    return @{
-                        Thumbprint = $validThumbprint
-                        Path       = $validPath
-                        Ensure     = 'Present'
+
+            Context 'When valid path and thumbprint and PFX is in store and should be' {
+                It 'Should return true' {
+                    Mock -CommandName Get-TargetResource {
+                        return @{
+                            Thumbprint = $validThumbprint
+                            Path       = $validPath
+                            Ensure     = 'Present'
+                        }
                     }
+
+                    Test-TargetResource @PresentParams | Should -Be $true
                 }
-                Test-TargetResource @PresentParams | Should -Be $true
             }
-            It 'returns false when valid path + thumbprint and PFX is in store but should not be' {
-                Mock Get-TargetResource {
-                    return @{
-                        Thumbprint = $validThumbprint
-                        Path       = $validPath
-                        Ensure     = 'Present'
+
+            Context 'When valid path and thumbprint and PFX is in store but should not be' {
+                It 'Should return false' {
+                    Mock -CommandName Get-TargetResource {
+                        return @{
+                            Thumbprint = $validThumbprint
+                            Path       = $validPath
+                            Ensure     = 'Present'
+                        }
                     }
+
+                    Test-TargetResource @AbsentParams | Should -Be $false
                 }
-                Test-TargetResource @AbsentParams | Should -Be $false
             }
         }
+
         Describe "$DSCResourceName\Set-TargetResource" {
             $null | Set-Content -Path $validPath
 
-            Mock Import-PfxCertificate
-            Mock Get-ChildItem
-            Mock Remove-Item
+            Context 'When valid path and thumbprint and Ensure is Present' {
+                Mock -CommandName Import-PfxCertificate -ParameterFilter {
+                    $CertStoreLocation -eq $validCertPath -and `
+                    $FilePath -eq $validPath -and `
+                    $Exportable -eq $True -and `
+                    $Password -eq $testCredential.Password
+                }
+                Mock -CommandName Get-ChildItem
+                Mock -CommandName Remove-Item
 
-            Context "Valid path + thumbprint and Ensure is Present" {
                 Set-TargetResource @PresentParams
 
-                It 'calls Import-PfxCertificate with the parameters supplied' {
-                    Assert-MockCalled Import-PfxCertificate -Exactly 1 -ParameterFilter {
+
+                It 'Should call Import-PfxCertificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 1 -ParameterFilter {
                         $CertStoreLocation -eq $validCertPath -and `
                         $FilePath -eq $validPath -and `
                         $Exportable -eq $True -and `
                         $Password -eq $testCredential.Password
                     }
                 }
-                It 'does not call Get-ChildItem' {
-                    Assert-MockCalled Get-ChildItem -Exactly 0
+
+                It 'Should not call Get-ChildItem' {
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 0
                 }
-                It 'does not call Remove-Item' {
-                    Assert-MockCalled Remove-Item -Exactly 0
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
                 }
             }
 
-            Mock Get-ChildItem -MockWith { Get-Item -Path $validPath }
-            Mock Where-Object -MockWith { Get-Item -Path $validPath }
-            Mock Remove-Item
+            Context 'When valid path and thumbprint and Ensure is Absent' {
+                Mock -CommandName Import-PfxCertificate
+                Mock -CommandName Get-ChildItem -MockWith {
+                    Get-Item -Path $validPath
+                }
+                Mock -CommandName Where-Object -MockWith {
+                    Get-Item -Path $validPath
+                }
+                Mock -CommandName Remove-Item
 
-            Context "Valid path + thumbprint and Ensure is Absent" {
                 Set-TargetResource @AbsentParams
 
-                It 'does not call Import-PfxCertificate' {
-                    Assert-MockCalled Import-PfxCertificate -Exactly 0
+                It 'Should not call Import-PfxCertificate' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
                 }
-                It 'calls Get-ChildItem' {
-                    Assert-MockCalled Get-ChildItem -Exactly 1
+
+                It 'Should call Get-ChildItem' {
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
                 }
-                It 'calls Remove-Item' {
-                    Assert-MockCalled Remove-Item -Exactly 1
+
+                It 'Should call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 1
                 }
             }
-
         }
     }
 }
