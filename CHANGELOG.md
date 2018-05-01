@@ -11,7 +11,7 @@
   - Removed unnecessary code from:
     - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
       - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
-- xPfxImport:
+- PfxImport:
   - Changed so that PFX will be reimported if private key is not
     installed - fixes [Issue #129](https://github.com/PowerShell/CertificateDsc/issues/129).
   - Corrected to meet style guidelines.
