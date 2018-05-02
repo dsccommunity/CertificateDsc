@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    ModuleVersion = '3.2.0.0'
+    moduleVersion = '4.0.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -50,7 +50,15 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- Get-CertificateTemplateName: Fix missing template name
+        ReleaseNotes = '- BREAKING CHANGE
+  - Renamed xCertificate to CertificateDsc - fixes [Issue 114](https://github.com/PowerShell/xCertificate/issues/114).
+  - Changed all MSFT_xResourceName to MSFT_ResourceName.
+  - Updated DSCResources, Examples, Modules and Tests for new naming.
+  - Updated Year to 2018 in License and Manifest.
+  - Updated README.md from xCertificate to CertifcateDsc
+  - Removed unnecessary code from:
+    - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
+      - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, ".rsp")
 
 '
 
@@ -59,6 +67,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 

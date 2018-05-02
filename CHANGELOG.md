@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.0.0.0
+
 - BREAKING CHANGE
   - Renamed xCertificate to CertificateDsc - fixes [Issue #114](https://github.com/PowerShell/xCertificate/issues/114).
   - Changed all MSFT_xResourceName to MSFT_ResourceName.
