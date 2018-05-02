@@ -99,7 +99,7 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
-                $certificateNew.Ensure                      | Should -Be 'Present'
+                $certificateNew.HasPrivateKey               | Should -Be $true
                 $certificateNew.Thumbprint                  | Should -Be $certificate.Thumbprint
                 $certificateNew.Subject                     | Should -Be $certificate.Subject
             }
@@ -149,7 +149,7 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
-                $certificateNew.Ensure                      | Should -Be 'Present'
+                $certificateNew.HasPrivateKey               | Should -Be $true
                 $certificateNew.Thumbprint                  | Should -Be $certificate.Thumbprint
                 $certificateNew.Subject                     | Should -Be $certificate.Subject
             }
@@ -193,7 +193,7 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
-                $certificateNew.Ensure                      | Should -Be 'Present'
+                $certificateNew.HasPrivateKey               | Should -Be $true
                 $certificateNew.Thumbprint                  | Should -Be $certificate.Thumbprint
                 $certificateNew.Subject                     | Should -Be $certificate.Subject
             }
