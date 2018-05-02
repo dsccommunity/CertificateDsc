@@ -61,7 +61,7 @@ try
         $ConfigFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName)_Add.config.ps1"
         . $ConfigFile
 
-        Context 'When certificate has not been imported yet but needs to be' {
+        Context 'When certificate has not been imported yet' {
             It 'Should compile and apply the MOF without throwing' {
                 {
                     $configData = @{
@@ -99,12 +99,13 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.Ensure                      | Should -Be 'Present'
                 $certificateNew.Thumbprint                  | Should -Be $certificate.Thumbprint
                 $certificateNew.Subject                     | Should -Be $certificate.Subject
             }
         }
 
-        Context 'When certificate has been imported but has no private key but needs to be' {
+        Context 'When certificate has been imported but the private key is missing' {
             $null = Remove-Item `
                 -Path $certificate.PSPath `
                 -Force
@@ -148,12 +149,13 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.Ensure                      | Should -Be 'Present'
                 $certificateNew.Thumbprint                  | Should -Be $certificate.Thumbprint
                 $certificateNew.Subject                     | Should -Be $certificate.Subject
             }
         }
 
-        Context 'When certificate has already been imported and needs to be' {
+        Context 'When certificate has already been imported' {
             It 'Should compile and apply the MOF without throwing' {
                 {
                     $configData = @{
@@ -191,6 +193,7 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.Ensure                      | Should -Be 'Present'
                 $certificateNew.Thumbprint                  | Should -Be $certificate.Thumbprint
                 $certificateNew.Subject                     | Should -Be $certificate.Subject
             }
@@ -201,7 +204,7 @@ try
         $ConfigFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName)_Remove.config.ps1"
         . $ConfigFile
 
-        Context 'When certificate has been imported and needs to be removed' {
+        Context 'When certificate has been imported but needs to be removed' {
             It 'Should compile without throwing' {
                 {
                     & "$($script:DSCResourceName)_Remove_Config" `

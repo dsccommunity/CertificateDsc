@@ -79,7 +79,7 @@ try
         Describe "$DSCResourceName\Get-TargetResource" {
             $null | Set-Content -Path $validPath
 
-            Context 'When yhe certificate exists with a private key' {
+            Context 'When the certificate exists with a private key' {
                 Mock `
                     -CommandName Get-ChildItem `
                     -MockWith {
@@ -101,7 +101,7 @@ try
                     $result.Ensure | Should -BeExactly 'Present'
                 }
 
-                It 'Should call the exected mocks' {
+                It 'Should call the expected mocks' {
                     Assert-MockCalled `
                         -CommandName Get-ChildItem `
                         -ParameterFilter { $Path -eq $validCertFullPath } `
@@ -133,7 +133,7 @@ try
                     $result.Ensure | Should -BeExactly 'Absent'
                 }
 
-                It 'Should call the exected mocks' {
+                It 'Should call the expected mocks' {
                     Assert-MockCalled `
                         -CommandName Get-ChildItem `
                         -ParameterFilter { $Path -eq $validCertFullPath } `
@@ -158,7 +158,7 @@ try
                     $result.Ensure | Should -BeExactly 'Absent'
                 }
 
-                It 'Should call the exected mocks' {
+                It 'Should call the expected mocks' {
                     Assert-MockCalled `
                         -CommandName Get-ChildItem `
                         -Exactly -Times 1

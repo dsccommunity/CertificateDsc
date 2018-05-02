@@ -762,7 +762,8 @@ function Import-PfxCertificateEx
 function Get-CertificateStorePath {
     [CmdletBinding()]
     [OutputType([System.String])]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
