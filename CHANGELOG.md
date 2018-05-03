@@ -2,17 +2,6 @@
 
 ## Unreleased
 
-## 4.0.0.0
-
-- BREAKING CHANGE
-  - Renamed xCertificate to CertificateDsc - fixes [Issue #114](https://github.com/PowerShell/xCertificate/issues/114).
-  - Changed all MSFT_xResourceName to MSFT_ResourceName.
-  - Updated DSCResources, Examples, Modules and Tests for new naming.
-  - Updated Year to 2018 in License and Manifest.
-  - Updated README.md from xCertificate to CertifcateDsc
-  - Removed unnecessary code from:
-    - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
-      - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
 - PfxImport:
   - Changed so that PFX will be reimported if private key is not
     installed - fixes [Issue #129](https://github.com/PowerShell/CertificateDsc/issues/129).
@@ -25,6 +14,18 @@
   - Corrected to meet style guidelines.
   - Added function Get-CertificateStorePath for generating Certificate Store path.
   - Remove false verbose message from `Test-Thumbprint` - fixes [Issue #127](https://github.com/PowerShell/CertificateDsc/issues/127).
+
+## 4.0.0.0
+
+- BREAKING CHANGE
+  - Renamed xCertificate to CertificateDsc - fixes [Issue #114](https://github.com/PowerShell/xCertificate/issues/114).
+  - Changed all MSFT_xResourceName to MSFT_ResourceName.
+  - Updated DSCResources, Examples, Modules and Tests for new naming.
+  - Updated Year to 2018 in License and Manifest.
+  - Updated README.md from xCertificate to CertifcateDsc
+  - Removed unnecessary code from:
+    - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
+      - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
 
 ## 3.2.0.0
 
