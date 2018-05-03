@@ -952,6 +952,18 @@ CertUtil: The parameter is incorrect.
                 }
             }
         }
+
+        Describe 'Get-CertificateStorePath' {
+            Context 'Get-CertificateStorePath called with Store and Location' {
+                It 'Should not throw' {
+                    { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
+                }
+
+                It 'Should return the expected path' {
+                    $script:getCertificateStorePathResult = 'Cert:\TestLocation\TestStore'
+                }
+            }
+        }
     }
 }
 finally
