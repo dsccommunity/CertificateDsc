@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+- PfxImport:
+  - Changed so that PFX will be reimported if private key is not
+    installed - fixes [Issue #129](https://github.com/PowerShell/CertificateDsc/issues/129).
+  - Corrected to meet style guidelines.
+  - Corrected path parameter description - fixes [Issue #125](https://github.com/PowerShell/CertificateDsc/issues/125).
+  - Refactored to remove code duplication by creating Get-CertificateStorePath.
+  - Improved unit tests to meet standards and provide better coverage.
+  - Improved integration tests to meet standards and provide better coverage.
+- CertificateDsc.Common:
+  - Corrected to meet style guidelines.
+  - Added function Get-CertificateStorePath for generating Certificate Store path.
+  - Remove false verbose message from `Test-Thumbprint` - fixes [Issue #127](https://github.com/PowerShell/CertificateDsc/issues/127).
+
+## 4.0.0.0
+
+- BREAKING CHANGE
+  - Renamed xCertificate to CertificateDsc - fixes [Issue #114](https://github.com/PowerShell/xCertificate/issues/114).
+  - Changed all MSFT_xResourceName to MSFT_ResourceName.
+  - Updated DSCResources, Examples, Modules and Tests for new naming.
+  - Updated Year to 2018 in License and Manifest.
+  - Updated README.md from xCertificate to CertifcateDsc
+  - Removed unnecessary code from:
+    - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
+      - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')
+
+## 3.2.0.0
+
+- Get-CertificateTemplateName: Fix missing template name
+
+## 3.1.0.0
+
+- xCertReq:
+  - Fixed behaviour to allow certificate templates with spaces in the name
 - Added `Documentation and Examples` section to Readme.md file - see
   [issue #98](https://github.com/PowerShell/xCertificate/issues/98).
 - Changed description in Credential parameter of xPfxImport resource

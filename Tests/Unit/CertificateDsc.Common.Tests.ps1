@@ -2,7 +2,7 @@ $script:ModuleName = 'CertificateDsc.Common'
 
 #region HEADER
 # Unit Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\xCertificate'
+[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -949,6 +949,18 @@ CertUtil: The parameter is incorrect.
 
                 It 'Should return false' {
                     Test-CommandExists -Name $testCommandName | Should -Be $false
+                }
+            }
+        }
+
+        Describe 'Get-CertificateStorePath' {
+            Context 'Get-CertificateStorePath called with Store and Location' {
+                It 'Should not throw' {
+                    { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
+                }
+
+                It 'Should return the expected path' {
+                    $script:getCertificateStorePathResult = 'Cert:\TestLocation\TestStore'
                 }
             }
         }
