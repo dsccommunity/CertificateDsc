@@ -115,23 +115,24 @@ function Test-Thumbprint
     Begin
     {
         # Get FIPS registry key
-        $fips =  [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty 'Enabled')
+        $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
 
         # Get a list of Hash Providers
+        $allHashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes()
+
         if ($fips -eq $true)
         {
-            $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
-                Where-Object -FilterScript {
-                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+            # Support only FIPS compliant Hash Algorithms
+            $hashProviders = $allHashProviders | Where-Object -FilterScript {
+                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                    ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
             }
         }
         else
         {
-            $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
-                Where-Object -FilterScript {
-                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+            $hashProviders = $allHashProviders | Where-Object -FilterScript {
+                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                    ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
             }
         }
 
@@ -141,8 +142,8 @@ function Test-Thumbprint
         {
             $bitSize = ( New-Object -TypeName $hashProvider ).HashSize
             $validHash = New-Object `
-                    -TypeName PSObject `
-                    -Property @{
+                -TypeName PSObject `
+                -Property @{
                 Hash      = $hashProvider.BaseType.Name
                 BitSize   = $bitSize
                 HexLength = $bitSize / 4
