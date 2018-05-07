@@ -47,7 +47,6 @@
 - Add support for Windows Server 2008 R2 which does not contain PKI
   module so is missing `Import-PfxCertificate` and `Import-Certificate`
   cmdlets - fixes [Issue #46](https://github.com/PowerShell/xCertificate/issues/46).
-- Added detection for FIPS mode in Test-Thumbprint - see [Issue #107](https://github.com/PowerShell/xCertificate/issues/107).
 
 ## 3.0.0.0
 
