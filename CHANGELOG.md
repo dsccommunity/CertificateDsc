@@ -14,6 +14,8 @@
   - Corrected to meet style guidelines.
   - Added function Get-CertificateStorePath for generating Certificate Store path.
   - Remove false verbose message from `Test-Thumbprint` - fixes [Issue #127](https://github.com/PowerShell/CertificateDsc/issues/127).
+- CertReq:
+  - Added detection for FIPS mode in Test-Thumbprint - fixes [Issue #107](https://github.com/PowerShell/CertificateDsc/issues/107).
 
 ## 4.0.0.0
 
