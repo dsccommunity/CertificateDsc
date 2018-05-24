@@ -3,6 +3,7 @@
 ## Unreleased
 
 - PfxImport:
+  - Changed to check if private key file exsits on filesystem - fixes [issue #129](https://github.com/PowerShell/CertificateDsc/issues/129)
   - Changed so that PFX will be reimported if private key is not
     installed - fixes [Issue #129](https://github.com/PowerShell/CertificateDsc/issues/129).
   - Corrected to meet style guidelines.
