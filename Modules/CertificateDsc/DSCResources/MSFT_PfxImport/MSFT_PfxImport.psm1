@@ -102,7 +102,7 @@ function Get-TargetResource
 
     if ($certificate)
     {
-        if ($certificate.HasPrivateKey)
+        if ($certificate.hasprivatekey -and $certificate.PrivateKey.CspKeyContainerInfo)
         {
             # If the certificate is found and has a private key then consider it Present
             Write-Verbose -Message ( @(
