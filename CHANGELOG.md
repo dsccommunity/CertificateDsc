@@ -16,6 +16,7 @@
   - Minor style corrections.
   - Changed unit tests to be non-destructive.
   - Improved naming and description of example files.
+  - Added localization string ID suffix for all strings.
 - CertificateDsc.Common:
   - Corrected to meet style guidelines.
   - Added function Get-CertificateStorePath for generating Certificate Store path.
