@@ -34,13 +34,18 @@ $localizedData = Get-LocalizedData `
     The Windows Certificate Store Name to import the PFX file to.
 
     .PARAMETER Exportable
-    Determines whether the private key is exportable from the machine after it has been imported.
+    Determines whether the private key is exportable from the machine after
+    it has been imported.
+    This parameter is ignored.
 
     .PARAMETER Credential
-    A `PSCredential` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    A `PSCredential` object that is used to decrypt the PFX file. Only the
+    password is used, so any user name is valid.
+    This parameter is ignored.
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
+    This parameter is ignored.
 #>
 function Get-TargetResource
 {
@@ -53,8 +58,7 @@ function Get-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
+        [Parameter()]
         [System.String]
         $Path,
 
@@ -69,7 +73,7 @@ function Get-TargetResource
         $Store,
 
         [Parameter()]
-        [Boolean]
+        [System.Boolean]
         $Exportable = $false,
 
         [Parameter()]
@@ -94,6 +98,15 @@ function Get-TargetResource
         New-InvalidArgumentException `
             -Message ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore) `
             -ArgumentName 'Store'
+    }
+
+    # Check that the certificate PFX file exists
+    if ($Ensure -eq 'Present' -and `
+        (-not (Test-CertificatePath -Path $Path)))
+    {
+        New-InvalidArgumentException `
+            -Message ($LocalizedData.CertificatePfxFileNotFoundError -f $Path) `
+            -ArgumentName 'Path'
     }
 
     # Look up the certificate
@@ -161,10 +174,12 @@ function Get-TargetResource
     The Windows Certificate Store Name to import the PFX file to.
 
     .PARAMETER Exportable
-    Determines whether the private key is exportable from the machine after it has been imported.
+    Determines whether the private key is exportable from the machine after
+    it has been imported.
 
     .PARAMETER Credential
-    A `PSCredential` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    A `PSCredential` object that is used to decrypt the PFX file. Only the
+    password is used, so any user name is valid.
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
@@ -180,8 +195,7 @@ function Test-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
+        [Parameter()]
         [System.String]
         $Path,
 
@@ -196,7 +210,7 @@ function Test-TargetResource
         $Store,
 
         [Parameter()]
-        [Boolean]
+        [System.Boolean]
         $Exportable = $false,
 
         [Parameter()]
@@ -209,7 +223,7 @@ function Test-TargetResource
         $Ensure = 'Present'
     )
 
-    $result = @(Get-TargetResource @PSBoundParameters)
+    $result = Get-TargetResource @PSBoundParameters
 
     $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
 
@@ -243,17 +257,19 @@ function Test-TargetResource
     The Windows Certificate Store Name to import the PFX file to.
 
     .PARAMETER Exportable
-    Determines whether the private key is exportable from the machine after it has been imported.
+    Determines whether the private key is exportable from the machine after
+    it has been imported.
 
     .PARAMETER Credential
-    A `PSCredential` object that is used to decrypt the PFX file. Only the password is used, so any user name is valid.
+    A `PSCredential` object that is used to decrypt the PFX file. Only the
+    password is used, so any user name is valid.
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
 #>
 function Set-TargetResource
 {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -261,8 +277,7 @@ function Set-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
+        [Parameter()]
         [System.String]
         $Path,
 
@@ -277,7 +292,7 @@ function Set-TargetResource
         $Store,
 
         [Parameter()]
-        [Boolean]
+        [System.Boolean]
         $Exportable = $false,
 
         [Parameter()]
@@ -299,35 +314,31 @@ function Set-TargetResource
 
     if ($Ensure -ieq 'Present')
     {
-        if ($PSCmdlet.ShouldProcess(($LocalizedData.ImportingPfxShould `
-                        -f $Path, $certificateStore)))
+        # Import the certificate into the Store
+        Write-Verbose -Message ( @(
+                "$($MyInvocation.MyCommand): "
+                $($LocalizedData.ImportingPfxMessage -f $Path, $certificateStore)
+            ) -join '' )
+
+        $importPfxCertificateParameters = @{
+            Exportable        = $Exportable
+            CertStoreLocation = $certificateStore
+            FilePath          = $Path
+        }
+
+        if ($Credential)
         {
-            # Import the certificate into the Store
-            Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.ImportingPfxMessage -f $Path, $certificateStore)
-                ) -join '' )
+            $importPfxCertificateParameters['Password'] = $Credential.Password
+        }
 
-            $importPfxCertificateParameters = @{
-                Exportable        = $Exportable
-                CertStoreLocation = $certificateStore
-                FilePath          = $Path
-            }
-
-            if ($Credential)
-            {
-                $importPfxCertificateParameters['Password'] = $Credential.Password
-            }
-
-            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
-            if (Test-CommandExists -Name 'Import-PfxCertificate')
-            {
-                Import-PfxCertificate @importPfxCertificateParameters
-            }
-            else
-            {
-                Import-PfxCertificateEx @importPfxCertificateParameters
-            }
+        # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
+        if (Test-CommandExists -Name 'Import-PfxCertificate')
+        {
+            Import-PfxCertificate @importPfxCertificateParameters
+        }
+        else
+        {
+            Import-PfxCertificateEx @importPfxCertificateParameters
         }
     }
     elseif ($Ensure -ieq 'Absent')
@@ -338,8 +349,10 @@ function Set-TargetResource
                 $($LocalizedData.RemovingPfxMessage -f $Thumbprint, $certificateStore)
             ) -join '' )
 
-        Get-ChildItem -Path $certificateStore |
-            Where-Object { $_.Thumbprint -ieq $thumbprint } |
+        $null = Get-ChildItem -Path $certificateStore |
+            Where-Object -FilterScript {
+                $_.Thumbprint -ieq $thumbprint
+            } |
             Remove-Item -Force
     }
 } # end function Set-TargetResource

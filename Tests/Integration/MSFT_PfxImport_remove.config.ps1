@@ -8,7 +8,6 @@ Configuration MSFT_PfxImport_Remove_Config {
     node localhost {
         PfxImport Integration_Test {
             Thumbprint = $Thumbprint
-            Path       = $Path
             Location   = 'LocalMachine'
             Store      = 'My'
             Ensure     = 'Absent'

@@ -23,10 +23,12 @@ $TestEnvironment = Initialize-TestEnvironment `
 # Using try/finally to always cleanup even if something awful happens.
 try
 {
-    # Generate a self-signed certificate, export it and remove it from the store
-    # to use for testing.
-    # Don't use CurrentUser certificates for this test because they won't be found because
-    # DSC LCM runs under a different context (Local System).
+    <#
+        Generate a self-signed certificate, export it and remove it from the store
+        to use for testing.
+        Don't use CurrentUser certificates for this test because they won't be found because
+        DSC LCM runs under a different context (Local System).
+    #>
     $certificate = New-SelfSignedCertificate `
         -DnsName $env:ComputerName `
         -CertStoreLocation Cert:\LocalMachine\My
@@ -209,7 +211,6 @@ try
                 {
                     & "$($script:DSCResourceName)_Remove_Config" `
                         -OutputPath $TestDrive `
-                        -Path $pfxPath `
                         -Thumbprint $certificate.Thumbprint
 
                     Start-DscConfiguration `
