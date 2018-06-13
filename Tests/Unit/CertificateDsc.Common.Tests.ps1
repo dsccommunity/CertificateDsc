@@ -20,10 +20,24 @@ try
     InModuleScope $script:ModuleName {
         $DSCResourceName = 'CertificateDsc.Common'
         $invalidThumbprint = 'Zebra'
+
+        # This thumbprint is valid (but not FIPS valid)
         $validThumbprint = (
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+            } | Select-Object -First 1 | ForEach-Object {
+                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object {
+                    '{0:x2}' -f $_
+                }
+            }
+        ) -join ''
+
+        # This thumbprint is valid for FIPS
+        $validFipsThumbprint = (
+            [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
             } | Select-Object -First 1 | ForEach-Object {
                 (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object {
                     '{0:x2}' -f $_
@@ -153,49 +167,97 @@ try
         }
 
         Describe "$DSCResourceName\Test-Thumbprint" {
-            Context 'a single valid thumbrpint by parameter' {
-                $result = Test-Thumbprint -Thumbprint $validThumbprint
-                It 'Should return true' {
-                    ($result -is [bool]) | Should -Be $true
-                    $result | Should -Be $true
+            Context 'When FIPS not set' {
+                Context 'When a single valid thumbrpint by parameter is passed' {
+                    $result = Test-Thumbprint -Thumbprint $validThumbprint
+                    It 'Should return true' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $true
+                    }
+                }
+
+                Context 'When a single invalid thumbprint by parameter is passed' {
+                    It 'Should throw an exception' {
+                        { Test-Thumbprint -Thumbprint $invalidThumbprint } | Should -Throw
+                    }
+                }
+
+                Context 'When a single invalid thumbprint by parameter with -Quiet is passed' {
+                    $result = Test-Thumbprint $invalidThumbprint -Quiet
+                    It 'Should return false' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $false
+                    }
+                }
+
+                Context 'When a single valid thumbprint by pipeline is passed' {
+                    $result = $validThumbprint | Test-Thumbprint
+                    It 'Should return true' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $true
+                    }
+                }
+
+                Context 'When a single invalid thumbprint by pipeline is passed' {
+                    It 'Should throw an exception' {
+                        { $invalidThumbprint | Test-Thumbprint } | Should -Throw
+                    }
+                }
+
+                Context 'When a single invalid thumbprint by pipeline with -Quiet is passed' {
+                    $result = $invalidThumbprint | Test-Thumbprint -Quiet
+                    It 'Should return false' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $false
+                    }
                 }
             }
 
-            Context 'a single invalid thumbprint by parameter' {
-                It 'Should throw an exception' {
-                    # directories are not valid
-                    { Test-Thumbprint -Thumbprint $invalidThumbprint } | Should -Throw
-                }
-            }
+            Context 'When FIPS is enabled' {
+                Mock -CommandName Get-ItemProperty -MockWith { @{ Enabled = 1 } }
 
-            Context 'a single invalid thumbprint by parameter with -Quiet' {
-                $result = Test-Thumbprint $invalidThumbprint -Quiet
-                It 'Should return false' {
-                    ($result -is [bool]) | Should -Be $true
-                    $result | Should -Be $false
+                Context 'When a single valid FIPS thumbrpint by parameter is passed' {
+                    $result = Test-Thumbprint -Thumbprint $validFipsThumbprint
+                    It 'Should return true' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $true
+                    }
                 }
-            }
 
-            Context 'a single valid thumbprint by pipeline' {
-                $result = $validThumbprint | Test-Thumbprint
-                It 'Should return true' {
-                    ($result -is [bool]) | Should -Be $true
-                    $result | Should -Be $true
+                Context 'When a single invalid FIPS thumbprint by parameter is passed' {
+                    It 'Should throw an exception' {
+                        { Test-Thumbprint -Thumbprint $validThumbprint } | Should -Throw
+                    }
                 }
-            }
 
-            Context 'a single invalid thumborint by pipeline' {
-                It 'Should throw an exception' {
-                    # directories are not valid
-                    { $invalidThumbprint | Test-Thumbprint } | Should -Throw
+                Context 'When a single invalid FIPS thumbprint by parameter with -Quiet is passed' {
+                    $result = Test-Thumbprint $validThumbprint -Quiet
+                    It 'Should return false' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $false
+                    }
                 }
-            }
 
-            Context 'a single invalid thumbprint by pipeline with -Quiet' {
-                $result = $invalidThumbprint | Test-Thumbprint -Quiet
-                It 'Should return false' {
-                    ($result -is [bool]) | Should -Be $true
-                    $result | Should -Be $false
+                Context 'When a single valid FIPS thumbprint by pipeline is passed' {
+                    $result = $validFipsThumbprint | Test-Thumbprint
+                    It 'Should return true' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $true
+                    }
+                }
+
+                Context 'When a single invalid FIPS thumbprint by pipeline is passed' {
+                    It 'Should throw an exception' {
+                        { $validThumbprint | Test-Thumbprint } | Should -Throw
+                    }
+                }
+
+                Context 'When a single invalid FIPS thumbprint by pipeline with -Quiet is passed' {
+                    $result = $validThumbprint | Test-Thumbprint -Quiet
+                    It 'Should return false' {
+                        $result | Should -BeOfType [System.Boolean]
+                        $result | Should -Be $false
+                    }
                 }
             }
         }
@@ -949,6 +1011,18 @@ CertUtil: The parameter is incorrect.
 
                 It 'Should return false' {
                     Test-CommandExists -Name $testCommandName | Should -Be $false
+                }
+            }
+        }
+
+        Describe 'Get-CertificateStorePath' {
+            Context 'Get-CertificateStorePath called with Store and Location' {
+                It 'Should not throw' {
+                    { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
+                }
+
+                It 'Should return the expected path' {
+                    $script:getCertificateStorePathResult = 'Cert:\TestLocation\TestStore'
                 }
             }
         }

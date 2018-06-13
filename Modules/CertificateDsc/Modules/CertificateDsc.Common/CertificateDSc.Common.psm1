@@ -16,8 +16,8 @@ $localizedData = Get-LocalizedData `
     The location of the file. Supports any path that Test-Path supports.
 
     .PARAMETER Quiet
-    Returns $false if the file does not exist. By default this function throws an exception if the
-    file is missing.
+    Returns $false if the file does not exist. By default this function throws
+    an exception if the file is missing.
 
     .EXAMPLE
     Test-CertificatePath -Path '\\server\share\Certificates\mycert.cer'
@@ -82,7 +82,8 @@ function Test-CertificatePath
     validation fails.
 
     .EXAMPLE
-    Test-Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
+    Test-Thumbprint `
+        -Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
 
     .EXAMPLE
     Test-Thumbprint `
@@ -103,7 +104,7 @@ function Test-Thumbprint
         [Parameter(Mandatory = $true,
             ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
-        [String[]]
+        [System.String[]]
         $Thumbprint,
 
         [Parameter()]
@@ -113,11 +114,26 @@ function Test-Thumbprint
 
     Begin
     {
+        # Get FIPS registry key
+        $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
+
         # Get a list of Hash Providers
-        $hashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
-            Where-Object -FilterScript {
-            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-            ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+        $allHashProviders = [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes()
+
+        if ($fips -eq $true)
+        {
+            # Support only FIPS compliant Hash Algorithms
+            $hashProviders = $allHashProviders | Where-Object -FilterScript {
+                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                    ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+            }
+        }
+        else
+        {
+            $hashProviders = $allHashProviders | Where-Object -FilterScript {
+                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                    ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+            }
         }
 
         # Get a list of all Valid Hash types and lengths into an array
@@ -146,10 +162,6 @@ function Test-Thumbprint
             {
                 if ($hash -cmatch "^[a-fA-F0-9]{$($algorithm.HexLength)}$")
                 {
-                    Write-Verbose `
-                        -Message ($LocalizedData.InvalidHashError -f $hash, $algorithm.Hash) `
-                        -Verbose
-
                     $isValid = $true
                 }
             }
@@ -318,14 +330,15 @@ function Find-Certificate
 } # end function Find-Certificate
 
 <#
-.SYNOPSIS
-    Get CDP container
+    .SYNOPSIS
+    Get CDP container.
 
-.DESCRIPTION
-    Gets the configuration data partition from the active directory configuration naming context
+    .DESCRIPTION
+    Gets the configuration data partition from the active directory configuration
+    naming context.
 
-.PARAMETER DomainName
-    The domain name
+    .PARAMETER DomainName
+    The domain name.
 #>
 function Get-CdpContainer
 {
@@ -364,15 +377,17 @@ function Get-CdpContainer
 } # end function Get-CdpContainer
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Automatically locate a certificate authority in Active Directory
 
-.DESCRIPTION
-    Automatically locates a certificate autority in Active Directory environments by leveraging ADSI to look inside the container CDP and
-    subsequently trying to certutil -ping every located CA until one is found.
+    .DESCRIPTION
+    Automatically locates a certificate autority in Active Directory environments
+    by leveraging ADSI to look inside the container CDP and subsequently trying to
+    certutil -ping every located CA until one is found.
 
-.PARAMETER DomainName
-    The domain name of the domain that will be used to locate the CA. Can be left empty to use the current domain.
+    .PARAMETER DomainName
+    The domain name of the domain that will be used to locate the CA. Can be left
+    empty to use the current domain.
 #>
 function Find-CertificateAuthority
 {
@@ -429,13 +444,13 @@ function Find-CertificateAuthority
 } # end function Find-CertificateAuthority
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Test to see if the specified ADCS CA is available.
 
-.PARAMETER CAServerFQDN
+    .PARAMETER CAServerFQDN
     The FQDN of the ADCS CA to test for availability.
 
-.PARAMETER CARootName
+    .PARAMETER CARootName
     The name of the ADCS CA to test for availability.
 #>
 function Test-CertificateAuthority
@@ -496,13 +511,13 @@ function Test-CertificateAuthority
 } # end function Test-CertificateAuthority
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Get a certificate template name
 
-.DESCRIPTION
+    .DESCRIPTION
     Gets the name of the template used for the certificate that is passed to this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or "1.3.6.1.4.1.311.20.2"
 
-.PARAMETER Certificate
+    .PARAMETER Certificate
     The certificate object the template name is needed for
 #>
 function Get-CertificateTemplateName
@@ -569,13 +584,13 @@ function Get-CertificateTemplateName
 }
 
 <#
-.SYNOPSIS
+    .SYNOPSIS
     Get certificate SAN
 
-.DESCRIPTION
+    .DESCRIPTION
     Gets the first subject alternative name for the certificate that is passed to this cmdlet
 
-.PARAMETER Certificate
+    .PARAMETER Certificate
     The certificate object the subject alternative name is needed for
 #>
 function Get-CertificateSan
@@ -618,10 +633,10 @@ function Get-CertificateSan
 
 <#
     .SYNOPSIS
-      Tests whether or not the command with the specified name exists.
+    Tests whether or not the command with the specified name exists.
 
     .PARAMETER Name
-      The name of the command to test for.
+    The name of the command to test for.
 #>
 function Test-CommandExists
 {
@@ -641,13 +656,13 @@ function Test-CommandExists
 
 <#
     .SYNOPSIS
-        This function imports a 509 public key certificate to the specific Store.
+    This function imports a 509 public key certificate to the specific Store.
 
     .PARAMETER FilePath
-        The path to the certificate file to import.
+    The path to the certificate file to import.
 
     .PARAMETER CertStoreLocation
-        The Certificate Store and Location Path to import the certificate to.
+    The Certificate Store and Location Path to import the certificate to.
 #>
 
 function Import-CertificateEx
@@ -681,20 +696,20 @@ function Import-CertificateEx
 
 <#
     .SYNOPSIS
-        This function imports a Pfx public - private certificate to the specific
-        Certificate Store Location.
+    This function imports a Pfx public - private certificate to the specific
+    Certificate Store Location.
 
     .PARAMETER FilePath
-        The path to the certificate file to import.
+    The path to the certificate file to import.
 
     .PARAMETER CertStoreLocation
-        The Certificate Store and Location Path to import the certificate to.
+    The Certificate Store and Location Path to import the certificate to.
 
     .PARAMETER Exportable
-        The parameter controls if certificate will be able to export the private key.
+    The parameter controls if certificate will be able to export the private key.
 
     .PARAMETER Password
-        The password that the certificate located at the FilePath needs to be imported.
+    The password that the certificate located at the FilePath needs to be imported.
   #>
 
 function Import-PfxCertificateEx
@@ -747,4 +762,35 @@ function Import-PfxCertificateEx
     $certStore.Open('MaxAllowed')
     $certStore.Add($cert)
     $certStore.Close()
+}
+
+<#
+    .SYNOPSIS
+    This function generates the path to a Windows Certificate Store.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+#>
+function Get-CertificateStorePath {
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store
+    )
+
+    return 'Cert:' |
+        Join-Path -ChildPath $Location |
+        Join-Path -ChildPath $Store
 }
