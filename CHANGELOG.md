@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.1.0.0
+
 - PfxImport:
   - Changed so that PFX will be reimported if private key is not
     installed - fixes [Issue #129](https://github.com/PowerShell/CertificateDsc/issues/129).
