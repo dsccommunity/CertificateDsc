@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    moduleVersion = '4.0.0.0'
+    moduleVersion = '4.1.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -50,15 +50,20 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- BREAKING CHANGE
-  - Renamed xCertificate to CertificateDsc - fixes [Issue 114](https://github.com/PowerShell/xCertificate/issues/114).
-  - Changed all MSFT_xResourceName to MSFT_ResourceName.
-  - Updated DSCResources, Examples, Modules and Tests for new naming.
-  - Updated Year to 2018 in License and Manifest.
-  - Updated README.md from xCertificate to CertifcateDsc
-  - Removed unnecessary code from:
-    - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
-      - Deleted $rspPath = [System.IO.Path]::ChangeExtension($workingPath, ".rsp")
+        ReleaseNotes = '- PfxImport:
+  - Changed so that PFX will be reimported if private key is not
+    installed - fixes [Issue 129](https://github.com/PowerShell/CertificateDsc/issues/129).
+  - Corrected to meet style guidelines.
+  - Corrected path parameter description - fixes [Issue 125](https://github.com/PowerShell/CertificateDsc/issues/125).
+  - Refactored to remove code duplication by creating Get-CertificateStorePath.
+  - Improved unit tests to meet standards and provide better coverage.
+  - Improved integration tests to meet standards and provide better coverage.
+- CertificateDsc.Common:
+  - Corrected to meet style guidelines.
+  - Added function Get-CertificateStorePath for generating Certificate Store path.
+  - Remove false verbose message from `Test-Thumbprint` - fixes [Issue 127](https://github.com/PowerShell/CertificateDsc/issues/127).
+- CertReq:
+  - Added detection for FIPS mode in Test-Thumbprint - fixes [Issue 107](https://github.com/PowerShell/CertificateDsc/issues/107).
 
 '
 
@@ -67,6 +72,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 
