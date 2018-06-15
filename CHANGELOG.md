@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
+  [Issue #139](https://github.com/PowerShell/CertificateDsc/issues/139).
+
 ## 4.1.0.0
 
 - PfxImport:
