@@ -12,6 +12,13 @@
   - Refactored to remove code duplication by creating Get-CertificateStorePath.
   - Improved unit tests to meet standards and provide better coverage.
   - Improved integration tests to meet standards and provide better coverage.
+  - Changed Path parameter to be optional to fix error when ensuring certificate
+    is absent and certificate file does not exist on disk - fixes [Issue #136](https://github.com/PowerShell/CertificateDsc/issues/136).
+  - Removed ShouldProcess because it is not required by DSC Resources.
+  - Minor style corrections.
+  - Changed unit tests to be non-destructive.
+  - Improved naming and description of example files.
+  - Added localization string ID suffix for all strings.
 - CertificateDsc.Common:
   - Corrected to meet style guidelines.
   - Added function Get-CertificateStorePath for generating Certificate Store path.

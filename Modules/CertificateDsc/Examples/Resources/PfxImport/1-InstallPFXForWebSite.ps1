@@ -1,6 +1,7 @@
 <#
     .EXAMPLE
-    Import a PFX into the WebHosting store and bind it to an IIS Web Site.
+    Import a PFX into the 'WebHosting' Local Machine certificate store and
+    bind it to an IIS Web Site.
 #>
 Configuration Example
 {

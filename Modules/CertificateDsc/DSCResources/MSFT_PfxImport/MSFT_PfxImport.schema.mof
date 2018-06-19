@@ -2,7 +2,7 @@
 class MSFT_PfxImport : OMI_BaseResource
 {
     [Key,Description("The thumbprint (unique identifier) of the PFX file you're importing.")] string Thumbprint;
-    [Required,Description("The path to the PFX file you want to import.")] string Path;
+    [Write,Description("The path to the PFX file you want to import.")] string Path;
     [Key,Description("The Windows Certificate Store Location to import the PFX file to."),ValueMap{"LocalMachine", "CurrentUser"},Values{"LocalMachine", "CurrentUser"}] string Location;
     [Key,Description("The Windows Certificate Store Name to import the PFX file to.")] string Store;
     [write,Description("Determines whether the private key is exportable from the machine after it has been imported")] boolean Exportable;
