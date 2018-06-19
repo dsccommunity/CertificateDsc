@@ -153,6 +153,7 @@ function Get-TargetResource
         Location   = $Location
         Store      = $Store
         Exportable = $Exportable
+        Credential = $Credential
         Ensure     = $Ensure
     }
 } # end function Get-TargetResource
