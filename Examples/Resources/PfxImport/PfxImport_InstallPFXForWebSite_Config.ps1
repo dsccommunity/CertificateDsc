@@ -1,16 +1,15 @@
+#Requires -module CertificateDsc
+#Requires -module xWebAdministration
+
 <#
-    .EXAMPLE
-    Import a PFX into the 'WebHosting' Local Machine certificate store and
-    bind it to an IIS Web Site.
+    .DESCRIPTION
+        Import a PFX into the 'WebHosting' Local Machine certificate store and
+        bind it to an IIS Web Site.
 #>
 Configuration Example
 {
     param
     (
-        [Parameter()]
-        [System.String[]]
-        $NodeName = 'localhost',
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
@@ -20,7 +19,7 @@ Configuration Example
     Import-DscResource -ModuleName CertificateDsc
     Import-DscResource -ModuleName xWebAdministration
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
         WindowsFeature IIS
         {

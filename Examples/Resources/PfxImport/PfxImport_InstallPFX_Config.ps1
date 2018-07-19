@@ -1,15 +1,13 @@
+#Requires -module CertificateDsc
+
 <#
-    .EXAMPLE
-    Import a PFX into the 'My' Local Machine certificate store.
+    .DESCRIPTION
+        Import a PFX into the 'My' Local Machine certificate store.
 #>
 Configuration Example
 {
     param
     (
-        [Parameter()]
-        [System.String[]]
-        $NodeName = 'localhost',
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
@@ -18,7 +16,7 @@ Configuration Example
 
     Import-DscResource -ModuleName CertificateDsc
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
         PfxImport CompanyCert
         {

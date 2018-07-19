@@ -1,15 +1,13 @@
+#Requires -module CertificateDsc
+
 <#
-    .EXAMPLE
-    Exports a certificate as a PFX using the friendly name to identify it.
+    .DESCRIPTION
+        Exports a certificate as a PFX using the friendly name to identify it.
 #>
 Configuration Example
 {
     param
     (
-        [Parameter()]
-        [System.String[]]
-        $NodeName = 'localhost',
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [System.Management.Automation.PSCredential]
@@ -18,7 +16,7 @@ Configuration Example
 
     Import-DscResource -ModuleName CertificateDsc
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
         CertificateExport SSLCert
         {

@@ -1,19 +1,14 @@
+#Requires -module CertificateDsc
+
 <#
-    .EXAMPLE
-    Import public key certificate into Trusted Root store.
+    .DESCRIPTION
+        Import public key certificate into Trusted Root store.
 #>
 Configuration Example
 {
-    param
-    (
-        [Parameter()]
-        [System.String[]]
-        $NodeName = 'localhost'
-    )
-
     Import-DscResource -ModuleName CertificateDsc
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
         CertificateImport MyTrustedRoot
         {
