@@ -1,5 +1,3 @@
-param ()
-
 $script:DSCModuleName = 'CertificateDsc'
 $script:DSCResourceName = 'MSFT_WaitForCertificateServices'
 

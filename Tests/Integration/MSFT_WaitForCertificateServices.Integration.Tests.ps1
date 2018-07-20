@@ -66,7 +66,13 @@ try
                             -OutputPath $TestDrive `
                             -ConfigurationData $configData
 
-                        Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
+                        Start-DscConfiguration `
+                            -Path $TestDrive `
+                            -ComputerName localhost `
+                            -Wait `
+                            -Verbose `
+                            -Force `
+                            -ErrorAction SilentlyContinue
                     } | Should -Not -Throw
                 }
 
@@ -75,7 +81,7 @@ try
                 }
 
                 It 'Should have set the resource and all the parameters should match' {
-                    $current = Get-DscConfiguration | Where-Object {
+                    $current = Get-DscConfiguration | Where-Object -FilterScript {
                         $_.ConfigurationName -eq "$($script:DSCResourceName)_Config"
                     }
 
@@ -109,7 +115,13 @@ try
                         -OutputPath $TestDrive `
                         -ConfigurationData $configData
 
-                    Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
+                        Start-DscConfiguration `
+                            -Path $TestDrive `
+                            -ComputerName localhost `
+                            -Wait `
+                            -Verbose `
+                            -Force `
+                            -ErrorAction SilentlyContinue
                 } | Should -Not -Throw
             }
 
@@ -118,7 +130,7 @@ try
             }
 
             It 'Should have set the resource and all the parameters should match' {
-                $current = Get-DscConfiguration | Where-Object {
+                $current = Get-DscConfiguration | Where-Object -FilterScript {
                     $_.ConfigurationName -eq "$($script:DSCResourceName)_Config"
                 }
 
