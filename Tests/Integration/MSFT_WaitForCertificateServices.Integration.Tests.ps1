@@ -24,6 +24,8 @@ $TestEnvironment = Initialize-TestEnvironment `
     -TestType Integration
 #endregion
 
+Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global
+
 # Using try/finally to always cleanup even if something awful happens.
 try
 {
@@ -51,16 +53,16 @@ try
                 $configData = @{
                     AllNodes = @(
                         @{
-                            NodeName         = 'localhost'
-                            CAServerFQDN     = $caServerFQDN
-                            CARootName       = $caRootName
+                            NodeName             = 'localhost'
+                            CAServerFQDN         = $caServerFQDN
+                            CARootName           = $caRootName
                             RetryIntervalSeconds = 1
-                            RetryCount       = 2
+                            RetryCount           = 2
                         }
                     )
                 }
 
-                It 'Should compile and apply the MOF without throwing' {
+                It 'Should compile and apply the MOF without throwing an exception' {
                     {
                         & "$($script:DSCResourceName)_Config" `
                             -OutputPath $TestDrive `
@@ -72,7 +74,7 @@ try
                             -Wait `
                             -Verbose `
                             -Force `
-                            -ErrorAction SilentlyContinue
+                            -ErrorAction Stop
                     } | Should -Not -Throw
                 }
 
@@ -100,29 +102,33 @@ try
             $configData = @{
                 AllNodes = @(
                     @{
-                        NodeName         = 'localhost'
-                        CAServerFQDN     = $caServerFQDN
-                        CARootName       = $caRootName
+                        NodeName             = 'localhost'
+                        CAServerFQDN         = $caServerFQDN
+                        CARootName           = $caRootName
                         RetryIntervalSeconds = 1
-                        RetryCount       = 2
+                        RetryCount           = 2
                     }
                 )
             }
 
-            It 'Should compile and apply the MOF without throwing' {
+            It 'Should compile the MOF without throwing an exception' {
                 {
                     & "$($script:DSCResourceName)_Config" `
                         -OutputPath $TestDrive `
                         -ConfigurationData $configData
-
-                        Start-DscConfiguration `
-                            -Path $TestDrive `
-                            -ComputerName localhost `
-                            -Wait `
-                            -Verbose `
-                            -Force `
-                            -ErrorAction SilentlyContinue
                 } | Should -Not -Throw
+            }
+
+            It 'Should apply the MOF throwing an exception' {
+                {
+                    Start-DscConfiguration `
+                        -Path $TestDrive `
+                        -ComputerName localhost `
+                        -Wait `
+                        -Verbose `
+                        -Force `
+                        -ErrorAction Stop
+                } | Should -Throw
             }
 
             It 'Should be able to call Get-DscConfiguration without throwing' {
