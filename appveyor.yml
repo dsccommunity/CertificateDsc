@@ -32,7 +32,7 @@ test_script:
 
 # scripts to run before deployment
 deploy_script:
-  - ps: |
+    - ps: |
         Invoke-AppveyorAfterTestTask `
             -Type 'Wiki' `
             -ResourceModuleName $moduleName
