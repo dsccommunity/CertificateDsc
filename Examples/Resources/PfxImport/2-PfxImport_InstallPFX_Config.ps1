@@ -1,3 +1,20 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID a93bd794-e0c1-45fb-a988-c637257d4b35
+.AUTHOR Microsoft Corporation
+.COMPANYNAME Microsoft Corporation
+.COPYRIGHT
+.TAGS DSCConfiguration
+.LICENSEURI https://github.com/PowerShell/CertificateDsc/blob/master/LICENSE
+.PROJECTURI https://github.com/PowerShell/CertificateDsc
+.ICONURI
+.EXTERNALMODULEDEPENDENCIES
+.REQUIREDSCRIPTS
+.EXTERNALSCRIPTDEPENDENCIES
+.RELEASENOTES First version.
+.PRIVATEDATA 2016-Datacenter,2016-Datacenter-Server-Core
+#>
+
 #Requires -module CertificateDsc
 
 <#
