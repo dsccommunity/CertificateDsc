@@ -3,7 +3,7 @@ $script:DSCResourceName = 'MSFT_CertificateImport'
 
 #region HEADER
 # Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
+[System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
      (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -20,10 +20,12 @@ $TestEnvironment = Initialize-TestEnvironment `
 # Using try/finally to always cleanup even if something awful happens.
 try
 {
-    # Generate a self-signed certificate, export it and remove it from the store
-    # to use for testing.
-    # Don't use CurrentUser certificates for this test because they won't be found because
-    # DSC LCM runs under a different context (Local System).
+    <#
+        Generate a self-signed certificate, export it and remove it from the store
+        to use for testing.
+        Don't use CurrentUser certificates for this test because they won't be found because
+        DSC LCM runs under a different context (Local System).
+    #>
     $Certificate = New-SelfSignedCertificate `
         -DnsName $env:ComputerName `
         -CertStoreLocation Cert:\LocalMachine\My

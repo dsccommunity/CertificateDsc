@@ -4,6 +4,9 @@
 
 - Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
   [Issue #139](https://github.com/PowerShell/CertificateDsc/issues/139).
+- Refactored module folder structure to move resource to root folder of
+  repository and remove test harness - fixes [Issue #142](https://github.com/PowerShell/CertificateDsc/issues/142).
+- Updated Examples to support deployment to PowerShell Gallery scripts.
 
 ## 4.1.0.0
 
