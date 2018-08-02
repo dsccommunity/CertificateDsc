@@ -577,7 +577,7 @@ function Get-CertificateTemplateName
         }
         else
         {
-            $templateName = $adTemplates.Where{$_.DisplayName -eq $Matches.TemplateName}
+            $templateName = $adTemplates.Where{$_.DisplayName -eq $Matches.TemplateName}.Name
         }
 
         # If the template name is empty, try to get it by it's OID
