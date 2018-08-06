@@ -21,7 +21,7 @@
     .DESCRIPTION
         Exports a certificate as a PFX using the friendly name to identify it.
 #>
-Configuration Example
+Configuration CertificateExport_PfxByFriendlyName_Config
 {
     param
     (

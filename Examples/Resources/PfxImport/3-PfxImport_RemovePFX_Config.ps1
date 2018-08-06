@@ -21,7 +21,7 @@
     .DESCRIPTION
         Remove a PFX certificate from the 'My' Local Machine certificate store.
 #>
-Configuration Example
+Configuration PfxImport_RemovePFX_Config
 {
     param
     (

@@ -31,7 +31,7 @@
         please refer to the following TechNet topic:
         https://technet.microsoft.com/en-us/library/dn781430.aspx
 #>
-configuration Example
+configuration WaitForCertificateServices_RequestSSLCertWithWait_Config
 {
     param
     (

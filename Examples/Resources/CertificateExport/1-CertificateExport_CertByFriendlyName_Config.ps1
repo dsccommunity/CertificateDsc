@@ -21,7 +21,7 @@
     .DESCRIPTION
         Exports a certificate as a CERT using the friendly name to identify it.
 #>
-Configuration Example
+Configuration CertificateExport_CertByFriendlyName_Config
 {
     Import-DscResource -ModuleName CertificateDsc
 

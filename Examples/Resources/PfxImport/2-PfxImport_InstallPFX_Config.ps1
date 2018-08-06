@@ -21,7 +21,7 @@
     .DESCRIPTION
         Import a PFX into the 'My' Local Machine certificate store.
 #>
-Configuration Example
+Configuration PfxImport_InstallPFX_Config
 {
     param
     (
