@@ -110,11 +110,37 @@ try
             -----END CERTIFICATE-----
             "
 
+        $cerFileWithAltTemplate = "
+            -----BEGIN CERTIFICATE-----
+            MIIDazCCAlOgAwIBAgIQJx7ZH+jq5YZLy436X4Li3TANBgkqhkiG9w0BAQsFADAW
+            MRQwEgYDVQQDDAtzb21lbWFjaGluZTAeFw0xODA4MDcwOTEwNDVaFw0xOTA4MDcw
+            OTMwNDVaMBYxFDASBgNVBAMMC3NvbWVtYWNoaW5lMIIBIjANBgkqhkiG9w0BAQEF
+            AAOCAQ8AMIIBCgKCAQEA98nll0sk4LiGTJcbZ+jIY86ongKRNE6CH+LZ0gp4mzUY
+            FRufTwmWqqoTjg6Q/Ri+CvofX1CbeaHCSdvI76/vIzF0ij+Y3wGg4Ot8YljbTjsF
+            aig3hGaWp+/Q345+O+sTlppwipcmdlp8vS8PNWx+FRbPFyPYSNTHbdFQXGjlz7Lu
+            s1gFe9VGbBqditYhvYPJeHjUSBWVDve2vd+E9ECRKssxn3UME74yuRSzEq30ly44
+            LPZYRYd8maypJERcMAkRz19bXZ1BNYp1kesxoi0KK7LLodSSzPG01Pls/K51KhZA
+            6NuFe14kA+jsAnstWQ2lIofUZxHrQ4IfykmgmP3NmQIDAQABo4G0MIGxMA4GA1Ud
+            DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwKAYDVR0R
+            BCEwH4IIZmlyc3RzYW6CCXNlY29uZHNhboIIdGhpcmRzYW4wNwYJKwYBBAGCNxUH
+            BCowKAYgKwYBBAGCNxUIgt3/eIL6kR6HjYUJhpmDKIHSoVI+ARACAWQCAQUwHQYD
+            VR0OBBYEFNt1uNJH8KG4/X0Gzh4rnAPR5lBfMA0GCSqGSIb3DQEBCwUAA4IBAQBI
+            MyZvohjsm1wbxJvowp5QrKXvGs8XVl+97zY79h8QqtcZALtIHkZd8rj2Bvkd+qyU
+            o01rPj7+LS7HzkdqfmDRUxbAnDclOkUTCMskzxon9CzEsizomFyTq4khWh/p+7fE
+            mR2Rq/kA95aupS4Dm7HcncHn89nw9BKcP7WLgIzjRC3ZBzplEGCCL7aKDv66+dv/
+            HM2uI47A8kHCFMvaq6O0bjlJfmXvrX8OgVQlRDItiuM+pu9LMkWc0t8U4ekRRQdj
+            kVIXdpdvNQmud6JHv3OI0HrjtL7Da1dK7Q8qye3qHBzHwva6SMVbMmFC3ACxukBU
+            v+M0WvuaEOEmAQoYaY6K
+            -----END CERTIFICATE-----
+            "
+
         $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
         $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
+        $cerBytesWithAltTemplate = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplate)
 
         $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
         $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
+        $testCertificateWithAltTemplate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplate)
 
         Describe "$DSCResourceName\Test-CertificatePath" {
             $null | Set-Content -Path $validPath
@@ -945,9 +971,37 @@ CertUtil: The parameter is incorrect.
         }
 
         Describe "$DSCResourceName\Get-CertificateTemplateName" {
-            Context 'A certificate with a valid template name is used' {
+            Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith {
+                @(
+                    [PSCustomObject] @{
+                        'Name'                    = 'WebServer'
+                        'DisplayName'             = 'Web Server'
+                        'mspki-cert-template-oid' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16'
+                    }
+                )
+            }
+
+            Context 'A certificate with the extension "Certificate Template Name" is used' {
                 It 'Should return the template name' {
                     Get-CertificateTemplateName -Certificate $testCertificate | Should -Be 'WebServer'
+                }
+            }
+
+            Context 'A certificate with the extension "Certificate Template Information" is used.' {
+                It 'Should return the template name when there is no display name' {
+                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplate | Should -Be 'WebServer'
+                }
+
+                Mock -CommandName Get-CertificateTemplateText -MockWith {
+@'
+Template=Web Server(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16)
+Major Version Number=100
+Minor Version Number=5
+'@
+                }
+
+                It 'Should return the template name when there is a display name' {
+                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplate | Should -Be 'WebServer'
                 }
             }
 
