@@ -9,6 +9,8 @@
 - Updated Examples to support deployment to PowerShell Gallery scripts.
 - Correct configuration names in Examples - fixes [Issue #150](https://github.com/PowerShell/CertificateDsc/issues/150).
 - Correct filename case of `CertificateDsc.Common.psm1` - fixes [Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
+- Remove exclusion of all tags in appveyor.yml, so all common tests can be run
+  if opt-in.
 
 ## 4.1.0.0
 
