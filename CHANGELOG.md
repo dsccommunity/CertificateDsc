@@ -7,6 +7,8 @@
 - Refactored module folder structure to move resource to root folder of
   repository and remove test harness - fixes [Issue #142](https://github.com/PowerShell/CertificateDsc/issues/142).
 - Updated Examples to support deployment to PowerShell Gallery scripts.
+- Correct configuration names in Examples - fixes [Issue #150](https://github.com/PowerShell/CertificateDsc/issues/150).
+- Correct filename case of `CertificateDsc.Common.psm1` - fixes [Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
 
 ## 4.1.0.0
 

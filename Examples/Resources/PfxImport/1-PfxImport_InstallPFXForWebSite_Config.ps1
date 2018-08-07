@@ -23,7 +23,7 @@
         Import a PFX into the 'WebHosting' Local Machine certificate store and
         bind it to an IIS Web Site.
 #>
-Configuration Example
+Configuration PfxImport_InstallPFXForWebSite_Config
 {
     param
     (
