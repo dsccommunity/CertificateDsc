@@ -27,7 +27,7 @@
         To learn how to securely store credentials through the use of certificates,
         please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
 #>
-configuration Example
+configuration CertReq_RequestAltSSLCert_Config
 {
     param
     (

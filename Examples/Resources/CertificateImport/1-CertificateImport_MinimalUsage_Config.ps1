@@ -21,7 +21,7 @@
     .DESCRIPTION
         Import public key certificate into Trusted Root store.
 #>
-Configuration Example
+Configuration CertificateImport_MinimalUsage_Config
 {
     Import-DscResource -ModuleName CertificateDsc
 
