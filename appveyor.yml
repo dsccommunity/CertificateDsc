@@ -25,6 +25,7 @@ test_script:
         Invoke-AppveyorTestScriptTask `
             -CodeCoverage `
             -CodeCovIo
+            -ExcludeTag @()
 
 #---------------------------------#
 #      deployment configuration   #
