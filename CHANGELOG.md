@@ -11,6 +11,9 @@
 - Correct filename case of `CertificateDsc.Common.psm1` - fixes [Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
 - Remove exclusion of all tags in appveyor.yml, so all common tests can be run
   if opt-in.
+- PfxImport:
+  - Added requirements to README.MD to specify cryptographic algorithm
+    support - fixes [Issue #153](https://github.com/PowerShell/CertificateDsc/issues/153).
 
 ## 4.1.0.0
 
