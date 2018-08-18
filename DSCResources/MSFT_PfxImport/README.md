@@ -11,8 +11,8 @@ store.
   Windows 10 or Windows Server 2016.
 
   If importing a PFX certificate exported with `AES256_SHA256` cryptographic
-  algorithm on a target machine earlier than build 1709 the following error
-  will occur:
+  algorithm on a target machine running a Windows 10 or Windows Server 2016
+  build earlier than 1709, the following error will occur:
 
   `The PFX file you are trying to import requires either a different password
   or membership in an Active Directory principal to which it is protected.`
