@@ -36,7 +36,7 @@
 -->
 - [ ] Added an entry under the Unreleased section of the CHANGELOG.md.
       Entry should say what was changed, and how that affects users (if applicable).
-- [ ] Resource documentation added/updated in README.md.
+- [ ] Resource documentation added/updated in the resource folder.
 - [ ] Resource parameter descriptions added/updated in schema.mof
       and comment-based help.
 - [ ] Comment-based help added/updated.
