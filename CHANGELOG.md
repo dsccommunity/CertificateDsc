@@ -14,6 +14,7 @@
 - PfxImport:
   - Added requirements to README.MD to specify cryptographic algorithm
     support - fixes [Issue #153](https://github.com/PowerShell/CertificateDsc/issues/153).
+- Added .VSCode settings for applying DSC PSSA rules - fixes [Issue #157](https://github.com/PowerShell/CertificateDsc/issues/157).
 
 ## 4.1.0.0
 
