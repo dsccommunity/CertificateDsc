@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.2.0.0
+
 - Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
   [Issue #139](https://github.com/PowerShell/CertificateDsc/issues/139).
 - Refactored module folder structure to move resource to root folder of
