@@ -4,9 +4,12 @@ param ()
 $script:DSCModuleName      = 'CertificateDsc'
 $script:DSCResourceName    = 'MSFT_PfxImport'
 
+# Load the common test helper
+Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global
+
 #region HEADER
 # Integration Test Template Version: 1.1.0
-[String] $script:moduleRoot = Join-Path -Path $(Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))) -ChildPath 'Modules\CertificateDsc'
+[System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
      (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
@@ -56,7 +59,22 @@ try
             HasPrivateKey = $false
         }
 
-        $PresentParams = @{
+        $testCertificatePath_parameterfilter = {
+            $Path -eq $validPath
+        }
+
+        $testGetChildItem_parameterfilter = {
+            $Path -eq $validCertFullPath
+        }
+
+        $importPfxCertificate_parameterfilter = {
+            $CertStoreLocation -eq $validCertPath -and `
+            $FilePath -eq $validPath -and `
+            $Exportable -eq $True -and `
+            $Password -eq $testCredential.Password
+        }
+
+        $presentParams = @{
             Thumbprint = $validThumbprint
             Path       = $validPath
             Ensure     = 'Present'
@@ -67,9 +85,8 @@ try
             Verbose    = $True
         }
 
-        $AbsentParams = @{
+        $absentParams = @{
             Thumbprint = $validThumbprint
-            Path       = $validPath
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
             Store      = 'My'
@@ -77,19 +94,22 @@ try
         }
 
         Describe "$DSCResourceName\Get-TargetResource" {
-            $null | Set-Content -Path $validPath
+            Context 'When the PFX file exists and the certificate exists with a private key' {
+                Mock `
+                    -CommandName Test-CertificatePath `
+                    -MockWith {
+                        $true
+                    } `
+                    -ParameterFilter $testCertificatePath_parameterfilter
 
-            Context 'When the certificate exists with a private key' {
                 Mock `
                     -CommandName Get-ChildItem `
                     -MockWith {
                         $validCertificateWithPrivateKey
                     } `
-                    -ParameterFilter {
-                        $Path -eq $validCertFullPath
-                    }
+                    -ParameterFilter $testGetChildItem_parameterfilter
 
-                $result = Get-TargetResource @PresentParams
+                $result = Get-TargetResource @presentParams
 
                 It 'Should return a hashtable' {
                     $result | Should -BeOfType System.Collections.Hashtable
@@ -103,25 +123,33 @@ try
 
                 It 'Should call the expected mocks' {
                     Assert-MockCalled `
+                        -CommandName Test-CertificatePath `
+                        -ParameterFilter $testCertificatePath_parameterfilter `
+                        -Exactly -Times 1
+
+                    Assert-MockCalled `
                         -CommandName Get-ChildItem `
-                        -ParameterFilter { $Path -eq $validCertFullPath } `
+                        -ParameterFilter $testGetChildItem_parameterfilter `
                         -Exactly -Times 1
                 }
             }
 
-            Context 'When the certificate exists without private key' {
+            Context 'When the PFX file exists and the certificate exists without private key' {
+                Mock `
+                    -CommandName Test-CertificatePath `
+                    -MockWith {
+                        $true
+                    } `
+                    -ParameterFilter $testCertificatePath_parameterfilter
+
                 Mock `
                     -CommandName Get-ChildItem `
                     -MockWith {
                         $validCertificateWithoutPrivateKey
                     } `
-                    -ParameterFilter {
-                        $Path -eq $validCertFullPath
-                    }
+                    -ParameterFilter $testGetChildItem_parameterfilter
 
-                $null | Set-Content -Path $validPath
-
-                $result = Get-TargetResource @PresentParams
+                $result = Get-TargetResource @presentParams
 
                 It 'Should return a hashtable' {
                     $result | Should -BeOfType System.Collections.Hashtable
@@ -135,18 +163,30 @@ try
 
                 It 'Should call the expected mocks' {
                     Assert-MockCalled `
+                        -CommandName Test-CertificatePath `
+                        -ParameterFilter $testCertificatePath_parameterfilter `
+                        -Exactly -Times 1
+
+                    Assert-MockCalled `
                         -CommandName Get-ChildItem `
-                        -ParameterFilter { $Path -eq $validCertFullPath } `
+                        -ParameterFilter $testGetChildItem_parameterfilter `
                         -Exactly -Times 1
                 }
             }
 
-            Context 'When the certificate does not exist' {
-                Mock -CommandName Get-ChildItem
+            Context 'When the PFX file exists and the certificate does not exist' {
+                Mock `
+                    -CommandName Test-CertificatePath `
+                    -MockWith {
+                        $true
+                    } `
+                    -ParameterFilter $testCertificatePath_parameterfilter
 
-                $null | Set-Content -Path $validPath
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -ParameterFilter $testGetChildItem_parameterfilter
 
-                $result = Get-TargetResource @PresentParams
+                $result = Get-TargetResource @presentParams
 
                 It 'Should return a hashtable' {
                     $result | Should -BeOfType System.Collections.Hashtable
@@ -160,17 +200,94 @@ try
 
                 It 'Should call the expected mocks' {
                     Assert-MockCalled `
+                        -CommandName Test-CertificatePath `
+                        -ParameterFilter $testCertificatePath_parameterfilter `
+                        -Exactly -Times 1
+
+                     Assert-MockCalled `
                         -CommandName Get-ChildItem `
+                        -ParameterFilter $testGetChildItem_parameterfilter `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'When the PFX file does not exist and ensure is absent' {
+                Mock `
+                    -CommandName Test-CertificatePath `
+                    -MockWith {
+                        $false
+                    } `
+                    -ParameterFilter $testCertificatePath_parameterfilter
+
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -MockWith {
+                        $validCertificateWithoutPrivateKey
+                    } `
+                    -ParameterFilter $testGetChildItem_parameterfilter
+
+                $result = Get-TargetResource @absentParams
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values' {
+                    $result.Thumbprint | Should -BeExactly $validThumbprint
+                    $result.Ensure | Should -BeExactly 'Absent'
+                }
+
+                It 'Should call the expected mocks' {
+                    Assert-MockCalled `
+                        -CommandName Test-CertificatePath `
+                        -ParameterFilter $testCertificatePath_parameterfilter `
+                        -Exactly -Times 0
+
+                    Assert-MockCalled `
+                        -CommandName Get-ChildItem `
+                        -ParameterFilter $testGetChildItem_parameterfilter `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'When the PFX file does not exist and ensure is present' {
+                Mock `
+                    -CommandName Test-CertificatePath `
+                    -MockWith {
+                        $false
+                    } `
+                    -ParameterFilter $testCertificatePath_parameterfilter
+
+                It 'Should throw expected exception' {
+                    $errorRecord = Get-InvalidArgumentRecord `
+                        -Message ($LocalizedData.CertificatePfxFileNotFoundError -f $validPath) `
+                        -ArgumentName 'Path'
+
+                    {
+                        $script:result = Get-TargetResource @presentParams
+                    } | Should -Throw $errorRecord
+                }
+
+                It 'Should call the expected mocks' {
+                    Assert-MockCalled `
+                        -CommandName Test-CertificatePath `
+                        -ParameterFilter $testCertificatePath_parameterfilter `
                         -Exactly -Times 1
                 }
             }
         }
 
         Describe "$DSCResourceName\Test-TargetResource" {
-            $null | Set-Content -Path $validPath
-
             It 'Should return a bool' {
-                Test-TargetResource @PresentParams | Should -BeOfType Boolean
+                Mock -CommandName Get-TargetResource {
+                    return @{
+                        Thumbprint = $validThumbprint
+                        Path       = $validPath
+                        Ensure     = 'Absent'
+                    }
+                }
+
+                Test-TargetResource @presentParams | Should -BeOfType Boolean
             }
 
             Context 'When valid path and thumbprint and certificate is not in store but should be' {
@@ -183,7 +300,7 @@ try
                         }
                     }
 
-                    Test-TargetResource @PresentParams | Should -Be $false
+                    Test-TargetResource @presentParams | Should -Be $false
                 }
             }
 
@@ -197,7 +314,7 @@ try
                         }
                     }
 
-                    Test-TargetResource @AbsentParams | Should -Be $true
+                    Test-TargetResource @absentParams | Should -Be $true
                 }
             }
 
@@ -211,7 +328,7 @@ try
                         }
                     }
 
-                    Test-TargetResource @PresentParams | Should -Be $true
+                    Test-TargetResource @presentParams | Should -Be $true
                 }
             }
 
@@ -225,34 +342,26 @@ try
                         }
                     }
 
-                    Test-TargetResource @AbsentParams | Should -Be $false
+                    Test-TargetResource @absentParams | Should -Be $false
                 }
             }
         }
 
         Describe "$DSCResourceName\Set-TargetResource" {
-            $null | Set-Content -Path $validPath
-
-            Context 'When valid path and thumbprint and Ensure is Present' {
-                Mock -CommandName Import-PfxCertificate -ParameterFilter {
-                    $CertStoreLocation -eq $validCertPath -and `
-                    $FilePath -eq $validPath -and `
-                    $Exportable -eq $True -and `
-                    $Password -eq $testCredential.Password
-                }
+            Context 'When PFX file exists and thumbprint and Ensure is Present' {
+                Mock `
+                    -CommandName Import-PfxCertificate `
+                    -ParameterFilter $importPfxCertificate_parameterfilter
                 Mock -CommandName Get-ChildItem
                 Mock -CommandName Remove-Item
 
-                Set-TargetResource @PresentParams
-
+                Set-TargetResource @presentParams
 
                 It 'Should call Import-PfxCertificate with the parameters supplied' {
-                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 1 -ParameterFilter {
-                        $CertStoreLocation -eq $validCertPath -and `
-                        $FilePath -eq $validPath -and `
-                        $Exportable -eq $True -and `
-                        $Password -eq $testCredential.Password
-                    }
+                    Assert-MockCalled `
+                        -CommandName Import-PfxCertificate `
+                        -ParameterFilter $importPfxCertificate_parameterfilter `
+                        -Exactly -Times 1
                 }
 
                 It 'Should not call Get-ChildItem' {
@@ -264,17 +373,14 @@ try
                 }
             }
 
-            Context 'When valid path and thumbprint and Ensure is Absent' {
+            Context 'When certificate exists and Ensure is Absent' {
                 Mock -CommandName Import-PfxCertificate
                 Mock -CommandName Get-ChildItem -MockWith {
-                    Get-Item -Path $validPath
-                }
-                Mock -CommandName Where-Object -MockWith {
-                    Get-Item -Path $validPath
+                    @{ Thumbprint = $validThumbprint }
                 }
                 Mock -CommandName Remove-Item
 
-                Set-TargetResource @AbsentParams
+                Set-TargetResource @absentParams
 
                 It 'Should not call Import-PfxCertificate' {
                     Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
