@@ -571,7 +571,7 @@ function Get-CertificateTemplatesFromActiveDirectory
 
     .DESCRIPTION
     If the certificate template is "1.3.6.1.4.1.311.20.2" then this function returns
-    the name fo the template from the formatted text of the extension.
+    the name of the template from the formatted text of the extension.
     If the certificate template is "1.3.6.1.4.1.311.21.7" then this function returns
     the information about the certificate template by retreiving the available templates
     from Active Directory and matching the certificate template against this list.
@@ -622,16 +622,21 @@ function Get-CertificateTemplateInformation
                 Write-Warning -Message $LocalizedData.TemplateNameResolutionError
             }
 
-            $TemplateInformation['Name']         = $Matches.Name
-            $TemplateInformation['DisplayName']  = $Matches.DisplayName
-            $TemplateInformation['Oid']          = $Matches.Oid
-            $TemplateInformation['MajorVersion'] = $Matches.MajorVersion
-            $TemplateInformation['MinorVersion'] = $Matches.MinorVersion
+            $templateInformation['Name']         = $Matches.Name
+            $templateInformation['DisplayName']  = $Matches.DisplayName
+            $templateInformation['Oid']          = $Matches.Oid
+            $templateInformation['MajorVersion'] = $Matches.MajorVersion
+            $templateInformation['MinorVersion'] = $Matches.MinorVersion
         }
 
         '^(?<TemplateName>\w+)\s?$'
         {
-            $TemplateInformation['Name'] = $Matches.TemplateName
+            $templateInformation['Name'] = $Matches.TemplateName
+        }
+
+        default
+        {
+            Write-Warning -Message 'Get-CertificateTemplateInformation: No template name found.'
         }
     }
 
@@ -662,15 +667,15 @@ function Get-CertificateTemplateText
         $TemplateExtensions
     )
 
-    $TemplateOidNames = 'Certificate Template Information', 'Certificate Template Name'
+    $templateOidNames = 'Certificate Template Information', 'Certificate Template Name'
 
-    $TemplateExtension = $TemplateExtensions.Where({
-        $_.Oid.FriendlyName -in $TemplateOidNames
+    $templateExtension = $TemplateExtensions.Where({
+        $_.Oid.FriendlyName -in $templateOidNames
     })[0]
 
-    if ($null -ne $TemplateExtension)
+    if ($null -ne $templateExtension)
     {
-        return $TemplateExtension.Format($true)
+        return $templateExtension.Format($true)
     }
 }
 
@@ -702,11 +707,11 @@ function Get-CertificateTemplateName
         return
     }
 
-    $TemplateExtensionText = Get-CertificateTemplateText -TemplateExtensions $Certificate.Extensions
+    $templateExtensionText = Get-CertificateTemplateText -TemplateExtensions $Certificate.Extensions
 
-    if ($null -ne $TemplateExtensionText)
+    if ($null -ne $templateExtensionText)
     {
-        return Get-CertificateTemplateInformation -FormattedTemplate $TemplateExtensionText | Select-Object -ExpandProperty Name
+        return Get-CertificateTemplateInformation -FormattedTemplate $templateExtensionText | Select-Object -ExpandProperty Name
     }
 }
 
