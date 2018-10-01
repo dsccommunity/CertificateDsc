@@ -7,8 +7,8 @@
 - Refactored module folder structure to move resource to root folder of
   repository and remove test harness - fixes [Issue #142](https://github.com/PowerShell/CertificateDsc/issues/142).
 - Updated Examples to support deployment to PowerShell Gallery scripts.
-- Changed Test-CertificateAuthority to return the template name if it finds the 
-  display name of the template in the certificate -fixes 
+- Changed Test-CertificateAuthority to return the template name if it finds the
+  display name of the template in the certificate -fixes
   [Issue #147](https://github.com/PowerShell/CertificateDsc/issues/147).
 - Correct configuration names in Examples - fixes [Issue #150](https://github.com/PowerShell/CertificateDsc/issues/150).
 - Correct filename case of `CertificateDsc.Common.psm1` - fixes [Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
