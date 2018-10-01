@@ -1011,6 +1011,78 @@ Minor Version Number=5
                 }
             }
         }
+        
+        Describe "$DSCResourceName\Get-CertificateTemplatesFromActiveDirectory" {
+            $MockSearchResults = @(
+                @{
+                    Properties = @(
+                        @{
+                            Name  = 'name'
+                            Value = 'MockData1'
+                        }
+                        @{
+                            Name  = 'displayName'
+                            Value = 'Mock Data 1'
+                        }
+                    )
+                }
+                @{
+                    Properties = @(
+                        @{
+                            Name  = 'name'
+                            Value = 'MockData2'
+                        }
+                        @{
+                            Name  = 'displayName'
+                            Value = 'Mock Data 2'
+                        }
+                    )
+                }
+                @{
+                    Properties = @(
+                        @{
+                            Name  = 'name'
+                            Value = 'MockData3'
+                        }
+                        @{
+                            Name  = 'displayName'
+                            Value = 'Mock Data 3'
+                        }
+                    )
+                }
+            )
+
+            Mock -CommandName Get-DirectoryEntry -MockWith {}
+            Mock -CommandName New-Object -ParameterFilter {$TypeName  -eq 'DirectoryServices.DirectorySearcher'} -MockWith {
+                [PSCustomObject] @{
+                    Filter     = $null
+                    SearchRoot = $null
+                } | Add-Member -MemberType ScriptMethod -Name FindAll -Value {$MockSearchResults} -PassThru
+            }
+
+            Context 'When certificate templates are retrieved from Active Directory successfully' {
+                It 'Should get 3 mocked search results' {
+                    $SearchResults = Get-CertificateTemplatesFromActiveDirectory
+
+                    Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly 1
+                    Assert-MockCalled -CommandName New-Object         -Exactly 1
+
+                    $SearchResults.Count | Should Be 3
+                }
+            }
+
+            Context 'When certificate templates are not retrieved from Active Directory successfully' {
+                Mock -CommandName Get-DirectoryEntry -MockWith {
+                    throw 'Mock Function Failure'
+                }
+
+                It 'Should display a warning message' {
+                    $Message = 'Failed to get the certificate templates from Active Directory.'
+
+                    Get-CertificateTemplatesFromActiveDirectory 3>&1 | Should Be $Message
+                }
+            }
+        }
 
         Describe "$DSCResourceName\Get-CertificateSan" {
             Context 'When a certificate with a SAN is used' {
@@ -1025,6 +1097,7 @@ Minor Version Number=5
                 }
             }
         }
+
         Describe 'Test-CommandExists' {
             $testCommandName = 'TestCommandName'
 
