@@ -445,6 +445,18 @@ function Find-CertificateAuthority
 
 <#
     .SYNOPSIS
+    Wraps a single ADSI command to get the domain naming context so it can be mocked.
+#>
+function Get-DirectoryEntry
+{
+    [CmdletBinding()]
+    param ()
+
+    return ([adsi] 'LDAP://RootDSE').Get('rootDomainNamingContext')
+}
+
+<#
+    .SYNOPSIS
     Test to see if the specified ADCS CA is available.
 
     .PARAMETER CAServerFQDN
@@ -534,7 +546,7 @@ function Get-CertificateTemplatesFromActiveDirectory
 
     try
     {
-        $domain   = ([adsi] 'LDAP://RootDSE').Get('rootDomainNamingContext')
+        $domain   = Get-DirectoryEntry
         $searcher = New-Object -TypeName DirectoryServices.DirectorySearcher
 
         $searcher.Filter     = '(objectclass=pKICertificateTemplate)'
@@ -544,7 +556,7 @@ function Get-CertificateTemplatesFromActiveDirectory
     }
     catch
     {
-        Write-Warning -Message ($LocalizedData.ActiveDirectoryTemplateSearch -f $_.Exception.InnerException.Message)
+        Write-Warning -Message $LocalizedData.ActiveDirectoryTemplateSearch
     }
 
     $adTemplates = @()
