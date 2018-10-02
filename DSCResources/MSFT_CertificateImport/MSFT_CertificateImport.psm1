@@ -252,15 +252,7 @@ function Set-TargetResource
                 Verbose           = $VerbosePreference
             }
 
-            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
-            if (Test-CommandExists -Name 'Import-Certificate')
-            {
-                Import-Certificate @importCertificateParameters
-            }
-            else
-            {
-                Import-CertificateEx @importCertificateParameters
-            }
+            Import-CertificateEx @importCertificateParameters
         }
     }
     elseif ($Ensure -ieq 'Absent')

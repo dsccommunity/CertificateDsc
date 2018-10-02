@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 4.3.0.0
+- Updated certificate import to only use Import-CertificateEx - fixes [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
+
 ## 4.2.0.0
 
 - Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
