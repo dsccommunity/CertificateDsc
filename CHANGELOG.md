@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-## 4.3.0.0
 - Updated certificate import to only use Import-CertificateEx - fixes [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
 
 ## 4.2.0.0
