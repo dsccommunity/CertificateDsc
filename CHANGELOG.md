@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Update LICENSE file to match the Microsoft Open Source Team standard - fixes[Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164)
+- Update LICENSE file to match the Microsoft Open Source Team standard -fixes
+  [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164)
 
 ## 4.2.0.0
 
