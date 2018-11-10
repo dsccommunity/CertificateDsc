@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Update LICENSE file to match the Microsoft Open Source Team standard -fixes
+  [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164)
+
 ## 4.2.0.0
 
 - Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
