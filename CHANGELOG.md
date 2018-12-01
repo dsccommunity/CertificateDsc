@@ -12,6 +12,9 @@
   - Validate Example Files To Be Published
   - Validate Markdown Links
   - Relative Path Length
+- CertificateExport:
+  - Fixed bug causing PFX export with matchsource enabled to fail - fixes
+    [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
 
 ## 4.2.0.0
 
