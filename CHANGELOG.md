@@ -18,6 +18,12 @@
 - CertificateExport:
   - Fixed bug causing PFX export with matchsource enabled to fail - fixes
     [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
+- CertReq:
+  - Simplified unit test comparison certificate request strings to make
+    tests easier to read.
+  - Improved unit test layout and updated to meet standards.
+  - Fixed bug in certificate renewal with `RenewalCert` attribute in the
+    incorrect section - fixes [Issue 172](https://github.com/PowerShell/CertificateDsc/issues/172)
 
 ## 4.2.0.0
 

@@ -442,6 +442,15 @@ KeyUsage = $KeyUsage
 FriendlyName = "$FriendlyName"
 "@
     }
+
+    if ($thumbprint)
+    {
+        $requestDetails += @"
+
+RenewalCert = $Thumbprint
+"@
+    }
+
     $requestDetails += @"
 
 [RequestAttributes]
@@ -466,13 +475,6 @@ CertificateTemplate = "$CertificateTemplate"
 
 [Extensions]
 2.5.29.17 = "{text}$SubjectAltName"
-"@
-    }
-    if ($thumbprint)
-    {
-        $requestDetails += @"
-
-RenewalCert = $Thumbprint
 "@
     }
     Set-Content -Path $infPath -Value $requestDetails
