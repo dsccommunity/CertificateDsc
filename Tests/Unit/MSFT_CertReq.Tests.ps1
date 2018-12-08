@@ -474,20 +474,22 @@ OID = $oid
         }
 
         Describe 'MSFT_CertReq\Get-TargetResource' {
-            Mock -CommandName Get-ChildItem `
-                -Mockwith { $validCert } `
-                -ParameterFilter $pathCertLocalMachineMy_parameterFilter
+            BeforeAll {
+                Mock -CommandName Get-ChildItem `
+                    -Mockwith { $validCert } `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
-            Mock -CommandName Get-CertificateTemplateName `
-                -MockWith { $certificateTemplate }
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith { $certificateTemplate }
 
-            Mock -CommandName Get-CertificateSan `
-                -MockWith { $subjectAltName }
+                Mock -CommandName Get-CertificateSan `
+                    -MockWith { $subjectAltName }
 
-            Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CAServerFQDN = 'rootca.contoso.com'
-                        CARootName = 'contoso-CA'
+                Mock -CommandName Find-CertificateAuthority -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CAServerFQDN = 'rootca.contoso.com'
+                            CARootName = 'contoso-CA'
+                    }
                 }
             }
 
@@ -541,19 +543,22 @@ OID = $oid
         }
 
         Describe 'MSFT_CertReq\Set-TargetResource' {
-            BeforeEach {
-                Mock -CommandName Join-Path -MockWith { 'CertReq-Test' }
-
-                Mock -CommandName CertReq.exe
-            }
-
-            Context 'When autorenew is false, credentials not passed' {
+            BeforeAll {
                 Mock -CommandName Test-Path -MockWith { $true } `
                     -ParameterFilter $pathCertReqTestReq_parameterFilter
 
                 Mock -CommandName Test-Path -MockWith { $true } `
                     -ParameterFilter $pathCertReqTestCer_parameterFilter
 
+                Mock -CommandName Test-Path -MockWith { $true } `
+                    -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                Mock -CommandName Join-Path -MockWith { 'CertReq-Test' }
+
+                Mock -CommandName CertReq.exe
+            }
+
+            Context 'When autorenew is false, credentials not passed' {
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -585,12 +590,6 @@ OID = $oid
             }
 
             Context 'When autorenew is true, credentials not passed and certificate does not exist' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -627,12 +626,6 @@ OID = $oid
             }
 
             Context 'When autorenew is true, credentials not passed and valid certificate exists' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -669,12 +662,6 @@ OID = $oid
             }
 
             Context 'When autorenew is true, credentials not passed and expiring certificate exists' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -711,12 +698,6 @@ OID = $oid
             }
 
             Context 'When autorenew is true, credentials not passed and expired certificate exists' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -753,12 +734,6 @@ OID = $oid
             }
 
             Context 'When autorenew is true, credentials not passed, keylength passed and expired certificate exists' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -840,9 +815,6 @@ OID = $oid
             }
 
             Context 'When autorenew is false, credentials not passed, certificate creation failed' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
                 Mock -CommandName Test-Path -MockWith { $false } `
                     -ParameterFilter $pathCertReqTestCer_parameterFilter
 
@@ -884,15 +856,6 @@ OID = $oid
             }
 
             Context 'When autorenew is false, credentials passed' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestOut_parameterFilter
-
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf'
@@ -953,12 +916,6 @@ OID = $oid
             }
 
             Context 'When autorenew is false, subject alt name passed, credentials not passed' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -995,12 +952,6 @@ OID = $oid
             }
 
             Context 'When standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'CertReq-Test.inf'
                 }
@@ -1035,12 +986,6 @@ OID = $oid
             }
 
             Context 'When enterprise CA, URL for CEP and CES passed, credentials passed' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
                 Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'CertReq-Test.inf'
                 }
@@ -1075,15 +1020,6 @@ OID = $oid
             }
 
             Context 'When auto-discovered CA, autorenew is false, credentials passed' {
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestCer_parameterFilter
-
-                Mock -CommandName Test-Path -MockWith { $true } `
-                    -ParameterFilter $pathCertReqTestOut_parameterFilter
-
                 Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'CertReq-Test.inf'
                 }
