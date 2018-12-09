@@ -92,6 +92,19 @@ try
         Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
             return "DNS Name=$subjectAltUrl"
         }
+
+        $validCertSubjectDifferentOrder = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = $validThumbprint
+            Subject      = 'E=xyz@contoso.com, CN=xyz.contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country'
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-30) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            FriendlyName = $friendlyName
+        }
+        Add-Member -InputObject $validCertSubjectDifferentOrder -MemberType ScriptMethod -Name Verify -Value {
+            return $true
+        }
+
         $validSANCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $validThumbprint
             Subject      = "CN=$validSubject"
@@ -243,6 +256,21 @@ try
             KeyUsage              = $keyUsage
             CertificateTemplate   = $certificateTemplate
             Credential            = $null
+            AutoRenew             = $True
+            FriendlyName          = $friendlyName
+        }
+
+        $paramsSubjectDifferentOrder = @{
+            Subject               = 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country'
+            CAServerFQDN          = $caServerFQDN
+            CARootName            = $caRootName
+            KeyLength             = $keyLength
+            Exportable            = $exportable
+            ProviderName          = $providerName
+            OID                   = $oid
+            KeyUsage              = $keyUsage
+            CertificateTemplate   = $certificateTemplate
+            Credential            = $testCredential
             AutoRenew             = $True
             FriendlyName          = $friendlyName
         }
@@ -1089,7 +1117,7 @@ OID = $oid
         }
 
         Describe 'MSFT_CertReq\Test-TargetResource' {
-            Context 'When called' {
+            Context 'When a valid certificate does not exist' {
                 Mock -CommandName Find-CertificateAuthority -MockWith {
                     return New-Object -TypeName psobject -Property @{
                         CARootName = "ContosoCA"
@@ -1097,12 +1125,14 @@ OID = $oid
                     }
                 }
 
-                It 'Should return a bool' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -BeOfType Boolean
+                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter
+
+                It 'Should return false' {
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
                 }
             }
 
-            Context 'When a valid certificate does not exist' {
+            Context 'When a valid certificate already exists' {
                 Mock -CommandName Find-CertificateAuthority -MockWith {
                     return New-Object -TypeName psobject -Property @{
                         CARootName = "ContosoCA"
@@ -1154,6 +1184,24 @@ OID = $oid
 
                 It 'Should return true' {
                     Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $true
+                }
+            }
+
+            Context 'When a valid certificate already exists and X500 subjects are in a different order but match' {
+                Mock -CommandName Find-CertificateAuthority -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith { $validCertSubjectDifferentOrder }
+
+                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
+
+                It 'Should return true' {
+                    Test-TargetResource @paramsSubjectDifferentOrder -Verbose | Should -Be $true
                 }
             }
 
@@ -1244,6 +1292,56 @@ OID = $oid
 
                 It 'Should execute the auto-discovery function' {
                     Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
+                }
+            }
+        }
+
+        Describe 'MSFT_CertReq\Compare-CertificateSubject' {
+            Context 'When called with matching subjects containing with single X500 paths' {
+                It 'Should return a true' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject 'CN=TestSubject' `
+                        -DifferenceSubject 'CN=TestSubject' | Should -Be $true
+                }
+            }
+
+            Context 'When called without matching subjects containing with single X500 paths' {
+                It 'Should return a false' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject 'CN=TestSubject' `
+                        -DifferenceSubject 'CN=SubjectTest' | Should -Be $false
+                }
+            }
+
+            Context 'When called with matching subjects containing with X500 paths in the same order' {
+                It 'Should return a true' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $true
+                }
+            }
+
+            Context 'When called with matching subjects containing with X500 paths in different order' {
+                It 'Should return a true' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
+                        -DifferenceSubject 'E=xyz@contoso.com, CN=xyz.contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $true
+                }
+            }
+
+            Context 'When called with different subjects containing with X500 paths in the same order' {
+                It 'Should return a false' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=test@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $false
+                }
+            }
+
+            Context 'When called with different subjects containing with X500 paths in the same order but missing element' {
+                It 'Should return a false' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
                 }
             }
         }

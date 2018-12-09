@@ -24,6 +24,8 @@
   - Improved unit test layout and updated to meet standards.
   - Fixed bug in certificate renewal with `RenewalCert` attribute in the
     incorrect section - fixes [Issue 172](https://github.com/PowerShell/CertificateDsc/issues/172)
+  - Fixed bug in certificate renewal when subject contains X500 path that
+    is in a different order - fixes [Issue 173](https://github.com/PowerShell/CertificateDsc/issues/173)
 
 ## 4.2.0.0
 
