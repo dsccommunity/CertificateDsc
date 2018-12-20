@@ -252,8 +252,10 @@ function Set-TargetResource
                 Verbose           = $VerbosePreference
             }
 
-            # Using Import-CertificateEx instead of Import-Certificate due to the following issue:
-            # https://github.com/PowerShell/CertificateDsc/issues/161
+            <#
+                Using Import-CertificateEx instead of Import-Certificate due to the following issue:
+                https://github.com/PowerShell/CertificateDsc/issues/161
+            #>
             Import-CertificateEx @importCertificateParameters
         }
     }
