@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Updated certificate import to only use Import-CertificateEx - fixes [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
 - Update LICENSE file to match the Microsoft Open Source Team standard -fixes
   [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
 - Opted into Common Tests - fixes [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
