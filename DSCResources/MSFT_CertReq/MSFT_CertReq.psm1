@@ -892,7 +892,7 @@ function Test-TargetResource
 
         if ($AutoRenew)
         {
-            if ($Cert.NotAfter -le (Get-Date).AddDays(-30))
+            if ($Cert.NotAfter -le (Get-Date).AddDays(30))
             {
                 # The certificate was found but it is expiring within 30 days or has expired
                 Write-Verbose -Message ( @(

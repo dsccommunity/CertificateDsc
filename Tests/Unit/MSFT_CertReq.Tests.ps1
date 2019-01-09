@@ -82,8 +82,8 @@ try
             Thumbprint   = $validThumbprint
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
-            NotBefore    = (Get-Date).AddDays(30) # Issued on
-            NotAfter     = (Get-Date).AddDays(-30) # Expires after
+            NotBefore    = (Get-Date).AddDays(-30) # Issued on
+            NotAfter     = (Get-Date).AddDays(30) # Expires after
             FriendlyName = $friendlyName
         }
 
