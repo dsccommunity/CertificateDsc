@@ -16,6 +16,10 @@
 - CertificateExport:
   - Fixed bug causing PFX export with matchsource enabled to fail - fixes
     [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
+- Added key lengths for ECDH key type.
+    - Added Key type to check for correct key lengths.
+    [Issue 113](https://github.com/PowerShell/CertificateDsc/issues/113)
+- Added request type parameter to support PKCS10.
 
 ## 4.2.0.0
 
