@@ -27,15 +27,14 @@
         To learn how to securely store credentials through the use of certificates,
         please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
 #>
-configuration CertReq_RequestAltSSLCert_Config
-{
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [System.Management.Automation.PSCredential]
-        $Credential
-    )
+[CmdletBinding()]
+param
+(
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullorEmpty()]
+    [System.Management.Automation.PSCredential]
+    $Credential
+)
 
     Import-DscResource -ModuleName CertificateDsc
 
@@ -56,6 +55,8 @@ configuration CertReq_RequestAltSSLCert_Config
             AutoRenew           = $true
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
+            KeyType             = "RSA"
+            RequestType         = "CMC"
         }
     }
 }

@@ -32,6 +32,9 @@
     # Cmdlets to export from this module
     CmdletsToExport   = '*'
 
+    # DSC resources to export from this module
+    DscResourcesToExport = @('CertificateExport','CertificateImport','CertReq','PfxImport','WaitForCertificateServices')
+
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
     PrivateData       = @{
 

@@ -76,6 +76,12 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER FriendlyName
     Specifies a friendly name for the certificate.
+
+    .PARAMETER KeyType
+    Specifies if the key type is RSA or ECDH, defaults to RSA.
+
+    .PARAMETER RequestType
+    Specified if the request type is CMC or PKCS10, deafults to CMC.
 #>
 function Get-TargetResource
 {
@@ -97,7 +103,7 @@ function Get-TargetResource
         $CARootName,
 
         [Parameter()]
-        [ValidateSet("1024", "2048", "4096", "8192")]
+        [ValidateSet('192', '224', '256', '384', '521', '1024', '2048', '4096', '8192')]
         [System.String]
         $KeyLength = '2048',
 
@@ -160,8 +166,20 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $FriendlyName
+        $FriendlyName,
+
+        [Parameter()]
+        [ValidateSet('RSA', 'ECDH')]
+        [System.String]
+        $KeyType = 'RSA',
+
+        [Parameter()]
+        [ValidateSet('CMC', 'PKCS10')]
+        [System.String]
+        $RequestType = 'CMC'
     )
+
+    Assert-ResourceProperty @PSBoundParameters
 
     # The certificate authority, accessible on the local area network
     if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
@@ -272,6 +290,12 @@ function Get-TargetResource
 
     .PARAMETER FriendlyName
     Specifies a friendly name for the certificate.
+
+    .PARAMETER KeyType
+    Specifies if the key type is RSA or ECDH, defaults to RSA.
+
+    .PARAMETER RequestType
+    Specified if the request type is CMC or PKCS10, deafults to CMC.
 #>
 function Set-TargetResource
 {
@@ -292,7 +316,7 @@ function Set-TargetResource
         $CARootName,
 
         [Parameter()]
-        [ValidateSet("1024", "2048", "4096", "8192")]
+        [ValidateSet('192', '224', '256', '384', '521', '1024', '2048', '4096', '8192')]
         [System.String]
         $KeyLength = '2048',
 
@@ -355,8 +379,20 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $FriendlyName
+        $FriendlyName,
+
+        [Parameter()]
+        [ValidateSet('RSA', 'ECDH')]
+        [System.String]
+        $KeyType = 'RSA',
+
+        [Parameter()]
+        [ValidateSet('CMC', 'PKCS10')]
+        [System.String]
+        $RequestType = 'CMC'
     )
+
+    Assert-ResourceProperty @PSBoundParameters
 
     # The certificate authority, accessible on the local area network
     if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
@@ -409,7 +445,6 @@ function Set-TargetResource
     $userProtected = 'FALSE'
     $useExistingKeySet = 'FALSE'
     $providerType = '12'
-    $requestType = 'CMC'
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
@@ -432,7 +467,7 @@ UserProtected = $userProtected
 UseExistingKeySet = $useExistingKeySet
 ProviderName = $ProviderName
 ProviderType = $providerType
-RequestType = $requestType
+RequestType = $RequestType
 KeyUsage = $KeyUsage
 "@
     if ($FriendlyName)
@@ -472,7 +507,7 @@ CertificateTemplate = "$CertificateTemplate"
     {
         $requestDetails += @"
 
-RenewalCert = $Thumbprint
+RenewalCert = $thumbprint
 "@
     }
     Set-Content -Path $infPath -Value $requestDetails
@@ -545,8 +580,8 @@ RenewalCert = $Thumbprint
                     '-p', [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($credPW),
                     '-PolicyServer', $CepURL,
                     '-config', $CesURL,
-                    $ReqPath,
-                    $CerPath
+                    $reqPath,
+                    $cerPath
                 )
             }
             else
@@ -605,7 +640,7 @@ RenewalCert = $Thumbprint
         }
         else
         {
-            $submitRequest = & certreq.exe @('-submit', '-q', '-config', $CA, $ReqPath, $CerPath)
+            $submitRequest = & certreq.exe @('-submit', '-q', '-config', $CA, $reqPath, $cerPath)
         } # if
 
         Write-Verbose -Message ( @(
@@ -701,6 +736,12 @@ RenewalCert = $Thumbprint
 
     .PARAMETER FriendlyName
     Specifies a friendly name for the certificate.
+
+    .PARAMETER KeyType
+    Specifies if the key type is RSA or ECDH, defaults to RSA.
+
+    .PARAMETER RequestType
+    Specified if the request type is CMC or PKCS10, deafults to CMC.
 #>
 function Test-TargetResource
 {
@@ -722,7 +763,7 @@ function Test-TargetResource
         $CARootName,
 
         [Parameter()]
-        [ValidateSet("1024", "2048", "4096", "8192")]
+        [ValidateSet('192', '224', '256', '384', '521', '1024', '2048', '4096', '8192')]
         [System.String]
         $KeyLength = '2048',
 
@@ -785,8 +826,20 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $FriendlyName
+        $FriendlyName,
+
+        [Parameter()]
+        [ValidateSet('RSA', 'ECDH')]
+        [System.String]
+        $KeyType = 'RSA',
+
+        [Parameter()]
+        [ValidateSet('CMC', 'PKCS10')]
+        [System.String]
+        $RequestType = 'CMC'
     )
+
+    Assert-ResourceProperty @PSBoundParameters
 
     # The certificate authority, accessible on the local area network
     if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
@@ -938,3 +991,169 @@ function Test-TargetResource
         ) -join '' )
     return $false
 } # end function Test-TargetResource
+
+<#
+    .SYNOPSIS
+    This function will check and ensure the right key length was choose for the
+
+    .PARAMETER Subject
+    Provide the text string to use as the subject of the certificate.
+
+    .PARAMETER CAServerFQDN
+    The FQDN of the Active Directory Certificate Authority on the local area network.
+
+    .PARAMETER CARootName
+    The name of the certificate authority, by default this will be in format domain-servername-ca.
+
+    .PARAMETER KeyLength
+    The bit length of the encryption key to be used.
+
+    .PARAMETER Exportable
+    The option to allow the certificate to be exportable, by default it will be true.
+
+    .PARAMETER ProviderName
+    The selection of provider for the type of encryption to be used.
+
+    .PARAMETER OID
+    The Object Identifier that is used to name the object.
+
+    .PARAMETER KeyUsage
+    The Keyusage is a restriction method that determines what a certificate can be used for.
+
+    .PARAMETER CertificateTemplate
+    The template used for the definiton of the certificate.
+
+    .PARAMETER SubjectAltName
+    The subject alternative name used to create the certificate.
+
+    .PARAMETER Credential
+    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
+
+    .PARAMETER AutoRenew
+    Determines if the resource will also renew a certificate within 7 days of expiration.
+
+    .PARAMETER CAType
+    The type of CA in use, Standalone/Enterprise.
+
+    .PARAMETER CepURL
+    The URL to the Certification Enrollment Policy Service.
+
+    .PARAMETER CesURL
+    The URL to the Certification Enrollment Service.
+
+    .PARAMETER UseMachineContext
+    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
+
+    .PARAMETER FriendlyName
+    Specifies a friendly name for the certificate.
+
+    .PARAMETER KeyType
+    Specifies if the key type is RSA or ECDH, defaults to RSA.
+
+    .PARAMETER RequestType
+    Specified if the request type is CMC or PKCS10, deafults to CMC.
+#>
+function Assert-ResourceProperty
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Subject,
+
+        [Parameter()]
+        [System.String]
+        $CAServerFQDN,
+
+        [Parameter()]
+        [System.String]
+        $CARootName,
+
+        [Parameter()]
+        [ValidateSet('192', '224', '256', '384', '521', '1024', '2048', '4096', '8192')]
+        [System.String]
+        $KeyLength = '2048',
+
+        [Parameter()]
+        [System.Boolean]
+        $Exportable = $true,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $OID = '1.3.6.1.5.5.7.3.1',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $KeyUsage = '0xa0',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CertificateTemplate = 'WebServer',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SubjectAltName,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $Credential,
+
+        [Parameter()]
+        [System.Boolean]
+        $AutoRenew,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CAType = 'Enterprise',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CepURL,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CesURL,
+
+        [Parameter()]
+        [System.Boolean]
+        $UseMachineContext,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName,
+
+        [Parameter()]
+        [ValidateSet('RSA', 'ECDH')]
+        [System.String]
+        $KeyType = 'RSA',
+
+        [Parameter()]
+        [ValidateSet('CMC', 'PKCS10')]
+        [System.String]
+        $RequestType = 'CMC'
+    )
+
+    $rsaSizes = @('1024', '2048', '4096', '8192')
+    $ecdhSizes = @('192', '224', '256', '384', '521')
+
+    if ((($KeyType -eq 'RSA')  -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
+    (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192',   '224',  '256',  '384', '521')))
+    {
+        New-InvalidArgumentException -Message $($($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
+    }
+}# end function Assert-ResourceProperty
