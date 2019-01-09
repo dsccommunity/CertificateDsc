@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    moduleVersion = '4.2.0.0'
+    moduleVersion = '4.3.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -50,26 +50,20 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
-  [Issue 139](https://github.com/PowerShell/CertificateDsc/issues/139).
-- Refactored module folder structure to move resource to root folder of
-  repository and remove test harness - fixes [Issue 142](https://github.com/PowerShell/CertificateDsc/issues/142).
-- Updated Examples to support deployment to PowerShell Gallery scripts.
-- Correct configuration names in Examples - fixes [Issue 150](https://github.com/PowerShell/CertificateDsc/issues/150).
-- Correct filename case of `CertificateDsc.Common.psm1` - fixes [Issue 149](https://github.com/PowerShell/CertificateDsc/issues/149).
-- Remove exclusion of all tags in appveyor.yml, so all common tests can be run
-  if opt-in.
-- PfxImport:
-  - Added requirements to README.MD to specify cryptographic algorithm
-    support - fixes [Issue 153](https://github.com/PowerShell/CertificateDsc/issues/153).
-  - Changed Path parameter to be optional to fix error when ensuring certificate
-    is absent and certificate file does not exist on disk - fixes [Issue 136](https://github.com/PowerShell/CertificateDsc/issues/136).
-  - Removed ShouldProcess because it is not required by DSC Resources.
-  - Minor style corrections.
-  - Changed unit tests to be non-destructive.
-  - Improved naming and description of example files.
-  - Added localization string ID suffix for all strings.
-- Added .VSCode settings for applying DSC PSSA rules - fixes [Issue 157](https://github.com/PowerShell/CertificateDsc/issues/157).
+        ReleaseNotes = '- Updated certificate import to only use Import-CertificateEx - fixes [Issue 161](https://github.com/PowerShell/CertificateDsc/issues/161)
+- Update LICENSE file to match the Microsoft Open Source Team standard -fixes
+  [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
+- Opted into Common Tests - fixes [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
+  - Required Script Analyzer Rules
+  - Flagged Script Analyzer Rules
+  - New Error-Level Script Analyzer Rules
+  - Custom Script Analyzer Rules
+  - Validate Example Files To Be Published
+  - Validate Markdown Links
+  - Relative Path Length
+- CertificateExport:
+  - Fixed bug causing PFX export with matchsource enabled to fail - fixes
+    [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
 
 '
 
@@ -78,6 +72,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 
