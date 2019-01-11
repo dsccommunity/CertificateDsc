@@ -56,7 +56,7 @@ configuration CertReq_RequestSSLCert_Config
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
             KeyType             = "RSA"
-            KeyRequest          = "CMC"
+            RequestType         = "CMC"
         }
     }
 }
