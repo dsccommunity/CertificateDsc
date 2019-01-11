@@ -26,8 +26,10 @@
         To learn how to securely store credentials through the use of certificates,
         please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
 #>
-[CmdletBinding()]
-param
+configuration CertReq_RequestSSLCert_Config
+{
+    [CmdletBinding()]
+    param
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
@@ -35,8 +37,7 @@ param
         $Credential
     )
 
-configuration CertReq_RequestSSLCert_Config
-{
+
     Import-DscResource -ModuleName CertificateDsc
 
     Node localhost
