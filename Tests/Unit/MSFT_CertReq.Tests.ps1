@@ -862,7 +862,7 @@ RenewalCert = $validThumbprint
                         $Arguments,
 
                         [Parameter()]
-                        [System.Management.Automation.PSCredential]
+                        #[System.Management.Automation.PSCredential]
                         $Credential
                     )
                 }
@@ -878,7 +878,7 @@ RenewalCert = $validThumbprint
                         $Arguments,
 
                         [Parameter()]
-                        [System.Management.Automation.PSCredential]
+                        #[System.Management.Automation.PSCredential]
                         $Credential
                     )
                 }
@@ -946,7 +946,7 @@ RenewalCert = $validThumbprint
                         $Arguments,
 
                         [Parameter()]
-                        [System.Management.Automation.PSCredential]
+                        #[System.Management.Automation.PSCredential]
                         $Credential
                     )
                 }
@@ -962,7 +962,7 @@ RenewalCert = $validThumbprint
                         $Arguments,
 
                         [Parameter()]
-                        [System.Management.Automation.PSCredential]
+                        #[System.Management.Automation.PSCredential]
                         $Credential
                     )
                 }
@@ -1038,7 +1038,7 @@ RenewalCert = $validThumbprint
                         $Arguments,
 
                         [Parameter()]
-                        [System.Management.Automation.PSCredential]
+                        #[System.Management.Automation.PSCredential]
                         $Credential
                     )
                 }
@@ -1054,7 +1054,7 @@ RenewalCert = $validThumbprint
                         $Arguments,
 
                         [Parameter()]
-                        [System.Management.Automation.PSCredential]
+                        #[System.Management.Automation.PSCredential]
                         $Credential
                     )
                 }
