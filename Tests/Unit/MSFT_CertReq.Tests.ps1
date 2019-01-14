@@ -430,6 +430,26 @@ try
             KeyType               = 'ECDH'
         }
 
+        $paramRsaValid = @{
+            KeyType   = 'RSA'
+            KeyLength = '2048'
+        }
+
+        $paramRsaInvalid = @{
+            KeyType   = 'RSA'
+            KeyLength = '384'
+        }
+
+        $paramEcdhValid = @{
+            KeyType   = 'ECDH'
+            KeyLength = '384'
+        }
+
+        $paramEcdhInvalid = @{
+            KeyType   = 'ECDH'
+            KeyLength = '2048'
+        }
+
         $certInf = @"
 [NewRequest]
 Subject = "CN=$validSubject"
@@ -1405,25 +1425,25 @@ RenewalCert = $validThumbprint
         Describe "$dscResourceName\Assert-ResourceProperty"{
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandard -Verbose } | Should -Not -Throw
+                    { Assert-ResourceProperty @paramRsaValid -Verbose } | Should -Not -Throw
                 }
             }
 
             Context 'When RSA key type and key length is invalid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandardInvalidRSALength -Verbose } | Should -Throw
+                    { Assert-ResourceProperty @paramRsaInvalid -Verbose } | Should -Throw
                 }
             }
 
             Context 'When ECDH key type and key length is valid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandardValidECDHLength -Verbose } | Should -Not -Throw
+                    { Assert-ResourceProperty @paramEcdhValid -Verbose } | Should -Not -Throw
                 }
             }
 
             Context 'When ECDH key type and key length is invalid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandardInvalidECDHLength -Verbose } | Should -Throw
+                    { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw
                 }
             }
         }
