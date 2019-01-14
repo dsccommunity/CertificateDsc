@@ -37,7 +37,6 @@ configuration CertReq_RequestSSLCert_Config
         $Credential
     )
 
-
     Import-DscResource -ModuleName CertificateDsc
 
     Node localhost
@@ -56,8 +55,8 @@ configuration CertReq_RequestSSLCert_Config
             AutoRenew           = $true
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
-            KeyType             = "RSA"
-            RequestType         = "CMC"
+            KeyType             = 'RSA'
+            RequestType         = 'CMC'
         }
     }
 }

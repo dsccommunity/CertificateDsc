@@ -28,7 +28,6 @@
         please refer to the following TechNet topic: https://technet.microsoft.com/en-us/library/dn781430.aspx
 #>
 configuration CertReq_RequestAltSSLCert_Config
-
 {
     [CmdletBinding()]
     param
@@ -58,8 +57,8 @@ configuration CertReq_RequestAltSSLCert_Config
             AutoRenew           = $true
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
-            KeyType             = "RSA"
-            RequestType         = "CMC"
+            KeyType             = 'RSA'
+            RequestType         = 'CMC'
         }
     }
 }

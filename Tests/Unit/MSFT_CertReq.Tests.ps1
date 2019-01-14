@@ -15,6 +15,7 @@ if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCR
 }
 
 Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module (Join-Path -Path $script:moduleRoot -ChildPath '\Tests\TestHelpers\CommonTestHelper.psm1') -Force
 $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:DSCModuleName `
     -DSCResourceName $script:DSCResourceName `
@@ -74,6 +75,7 @@ try
             NotAfter     = (Get-Date).AddDays(31) # Expires after
             FriendlyName = $invalidFriendlyName
         }
+
         Add-Member -InputObject $validCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
@@ -208,7 +210,7 @@ try
             FriendlyName          = $friendlyName
         }
 
-        $paramsinvalid = @{
+        $paramsInvalid = @{
             Subject               = $invalidSubject
             CAServerFQDN          = $caServerFQDN
             CARootName            = $caRootName
@@ -484,7 +486,7 @@ RenewalCert = $validThumbprint
                     }
                 }
 
-            Context 'Called without auto discovery' {
+            Context 'When called without auto discovery' {
                 $result = Get-TargetResource @paramsStandard -Verbose
 
                 It 'Should return a hashtable' {
@@ -506,7 +508,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'Called with auto discovery' {
+            Context 'When called with auto discovery' {
                 $result = Get-TargetResource @paramsAutoDiscovery -Verbose
 
                 It 'Should return a hashtable' {
@@ -535,18 +537,18 @@ RenewalCert = $validThumbprint
             Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                 -Mockwith { $invalidCert }
 
-            Context 'Called without valid cert' {
-                $results = Get-TargetResource @paramsinvalid -Verbose
+            Context 'When called without valid cert' {
+                $results = Get-TargetResource @paramsInvalid -Verbose
 
                 It 'Should return null' {
-                    $results | Should BeNullOrEmpty
+                    $results | Should -BeNullOrEmpty
                 }
             }
         }
         #endregion
 
         #region Set-TargetResource
-        Describe "$dscResourceName\Set-TargetResource" -Tag "Set" {
+        Describe "$dscResourceName\Set-TargetResource" -Tag 'Set' {
             Mock -CommandName Join-Path -MockWith { 'CertReq-Test' } `
                 -ParameterFilter { $Path -eq $env:Temp }
 
@@ -564,7 +566,7 @@ RenewalCert = $validThumbprint
                     $Value -eq $certInf
                 }
 
-            Context 'autorenew is false, credentials not passed' {
+            Context 'When autorenew is false, credentials not passed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -592,7 +594,7 @@ RenewalCert = $validThumbprint
             }
 
 
-            Context 'autorenew is true, credentials not passed and certificate does not exist' {
+            Context 'When autorenew is true, credentials not passed and certificate does not exist' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -622,7 +624,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'autorenew is true, credentials not passed and valid certificate exists' {
+            Context 'When autorenew is true, credentials not passed and valid certificate exists' {
                 Mock -CommandName Get-ChildItem -Mockwith { $validCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -657,7 +659,8 @@ RenewalCert = $validThumbprint
                     $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInfRenew
                 }
-            Context 'autorenew is true, credentials not passed and expiring certificate exists' {
+
+            Context 'When autorenew is true, credentials not passed and expiring certificate exists' {
                 Mock -CommandName Get-ChildItem -Mockwith { $expiringCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -687,7 +690,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'autorenew is true, credentials not passed and expired certificate exists' {
+            Context 'When autorenew is true, credentials not passed and expired certificate exists' {
                 Mock -CommandName Get-ChildItem -Mockwith { $expiredCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -723,7 +726,7 @@ RenewalCert = $validThumbprint
                     $Value -eq $certInfKeyRenew
                 }
 
-            Context 'autorenew is true, credentials not passed, keylength passed and expired certificate exists' {
+            Context 'When autorenew is true, credentials not passed, keylength passed and expired certificate exists' {
                 Mock -CommandName Get-ChildItem -Mockwith { $expiredCert } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -764,7 +767,7 @@ RenewalCert = $validThumbprint
                     $Value -eq $certInf
                 }
 
-            Context 'autorenew is false, credentials not passed, certificate request creation failed' {
+            Context 'When autorenew is false, credentials not passed, certificate request creation failed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -800,7 +803,7 @@ RenewalCert = $validThumbprint
             Mock -CommandName Test-Path -MockWith { $false } `
                 -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-            Context 'Autorenew is false, credentials not passed, certificate creation failed' {
+            Context 'When autorenew is false, credentials not passed, certificate creation failed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -839,7 +842,7 @@ RenewalCert = $validThumbprint
             Mock -CommandName Test-Path -MockWith { $true } `
                 -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
-            Context 'autorenew is false, credentials passed' {
+            Context 'When autorenew is false, credentials passed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -923,7 +926,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'autorenew is false, credentials passed, passed ' {
+            Context 'When autorenew is false, credentials passed, passed ' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -992,7 +995,8 @@ RenewalCert = $validThumbprint
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1 -ParameterFilter {$Arguments -like "*-adminforcemachine*"}
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1 `
+                        -ParameterFilter {$Arguments -like "*-adminforcemachine*"}
 
                     Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly 1
 
@@ -1007,9 +1011,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-
-
-            Context 'autorenew is false, credeintals passed, no .out file' {
+            Context 'When autorenew is false, credeintals passed, no .out file' {
 
                 Mock -CommandName Test-Path -MockWith { $false } `
                 -ParameterFilter { $Path -eq 'CertReq-Test.out' }
@@ -1107,7 +1109,7 @@ RenewalCert = $validThumbprint
                     $Value -eq $certInfSubjectAltName
                 }
 
-            Context 'autorenew is false, subject alt name passed, credentials not passed' {
+            Context 'When autorenew is false, subject alt name passed, credentials not passed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -1134,7 +1136,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
+            Context 'When standalone CA, URL for CEP and CES passed, credentials passed, inf not containing template' {
                 Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInfNoTemplate
@@ -1166,7 +1168,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'enterprise CA, URL for CEP and CES passed, credentials passed' {
+            Context 'When enterprise CA, URL for CEP and CES passed, credentials passed' {
                 Mock -CommandName Set-Content -ParameterFilter {
                     $Path -eq 'CertReq-Test.inf' -and `
                     $Value -eq $certInf
@@ -1198,7 +1200,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'Auto-discovered CA, autorenew is false, credentials passed' {
+            Context 'When auto-discovered CA, autorenew is false, credentials passed' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
@@ -1273,7 +1275,7 @@ RenewalCert = $validThumbprint
                 Test-TargetResource @paramsStandard -Verbose | Should -BeOfType Boolean
             }
 
-            Context 'A valid certificate does not exist' {
+            Context 'When a valid certificate does not exist' {
                 It 'Should return false' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { }
@@ -1282,7 +1284,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'A valid certificate already exists and is not about to expire' {
+            Context 'When a valid certificate already exists and is not about to expire' {
                 It 'Should return true' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $validCert }
@@ -1295,7 +1297,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'An expired certificate exists and autorenew set' {
+            Context 'When an expired certificate exists and autorenew set' {
                 It 'Should return true' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $expiredCert }
@@ -1308,7 +1310,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'A valid certificate already exists and is about to expire and autorenew set' {
+            Context 'When a valid certificate already exists and is about to expire and autorenew set' {
                 It 'Should return false' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $expiringCert }
@@ -1321,7 +1323,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'A valid certificate already exists and DNS SANs match' {
+            Context 'When a valid certificate already exists and DNS SANs match' {
                 It 'Should return true' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $validSANCert }
@@ -1332,7 +1334,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'A certificate exists but contains incorrect DNS SANs' {
+            Context 'When a certificate exists but contains incorrect DNS SANs' {
                 It 'Should return false' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $incorrectSANCert }
@@ -1343,7 +1345,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'A certificate exists but does not contain specified DNS SANs' {
+            Context 'When a certificate exists but does not contain specified DNS SANs' {
                 It 'Should return false' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $emptySANCert }
@@ -1354,7 +1356,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'A certificate exists but does not match the Friendly Name' {
+            Context 'When a certificate exists but does not match the Friendly Name' {
                 It 'Should return false' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $incorrectFriendlyName }
@@ -1365,7 +1367,7 @@ RenewalCert = $validThumbprint
                 }
             }
 
-            Context 'A certificate exists but does not match the Certificate Template' {
+            Context 'When a certificate exists but does not match the Certificate Template' {
                 It 'Should return false' {
                     Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                         -Mockwith { $validcert }
@@ -1401,28 +1403,27 @@ RenewalCert = $validThumbprint
         }
 
         Describe "$dscResourceName\Assert-ResourceProperty"{
-
-            Context ' When RSA key type and key length is valid' {
+            Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandard  -Verbose } | Should -Not -Throw
+                    { Assert-ResourceProperty @paramsStandard -Verbose } | Should -Not -Throw
                 }
             }
 
-            Context ' When RSA key type and key length is invalid' {
+            Context 'When RSA key type and key length is invalid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandardInvalidRSALength  -Verbose } | Should -Throw
+                    { Assert-ResourceProperty @paramsStandardInvalidRSALength -Verbose } | Should -Throw
                 }
             }
 
-            Context ' When ECDH key type and key length is valid' {
+            Context 'When ECDH key type and key length is valid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandardValidECDHLength  -Verbose } | Should -Not -Throw
+                    { Assert-ResourceProperty @paramsStandardValidECDHLength -Verbose } | Should -Not -Throw
                 }
             }
 
-            Context ' When ECDH key type and key length is invalid' {
+            Context 'When ECDH key type and key length is invalid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramsStandardInvalidECDHLength  -Verbose } | Should -Throw
+                    { Assert-ResourceProperty @paramsStandardInvalidECDHLength -Verbose } | Should -Throw
                 }
             }
         }

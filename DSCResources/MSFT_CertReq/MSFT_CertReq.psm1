@@ -179,7 +179,7 @@ function Get-TargetResource
         $RequestType = 'CMC'
     )
 
-    Assert-ResourceProperty @PSBoundParameters
+    Assert-ResourceProperty -KeyLength $KeyLength -KeyType $KeyType
 
     # The certificate authority, accessible on the local area network
     if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
@@ -392,7 +392,7 @@ function Set-TargetResource
         $RequestType = 'CMC'
     )
 
-    Assert-ResourceProperty @PSBoundParameters
+    Assert-ResourceProperty -KeyLength $KeyLength -KeyType $KeyType
 
     # The certificate authority, accessible on the local area network
     if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
@@ -839,7 +839,7 @@ function Test-TargetResource
         $RequestType = 'CMC'
     )
 
-    Assert-ResourceProperty @PSBoundParameters
+    Assert-ResourceProperty -KeyLength $KeyLength -KeyType $KeyType
 
     # The certificate authority, accessible on the local area network
     if ([string]::IsNullOrWhiteSpace($CAServerFQDN) -or [string]::IsNullOrWhiteSpace($CARootName))
@@ -994,7 +994,7 @@ function Test-TargetResource
 
 <#
     .SYNOPSIS
-    This function will check and ensure the right key length was choose for the
+    This function will check and ensure the right key length was choosen for the key type that was intended to be used
 
     .PARAMETER Subject
     Provide the text string to use as the subject of the certificate.
@@ -1058,101 +1058,19 @@ function Assert-ResourceProperty
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Subject,
-
-        [Parameter()]
-        [System.String]
-        $CAServerFQDN,
-
-        [Parameter()]
-        [System.String]
-        $CARootName,
-
         [Parameter()]
         [ValidateSet('192', '224', '256', '384', '521', '1024', '2048', '4096', '8192')]
         [System.String]
         $KeyLength = '2048',
 
         [Parameter()]
-        [System.Boolean]
-        $Exportable = $true,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $OID = '1.3.6.1.5.5.7.3.1',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $KeyUsage = '0xa0',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $CertificateTemplate = 'WebServer',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $SubjectAltName,
-
-        [Parameter()]
-        [System.Management.Automation.PSCredential]
-        $Credential,
-
-        [Parameter()]
-        [System.Boolean]
-        $AutoRenew,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $CAType = 'Enterprise',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $CepURL,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $CesURL,
-
-        [Parameter()]
-        [System.Boolean]
-        $UseMachineContext,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $FriendlyName,
-
-        [Parameter()]
         [ValidateSet('RSA', 'ECDH')]
         [System.String]
-        $KeyType = 'RSA',
-
-        [Parameter()]
-        [ValidateSet('CMC', 'PKCS10')]
-        [System.String]
-        $RequestType = 'CMC'
+        $KeyType = 'RSA'
     )
 
-    $rsaSizes = @('1024', '2048', '4096', '8192')
-    $ecdhSizes = @('192', '224', '256', '384', '521')
-
     if ((($KeyType -eq 'RSA')  -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
-    (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192',   '224',  '256',  '384', '521')))
+    (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
     {
         New-InvalidArgumentException -Message $($($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
     }
