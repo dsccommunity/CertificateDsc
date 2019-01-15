@@ -19,5 +19,5 @@ class MSFT_CertReq : OMI_BaseResource
     [Write, Description("Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication")] Boolean UseMachineContext;
     [Write, Description("Specifies a friendly name for the certificate.")] String FriendlyName;
     [Write, Description("Specifies key type as RSA or ECDH."), ValueMap{"RSA","ECDH"}, Values{"RSA","ECDH"}] String KeyType;
-    [Write,Description("Specifies request type as CMC or PKCS10."), ValueMap{"CMC","PKCS10"},Values{"CMC","PKCS10"}] String RequestType;
+    [Write, Description("Specifies request type as CMC or PKCS10."), ValueMap{"CMC","PKCS10"},Values{"CMC","PKCS10"}] String RequestType;
 };

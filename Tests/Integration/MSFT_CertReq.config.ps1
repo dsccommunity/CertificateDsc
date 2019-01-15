@@ -15,6 +15,8 @@ Configuration MSFT_CertReq_Config {
             CertificateTemplate = $Node.CertificateTemplate
             SubjectAltName      = $Node.SubjectAltName
             FriendlyName        = $Node.FriendlyName
+            KeyType             = $Node.KeyType
+            RequestType         = $Node.RequestType
         }
     }
 }
