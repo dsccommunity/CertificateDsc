@@ -2,10 +2,15 @@
 
 ## Unreleased
 
+- Minor style corrections from PR for [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
+  that were missed.
+
 ## 4.3.0.0
 
-- Updated certificate import to only use Import-CertificateEx - fixes [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
-- Update LICENSE file to match the Microsoft Open Source Team standard -fixes
+- CertificateImport:
+  - Updated certificate import to only use Import-CertificateEx - fixes
+    [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161).
+- Update LICENSE file to match the Microsoft Open Source Team standard - fixes
   [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
 - Opted into Common Tests - fixes [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
   - Required Script Analyzer Rules
@@ -18,6 +23,14 @@
 - CertificateExport:
   - Fixed bug causing PFX export with matchsource enabled to fail - fixes
     [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
+- CertReq:
+  - Simplified unit test comparison certificate request strings to make
+    tests easier to read.
+  - Improved unit test layout and updated to meet standards.
+  - Fixed bug in certificate renewal with `RenewalCert` attribute in the
+    incorrect section - fixes [Issue 172](https://github.com/PowerShell/CertificateDsc/issues/172)
+  - Fixed bug in certificate renewal when subject contains X500 path that
+    is in a different order - fixes [Issue 173](https://github.com/PowerShell/CertificateDsc/issues/173)
 
 ## 4.2.0.0
 

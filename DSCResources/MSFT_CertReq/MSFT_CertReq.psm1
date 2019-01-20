@@ -442,6 +442,15 @@ KeyUsage = $KeyUsage
 FriendlyName = "$FriendlyName"
 "@
     }
+
+    if ($thumbprint)
+    {
+        $requestDetails += @"
+
+RenewalCert = $Thumbprint
+"@
+    }
+
     $requestDetails += @"
 
 [RequestAttributes]
@@ -466,13 +475,6 @@ CertificateTemplate = "$CertificateTemplate"
 
 [Extensions]
 2.5.29.17 = "{text}$SubjectAltName"
-"@
-    }
-    if ($thumbprint)
-    {
-        $requestDetails += @"
-
-RenewalCert = $Thumbprint
 "@
     }
     Set-Content -Path $infPath -Value $requestDetails
@@ -809,13 +811,13 @@ function Test-TargetResource
             $($LocalizedData.TestingCertReqStatusMessage -f $Subject, $ca)
         ) -join '' )
 
-    # Exception for standard template DomainControllerAuthentication
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-        $_.Subject -eq $Subject -and `
+            (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
             $_.Issuer.split(',')[0] -eq "CN=$CARootName"
     }
 
+    # Exception for standard template DomainControllerAuthentication
     if ($CertificateTemplate -eq 'DomainControllerAuthentication')
     {
         $cert = Get-Childitem -Path Cert:\LocalMachine\My |
@@ -938,3 +940,40 @@ function Test-TargetResource
         ) -join '' )
     return $false
 } # end function Test-TargetResource
+
+<#
+    .SYNOPSIS
+    Compares two certificate subjects.
+
+    .PARAMETER ReferenceSubject
+    The certificate subject to compare.
+
+    .PARAMETER DifferenceSubject
+    The certificate subject to compare with the ReferenceSubject.
+#>
+function Compare-CertificateSubject
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ReferenceSubject,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $DifferenceSubject
+    )
+
+    $referenceSubjectArray = ($ReferenceSubject -split ',').Trim() | Sort-Object
+    $differenceSubjectArray = ($DifferenceSubject -split ',').Trim() | Sort-Object
+
+    $difference = Compare-Object `
+        -ReferenceObject $referenceSubjectArray `
+        -DifferenceObject $differenceSubjectArray
+
+    return ($difference.Count -eq 0)
+}
