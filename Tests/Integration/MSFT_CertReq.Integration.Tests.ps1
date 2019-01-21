@@ -23,7 +23,6 @@ if ([String]::IsNullOrEmpty($Result))
     return
 } # if
 
-#region HEADER
 # Integration Test Template Version: 1.1.0
 [System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
@@ -37,12 +36,10 @@ $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:DSCModuleName `
     -DSCResourceName $script:DSCResourceName `
     -TestType Integration
-#endregion
 
 # Using try/finally to always cleanup even if something awful happens.
 try
 {
-    #region Integration Tests
     $ConfigFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName).config.ps1"
     . $ConfigFile
 
@@ -135,8 +132,7 @@ try
             }
         }
 
-        #region DEFAULT TESTS
-        Context 'WebServer certificate does not exist, Testing with RSA KeyType and CMC RequestType' {
+        Context 'When WebServer certificate does not exist, Testing with RSA KeyType and CMC RequestType' {
             It 'Should compile and apply the MOF without throwing' {
                 {
                     & "$($script:DSCResourceName)_Config" `
@@ -167,10 +163,8 @@ try
                 $CertificateNew.EnhancedKeyUsageList.ObjectId  | Should -Be $oid
             }
         }
-        #endregion
 
-        #Region Tests for New Parameters
-        Context 'WebServer certificate does not exist, Testing with ECDH KeyType and PKCS10 RequestType' {
+        Context 'When WebServer certificate does not exist, Testing with ECDH KeyType and PKCS10 RequestType' {
             It 'Should compile and apply the MOF without throwing' {
                 {
                     & "$($script:DSCResourceName)_Config" `
@@ -193,7 +187,7 @@ try
                         $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
                     }
 
-                #Removed check for key length becuase in the ECDH certificate PowerShell cannot see the length
+                # Removed check for key length becuase in the ECDH certificate PowerShell cannot see the length
                 $CertificateNew.Subject                        | Should -Be "CN=$($paramsEcdhPkcs10Request.subject)"
                 $CertificateNew.Issuer.split(',')[0]           | Should -Be "CN=$($caRootName)"
                 $CertificateNew.FriendlyName                   | Should -Be $friendlyName
@@ -227,12 +221,9 @@ try
                 -ErrorAction SilentlyContinue
         }
     }
-    #endregion
 }
 finally
 {
-    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
-    #endregion
 }
 
