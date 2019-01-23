@@ -1589,7 +1589,7 @@ OID = $oid
                     Test-TargetResource @paramsStandardDomainController -Verbose | Should -Be $true
                 }
             }
-            
+
             Context 'When auto-discover of the CA is enabled' {
                 Mock -CommandName Find-CertificateAuthority -MockWith {
                     return New-Object -TypeName psobject -Property @{
@@ -1608,7 +1608,7 @@ OID = $oid
                 }
             }
         }
-        
+
         Describe "$dscResourceName\Assert-ResourceProperty"{
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
@@ -1631,6 +1631,9 @@ OID = $oid
             Context 'When ECDH key type and key length is invalid' {
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw
+                }
+            }
+        }
 
         Describe 'MSFT_CertReq\Compare-CertificateSubject' {
             Context 'When called with matching subjects containing with single X500 paths' {

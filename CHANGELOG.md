@@ -37,7 +37,6 @@
   - Fixed bug in certificate renewal when subject contains X500 path that
     is in a different order - fixes [Issue 173](https://github.com/PowerShell/CertificateDsc/issues/173)
 
-
 ## 4.2.0.0
 
 - Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
