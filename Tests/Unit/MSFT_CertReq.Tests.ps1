@@ -1407,14 +1407,6 @@ OID = $oid
                 }
             }
 
-            Context 'When a valid certificate already exists and DNS SANs match' {
-                Mock -CommandName Get-CertificateSan -MockWith { $subjectAltName }
-
-                It 'Should return true' {
-                    Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $true
-                }
-            }
-
             Context 'When a valid certificate already exists and X500 subjects are in a different order but match' {
                 Mock -CommandName Find-CertificateAuthority -MockWith {
                     return New-Object -TypeName psobject -Property @{
