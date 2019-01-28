@@ -44,7 +44,6 @@ try
         $validIssuer                  = "CN=$caRootName, DC=contoso, DC=com"
         $invalidIssuer                = 'CN=InvalidTest, DC=invalid, DC=com'
         $keyLength                    = '2048'
-        $ecdhKeyLength                = '384'
         $exportable                   = $true
         $providerName                 = '"Microsoft RSA SChannel Cryptographic Provider"'
         $oid                          = '1.3.6.1.5.5.7.3.1'
@@ -410,54 +409,6 @@ try
             FriendlyName          = $friendlyName
         }
 
-        $paramsStandardInvalidRSALength = @{
-            Subject               = $validSubject
-            CAServerFQDN          = $caServerFQDN
-            CARootName            = $caRootName
-            KeyLength             = $ecdhKeyLength
-            Exportable            = $exportable
-            ProviderName          = $providerName
-            OID                   = $oid
-            KeyUsage              = $keyUsage
-            CertificateTemplate   = $certificateTemplate
-            Credential            = $testCredential
-            AutoRenew             = $false
-            FriendlyName          = $friendlyName
-            KeyType               = 'RSA'
-        }
-
-        $paramsStandardValidECDHLength = @{
-            Subject               = $validSubject
-            CAServerFQDN          = $caServerFQDN
-            CARootName            = $caRootName
-            KeyLength             = $ecdhKeyLength
-            Exportable            = $exportable
-            ProviderName          = $providerName
-            OID                   = $oid
-            KeyUsage              = $keyUsage
-            CertificateTemplate   = $certificateTemplate
-            Credential            = $testCredential
-            AutoRenew             = $false
-            FriendlyName          = $friendlyName
-            KeyType               = 'ECDH'
-        }
-
-        $paramsStandardInvalidECDHLength = @{
-            Subject               = $validSubject
-            CAServerFQDN          = $caServerFQDN
-            CARootName            = $caRootName
-            KeyLength             = $keyLength
-            Exportable            = $exportable
-            ProviderName          = $providerName
-            OID                   = $oid
-            KeyUsage              = $keyUsage
-            CertificateTemplate   = $certificateTemplate
-            Credential            = $testCredential
-            AutoRenew             = $false
-            FriendlyName          = $friendlyName
-            KeyType               = 'ECDH'
-        }
-
         $paramRsaValid = @{
             KeyType   = 'RSA'
             KeyLength = '2048'
@@ -617,6 +568,7 @@ OID = $oid
                 $Arguments,
 
                 [Parameter()]
+                [System.Management.Automation.PSCredential]
                 $Credential
             )
         }
@@ -632,6 +584,7 @@ OID = $oid
                 $Arguments,
 
                 [Parameter()]
+                [System.Management.Automation.PSCredential]
                 $Credential
             )
         }
@@ -1121,12 +1074,6 @@ OID = $oid
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter {
-                            $Path -eq 'CertReq-Test.inf' -and `
-                            $Value -eq $certInf
-                        }
-
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
                     Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1 `
@@ -1179,12 +1126,6 @@ OID = $oid
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
-
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
-                        -ParameterFilter {
-                            $Path -eq 'CertReq-Test.inf' -and `
-                            $Value -eq $certInf
-                        }
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 

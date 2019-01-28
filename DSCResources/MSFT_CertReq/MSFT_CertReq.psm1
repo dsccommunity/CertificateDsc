@@ -512,13 +512,6 @@ CertificateTemplate = "$CertificateTemplate"
 2.5.29.17 = "{text}$SubjectAltName"
 "@
     }
-    if ($thumbprint)
-    {
-        $requestDetails += @"
-
-RenewalCert = $thumbprint
-"@
-    }
 
     Set-Content -Path $infPath -Value $requestDetails
 
