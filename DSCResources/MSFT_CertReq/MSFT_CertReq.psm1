@@ -78,10 +78,10 @@ $localizedData = Get-LocalizedData `
     Specifies a friendly name for the certificate.
 
     .PARAMETER KeyType
-    Specifies if the key type is RSA or ECDH, defaults to RSA.
+    Specifies if the key type should be RSA or ECDH, defaults to RSA.
 
     .PARAMETER RequestType
-    Specified if the request type is CMC or PKCS10, deafults to CMC.
+    Specified if the request type should be CMC or PKCS10, deafults to CMC.
 #>
 function Get-TargetResource
 {
@@ -292,10 +292,10 @@ function Get-TargetResource
     Specifies a friendly name for the certificate.
 
     .PARAMETER KeyType
-    Specifies if the key type is RSA or ECDH, defaults to RSA.
+    Specifies if the key type should be RSA or ECDH, defaults to RSA.
 
     .PARAMETER RequestType
-    Specified if the request type is CMC or PKCS10, deafults to CMC.
+    Specified if the request type should be CMC or PKCS10, deafults to CMC.
 #>
 function Set-TargetResource
 {
@@ -741,10 +741,10 @@ CertificateTemplate = "$CertificateTemplate"
     Specifies a friendly name for the certificate.
 
     .PARAMETER KeyType
-    Specifies if the key type is RSA or ECDH, defaults to RSA.
+    Specifies if the key type should be RSA or ECDH, defaults to RSA.
 
     .PARAMETER RequestType
-    Specified if the request type is CMC or PKCS10, deafults to CMC.
+    Specified if the request type should be CMC or PKCS10, deafults to CMC.
 #>
 function Test-TargetResource
 {
@@ -997,65 +997,13 @@ function Test-TargetResource
 
 <#
     .SYNOPSIS
-
     This function will check and ensure the right key length was choosen for the key type that was intended to be used
-
-    .PARAMETER Subject
-    Provide the text string to use as the subject of the certificate.
-
-    .PARAMETER CAServerFQDN
-    The FQDN of the Active Directory Certificate Authority on the local area network.
-
-    .PARAMETER CARootName
-    The name of the certificate authority, by default this will be in format domain-servername-ca.
 
     .PARAMETER KeyLength
     The bit length of the encryption key to be used.
 
-    .PARAMETER Exportable
-    The option to allow the certificate to be exportable, by default it will be true.
-
-    .PARAMETER ProviderName
-    The selection of provider for the type of encryption to be used.
-
-    .PARAMETER OID
-    The Object Identifier that is used to name the object.
-
-    .PARAMETER KeyUsage
-    The Keyusage is a restriction method that determines what a certificate can be used for.
-
-    .PARAMETER CertificateTemplate
-    The template used for the definiton of the certificate.
-
-    .PARAMETER SubjectAltName
-    The subject alternative name used to create the certificate.
-
-    .PARAMETER Credential
-    The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority.
-
-    .PARAMETER AutoRenew
-    Determines if the resource will also renew a certificate within 7 days of expiration.
-
-    .PARAMETER CAType
-    The type of CA in use, Standalone/Enterprise.
-
-    .PARAMETER CepURL
-    The URL to the Certification Enrollment Policy Service.
-
-    .PARAMETER CesURL
-    The URL to the Certification Enrollment Service.
-
-    .PARAMETER UseMachineContext
-    Determines if the machine should be impersonated for a request. Used for templates like Domain Controller Authentication
-
-    .PARAMETER FriendlyName
-    Specifies a friendly name for the certificate.
-
     .PARAMETER KeyType
-    Specifies if the key type is RSA or ECDH, defaults to RSA.
-
-    .PARAMETER RequestType
-    Specified if the request type is CMC or PKCS10, deafults to CMC.
+    Specifies if the key type should be RSA or ECDH, defaults to RSA.
 #>
 function Assert-ResourceProperty
 {
@@ -1073,14 +1021,15 @@ function Assert-ResourceProperty
         $KeyType = 'RSA'
     )
 
-    if ((($KeyType -eq 'RSA')  -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
+    if ((($KeyType -eq 'RSA') -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
     (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
     {
-        New-InvalidArgumentException -Message $($($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
+        New-InvalidArgumentException -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
     }
 }# end function Assert-ResourceProperty
 
 <#
+    .SYNOPSIS
     Compares two certificate subjects.
 
     .PARAMETER ReferenceSubject
@@ -1089,7 +1038,6 @@ function Assert-ResourceProperty
     .PARAMETER DifferenceSubject
     The certificate subject to compare with the ReferenceSubject.
 #>
-
 function Compare-CertificateSubject
 {
     [CmdletBinding()]

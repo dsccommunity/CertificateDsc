@@ -657,7 +657,7 @@ OID = $oid
                 }
             }
 
-            Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+            Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                 -Mockwith { $invalidCert }
 
             Context 'When called without valid cert' {
@@ -675,7 +675,6 @@ OID = $oid
             BeforeAll {
                 Mock -CommandName Test-Path -MockWith { $true } `
                     -ParameterFilter $pathCertReqTestReq_parameterFilter
-
 
                 Mock -CommandName Test-Path -MockWith { $true } `
                     -ParameterFilter $pathCertReqTestCer_parameterFilter
@@ -1077,7 +1076,7 @@ OID = $oid
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
                     Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1 `
-                        -ParameterFilter {$Arguments -like "*-adminforcemachine*"}
+                        -ParameterFilter { $Arguments -like "*-adminforcemachine*" }
 
                     Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly 1
 
@@ -1093,9 +1092,8 @@ OID = $oid
             }
 
             Context 'When autorenew is false, credeintals passed, no .out file' {
-
                 Mock -CommandName Test-Path -MockWith { $false } `
-                -ParameterFilter { $Path -eq 'CertReq-Test.out' }
+                    -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
@@ -1336,7 +1334,6 @@ OID = $oid
 
                 Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
-            Context 'When a valid certificate does not exist' {
                 It 'Should return false' {
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
                 }
@@ -1404,7 +1401,6 @@ OID = $oid
                 Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
 
                     Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $false
-                }
             }
 
             Context 'When a valid certificate already exists and X500 subjects are in a different order but match' {
@@ -1512,7 +1508,7 @@ OID = $oid
 
             Context 'When a Domain Controller certificate template is used, A valid certificate already exists and is not about to expire' {
                 It 'Should return true' {
-                    Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    Mock Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
                         -Mockwith { $validCert }
 
                     Mock Get-CertificateTemplateName -MockWith { $certificateDCTemplate }
@@ -1531,6 +1527,7 @@ OID = $oid
                     }
                 }
 
+                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
                     Test-TargetResource @paramsAutoDiscovery -Verbose | Should -Be $false
@@ -1543,6 +1540,9 @@ OID = $oid
         }
 
         Describe "$dscResourceName\Assert-ResourceProperty"{
+            $errorRecord = Get-InvalidOperationsRecord `
+                -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
+
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramRsaValid -Verbose } | Should -Not -Throw
@@ -1551,7 +1551,7 @@ OID = $oid
 
             Context 'When RSA key type and key length is invalid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramRsaInvalid -Verbose } | Should -Throw
+                    { Assert-ResourceProperty @paramRsaInvalid -Verbose } | Should -Throw $errorRecord
                 }
             }
 
@@ -1563,7 +1563,7 @@ OID = $oid
 
             Context 'When ECDH key type and key length is invalid' {
                 It 'Should not throw' {
-                    { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw
+                    { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw $errorRecord
                 }
             }
         }
@@ -1614,7 +1614,6 @@ OID = $oid
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
                         -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
-
                 }
             }
         }

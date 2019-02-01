@@ -26,7 +26,7 @@
 - Added DSCResourcesToExport to the CertificateDSC.psd1
 - CertReq:
   - Added key lengths for ECDH key type.
-  - Added Key type to check for correct key lengths.
+  - Added Key type to check for correct key lengths. - fixes
     [Issue 113](https://github.com/PowerShell/CertificateDsc/issues/113)
   - Added request type parameter to support PKCS10.
   - Simplified unit test comparison certificate request strings to make
