@@ -1056,7 +1056,7 @@ OID = $oid
 
                 Mock -CommandName Import-Module
 
-                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq -ParameterFilter {$Arguments -like "*-adminforcemachine*"}
+                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq
 
                 Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq
 
