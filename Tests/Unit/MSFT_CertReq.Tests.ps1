@@ -1540,9 +1540,6 @@ OID = $oid
         }
 
         Describe "$dscResourceName\Assert-ResourceProperty"{
-            $errorRecord = Get-InvalidOperationRecord `
-                -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
-
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramRsaValid -Verbose } | Should -Not -Throw
