@@ -1024,7 +1024,7 @@ function Assert-ResourceProperty
     if ((($KeyType -eq 'RSA') -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
     (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
     {
-        New-InvalidArgumentException -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType)
+        New-InvalidArgumentException -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
     }
 }# end function Assert-ResourceProperty
 
