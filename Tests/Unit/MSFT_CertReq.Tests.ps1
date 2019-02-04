@@ -1541,7 +1541,7 @@ OID = $oid
 
         Describe "$dscResourceName\Assert-ResourceProperty"{
             $errorRecord = Get-InvalidOperationRecord `
-                -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType)
+                -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
 
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
@@ -1550,6 +1550,9 @@ OID = $oid
             }
 
             Context 'When RSA key type and key length is invalid' {
+                $errorRecord = Get-InvalidOperationRecord `
+                -Message (($LocalizedData.InvalidKeySize) -f '384','RSA') -ArgumentName 'KeyLength'
+
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramRsaInvalid -Verbose } | Should -Throw $errorRecord
                 }
@@ -1562,6 +1565,9 @@ OID = $oid
             }
 
             Context 'When ECDH key type and key length is invalid' {
+                $errorRecord = Get-InvalidOperationRecord `
+                -Message (($LocalizedData.InvalidKeySize) -f '2048','ECDH') -ArgumentName 'KeyLength'
+
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw $errorRecord
                 }
