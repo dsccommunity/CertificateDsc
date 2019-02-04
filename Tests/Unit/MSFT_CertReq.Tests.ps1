@@ -1548,7 +1548,7 @@ OID = $oid
 
             Context 'When RSA key type and key length is invalid' {
                 $errorRecord = Get-InvalidOperationRecord `
-                -Message (($LocalizedData.InvalidKeySize) -f '384','RSA') -ArgumentName 'KeyLength'
+                -Message (($LocalizedData.InvalidKeySize) -f '384','RSA')
 
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramRsaInvalid -Verbose } | Should -Throw $errorRecord
@@ -1563,7 +1563,7 @@ OID = $oid
 
             Context 'When ECDH key type and key length is invalid' {
                 $errorRecord = Get-InvalidOperationRecord `
-                -Message (($LocalizedData.InvalidKeySize) -f '2048','ECDH') -ArgumentName 'KeyLength'
+                -Message (($LocalizedData.InvalidKeySize) -f '2048','ECDH')
 
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw $errorRecord
