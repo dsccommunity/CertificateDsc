@@ -591,8 +591,8 @@ function Get-CertificateTemplatesFromActiveDirectory
     and minor version is also returned.
 
     .PARAMETER FormattedTemplate
-    The text from the certificate template extension. The Format method should be called
-    using the parameter $true.
+    The text from the certificate template extension, retrieved from
+    Get-CertificateTemplateText.
 #>
 function Get-CertificateTemplateInformation
 {

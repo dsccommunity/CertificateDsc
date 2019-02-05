@@ -1117,21 +1117,21 @@ OID = $oid
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                     Assert-MockCalled -CommandName Get-Content -Exactly 0 `

@@ -150,10 +150,10 @@ try
                     Assert-MockCalled Import-CertificateEx -Exactly 0
                 }
                 It 'calls Get-ChildItem' {
-                    Assert-MockCalled Get-ChildItem -Exactly 1
+                    Assert-MockCalled Get-ChildItem -Exactly -Times 1
                 }
                 It 'calls Remove-Item' {
-                    Assert-MockCalled Remove-Item -Exactly 1
+                    Assert-MockCalled Remove-Item -Exactly -Times 1
                 }
             }
         }

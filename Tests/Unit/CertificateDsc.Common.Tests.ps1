@@ -1011,7 +1011,7 @@ Minor Version Number=5
                 }
             }
         }
-        
+
         Describe "$DSCResourceName\Get-CertificateTemplatesFromActiveDirectory" {
             $MockSearchResults = @(
                 @{
@@ -1052,22 +1052,29 @@ Minor Version Number=5
                 }
             )
 
-            Mock -CommandName Get-DirectoryEntry -MockWith {}
-            Mock -CommandName New-Object -ParameterFilter {$TypeName  -eq 'DirectoryServices.DirectorySearcher'} -MockWith {
+            $newObject_parameterFilter = {
+                $TypeName  -eq 'DirectoryServices.DirectorySearcher'
+            }
+
+            $newObject_mock = {
                 [PSCustomObject] @{
                     Filter     = $null
                     SearchRoot = $null
-                } | Add-Member -MemberType ScriptMethod -Name FindAll -Value {$MockSearchResults} -PassThru
+                } | Add-Member -MemberType ScriptMethod -Name FindAll -Value {
+                    $MockSearchResults
+                    } -PassThru
             }
+
+            Mock -CommandName New-Object -ParameterFilter $newObject_mock -MockWith $newObject_parameterFilter
 
             Context 'When certificate templates are retrieved from Active Directory successfully' {
                 It 'Should get 3 mocked search results' {
                     $SearchResults = Get-CertificateTemplatesFromActiveDirectory
 
-                    Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly 1
-                    Assert-MockCalled -CommandName New-Object         -Exactly 1
+                    Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly -Times 1
+                    Assert-MockCalled -CommandName New-Object         -Exactly -Times 1
 
-                    $SearchResults.Count | Should Be 3
+                    $SearchResults.Count | Should -Be 3
                 }
             }
 
@@ -1079,7 +1086,7 @@ Minor Version Number=5
                 It 'Should display a warning message' {
                     $Message = 'Failed to get the certificate templates from Active Directory.'
 
-                    Get-CertificateTemplatesFromActiveDirectory 3>&1 | Should Be $Message
+                    Get-CertificateTemplatesFromActiveDirectory 3>&1 | Should -Be $Message
                 }
             }
         }
@@ -1113,7 +1120,7 @@ Minor Version Number=5
                         return $Name -eq $testCommandName
                     }
 
-                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
                 }
 
                 It 'Should return true' {
@@ -1133,7 +1140,7 @@ Minor Version Number=5
                         return $Name -eq $testCommandName
                     }
 
-                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
                 }
 
                 It 'Should return false' {
