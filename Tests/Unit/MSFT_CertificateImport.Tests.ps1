@@ -126,7 +126,7 @@ try
                 Set-TargetResource @PresentParams
 
                 It 'calls Import-Certificate with the parameters supplied' {
-                    Assert-MockCalled Import-Certificate -Exactly 1 -ParameterFilter {
+                    Assert-MockCalled Import-Certificate -Exactly -Times 1 -ParameterFilter {
                         $CertStoreLocation -eq $validCertPath -and `
                         $FilePath -eq $validPath
                     }
@@ -150,10 +150,10 @@ try
                     Assert-MockCalled Import-Certificate -Exactly 0
                 }
                 It 'calls Get-ChildItem' {
-                    Assert-MockCalled Get-ChildItem -Exactly 1
+                    Assert-MockCalled Get-ChildItem -Exactly -Times 1
                 }
                 It 'calls Remove-Item' {
-                    Assert-MockCalled Remove-Item -Exactly 1
+                    Assert-MockCalled Remove-Item -Exactly -Times 1
                 }
             }
         }

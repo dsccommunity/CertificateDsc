@@ -449,15 +449,15 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
@@ -476,18 +476,18 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
@@ -506,18 +506,18 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
@@ -541,18 +541,18 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfRenew
@@ -571,18 +571,18 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfRenew
@@ -607,22 +607,22 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly 1 `
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.inf' }
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 3
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfKeyRenew
@@ -651,21 +651,21 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
                     Assert-MockCalled -CommandName Test-Path -Exactly 0 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
                         }
 
-                    Assert-MockCalled -CommandName CertReq.exe -Exactly 1
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly -Times 1
                 }
             }
 
@@ -687,15 +687,15 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
@@ -761,15 +761,15 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
@@ -777,17 +777,17 @@ RenewalCert = $validThumbprint
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
-                    Assert-MockCalled -CommandName Get-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Get-Content -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
-                    Assert-MockCalled -CommandName Remove-Item -Exactly 1 `
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
                 }
             }
@@ -807,15 +807,15 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfSubjectAltName
@@ -839,15 +839,15 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInfNoTemplate
@@ -871,15 +871,15 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
@@ -917,15 +917,15 @@ RenewalCert = $validThumbprint
                 }
 
                 It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly 1
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.req' }
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.cer' }
 
-                    Assert-MockCalled -CommandName Set-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
                         -ParameterFilter {
                             $Path -eq 'CertReq-Test.inf' -and `
                             $Value -eq $certInf
@@ -933,17 +933,17 @@ RenewalCert = $validThumbprint
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Test-Path  -Exactly 1 `
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
-                    Assert-MockCalled -CommandName Get-Content -Exactly 1 `
+                    Assert-MockCalled -CommandName Get-Content -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
-                    Assert-MockCalled -CommandName Remove-Item -Exactly 1 `
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
 
                     Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
