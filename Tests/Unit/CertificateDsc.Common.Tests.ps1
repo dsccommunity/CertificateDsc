@@ -1092,13 +1092,13 @@ Minor Version Number=5
         }
 
         Describe "$DSCResourceName\Get-CertificateSan" {
-            Context 'A certificate with a SAN is used' {
+            Context 'When a certificate with a SAN is used' {
                 It 'Should return the SAN' {
                     Get-CertificateSan -Certificate $testCertificate | Should -Be 'firstsan'
                 }
             }
 
-            Context 'A certificate without SAN is used' {
+            Context 'When a certificate without SAN is used' {
                 It 'Should return null' {
                     Get-CertificateSan -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
                 }
@@ -1110,7 +1110,7 @@ Minor Version Number=5
 
             Mock -CommandName 'Get-Command' -MockWith { return $Name }
 
-            Context 'Get-Command returns the command' {
+            Context 'When Get-Command returns' {
                 It 'Should not throw' {
                     { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
                 }
@@ -1128,7 +1128,7 @@ Minor Version Number=5
                 }
             }
 
-            Context 'Get-Command returns null' {
+            Context 'When Get-Command returns null' {
                 Mock -CommandName 'Get-Command' -MockWith { return $null }
 
                 It 'Should not throw' {
@@ -1150,7 +1150,7 @@ Minor Version Number=5
         }
 
         Describe 'Get-CertificateStorePath' {
-            Context 'Get-CertificateStorePath called with Store and Location' {
+            Context 'When Get-CertificateStorePath called with Store and Location' {
                 It 'Should not throw' {
                     { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
                 }

@@ -125,8 +125,8 @@ try
             Context "Valid path + thumbprint and Ensure is Present" {
                 Set-TargetResource @PresentParams
 
-                It 'calls Import-CertificateEx with the parameters supplied' {
-                    Assert-MockCalled Import-CertificateEx -Exactly 1 -ParameterFilter {
+                It 'calls Import-Certificate with the parameters supplied' {
+                    Assert-MockCalled Import-Certificate -Exactly -Times 1 -ParameterFilter {
                         $CertStoreLocation -eq $validCertPath -and `
                         $FilePath -eq $validPath
                     }
