@@ -1087,7 +1087,7 @@ Minor Version Number=5
                 It 'Should display a warning message' {
                     $Message = 'Failed to get the certificate templates from Active Directory.'
 
-                    Get-CertificateTemplatesFromActiveDirectory 3>&1 | Should -Be $Message
+                    Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1 | Should -Be $Message
                 }
             }
         }

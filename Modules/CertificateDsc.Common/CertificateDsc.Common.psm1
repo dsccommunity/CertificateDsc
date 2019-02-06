@@ -556,6 +556,7 @@ function Get-CertificateTemplatesFromActiveDirectory
     }
     catch
     {
+        Write-Verbose -Message $_.Exception.Message
         Write-Warning -Message $LocalizedData.ActiveDirectoryTemplateSearch
     }
 
