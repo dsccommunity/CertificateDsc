@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Minor style corrections from PR for
-[Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161) 
+[Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
 that were missed.
 - Opt-in to Example publishing to PowerShell Gallery - fixes
 [Issue #177](https://github.com/PowerShell/CertificateDsc/issues/177).
