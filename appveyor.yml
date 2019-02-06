@@ -24,7 +24,8 @@ test_script:
     - ps: |
         Invoke-AppveyorTestScriptTask `
             -CodeCoverage `
-            -CodeCovIo
+            -CodeCovIo `
+            -ExcludeTag @()
 
 #---------------------------------#
 #      deployment configuration   #
@@ -37,5 +38,4 @@ deploy_script:
             -Type 'Wiki' `
             -ResourceModuleName $moduleName
 
-        Invoke-AppVeyorDeployTask `
-            -OptIn @()
+        Invoke-AppVeyorDeployTask

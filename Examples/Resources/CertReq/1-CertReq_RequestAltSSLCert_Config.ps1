@@ -29,6 +29,7 @@
 #>
 configuration CertReq_RequestAltSSLCert_Config
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -56,6 +57,8 @@ configuration CertReq_RequestAltSSLCert_Config
             AutoRenew           = $true
             FriendlyName        = 'SSL Cert for Web Server'
             Credential          = $Credential
+            KeyType             = 'RSA'
+            RequestType         = 'CMC'
         }
     }
 }

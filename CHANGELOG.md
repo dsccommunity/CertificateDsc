@@ -2,6 +2,45 @@
 
 ## Unreleased
 
+- Minor style corrections from PR for [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
+  that were missed.
+- Opt-in to Example publishing to PowerShell Gallery - fixes [Issue #177](https://github.com/PowerShell/CertificateDsc/issues/177).
+- Changed Test-CertificateAuthority to return the template name if it finds the display name of the template in the certificate -fixes Issue #147.
+
+## 4.3.0.0
+
+- CertificateImport:
+  - Updated certificate import to only use Import-CertificateEx - fixes
+    [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161).
+- Update LICENSE file to match the Microsoft Open Source Team standard - fixes
+  [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
+- Opted into Common Tests - fixes [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
+  - Required Script Analyzer Rules
+  - Flagged Script Analyzer Rules
+  - New Error-Level Script Analyzer Rules
+  - Custom Script Analyzer Rules
+  - Validate Example Files To Be Published
+  - Validate Markdown Links
+  - Relative Path Length
+- CertificateExport:
+  - Fixed bug causing PFX export with matchsource enabled to fail - fixes
+    [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
+- Added DSCResourcesToExport to the CertificateDSC.psd1
+- CertReq:
+  - Added key lengths for ECDH key type.
+  - Added Key type to check for correct key lengths. - fixes
+    [Issue 113](https://github.com/PowerShell/CertificateDsc/issues/113)
+  - Added request type parameter to support PKCS10.
+  - Simplified unit test comparison certificate request strings to make
+    tests easier to read.
+  - Improved unit test layout and updated to meet standards.
+  - Fixed bug in certificate renewal with `RenewalCert` attribute in the
+    incorrect section - fixes [Issue 172](https://github.com/PowerShell/CertificateDsc/issues/172)
+  - Fixed bug in certificate renewal when subject contains X500 path that
+    is in a different order - fixes [Issue 173](https://github.com/PowerShell/CertificateDsc/issues/173)
+
+## 4.2.0.0
+
 - Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
   [Issue #139](https://github.com/PowerShell/CertificateDsc/issues/139).
 - Refactored module folder structure to move resource to root folder of
@@ -12,6 +51,19 @@
   [Issue #147](https://github.com/PowerShell/CertificateDsc/issues/147).
 - Correct configuration names in Examples - fixes [Issue #150](https://github.com/PowerShell/CertificateDsc/issues/150).
 - Correct filename case of `CertificateDsc.Common.psm1` - fixes [Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
+- Remove exclusion of all tags in appveyor.yml, so all common tests can be run
+  if opt-in.
+- PfxImport:
+  - Added requirements to README.MD to specify cryptographic algorithm
+    support - fixes [Issue #153](https://github.com/PowerShell/CertificateDsc/issues/153).
+  - Changed Path parameter to be optional to fix error when ensuring certificate
+    is absent and certificate file does not exist on disk - fixes [Issue #136](https://github.com/PowerShell/CertificateDsc/issues/136).
+  - Removed ShouldProcess because it is not required by DSC Resources.
+  - Minor style corrections.
+  - Changed unit tests to be non-destructive.
+  - Improved naming and description of example files.
+  - Added localization string ID suffix for all strings.
+- Added .VSCode settings for applying DSC PSSA rules - fixes [Issue #157](https://github.com/PowerShell/CertificateDsc/issues/157).
 
 ## 4.1.0.0
 
@@ -23,13 +75,6 @@
   - Refactored to remove code duplication by creating Get-CertificateStorePath.
   - Improved unit tests to meet standards and provide better coverage.
   - Improved integration tests to meet standards and provide better coverage.
-  - Changed Path parameter to be optional to fix error when ensuring certificate
-    is absent and certificate file does not exist on disk - fixes [Issue #136](https://github.com/PowerShell/CertificateDsc/issues/136).
-  - Removed ShouldProcess because it is not required by DSC Resources.
-  - Minor style corrections.
-  - Changed unit tests to be non-destructive.
-  - Improved naming and description of example files.
-  - Added localization string ID suffix for all strings.
 - CertificateDsc.Common:
   - Corrected to meet style guidelines.
   - Added function Get-CertificateStorePath for generating Certificate Store path.

@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    moduleVersion = '4.1.0.0'
+    moduleVersion = '4.3.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -32,6 +32,9 @@
     # Cmdlets to export from this module
     CmdletsToExport   = '*'
 
+    # DSC resources to export from this module
+    DscResourcesToExport = @('CertificateExport','CertificateImport','CertReq','PfxImport','WaitForCertificateServices')
+
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
     PrivateData       = @{
 
@@ -50,20 +53,20 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- PfxImport:
-  - Changed so that PFX will be reimported if private key is not
-    installed - fixes [Issue 129](https://github.com/PowerShell/CertificateDsc/issues/129).
-  - Corrected to meet style guidelines.
-  - Corrected path parameter description - fixes [Issue 125](https://github.com/PowerShell/CertificateDsc/issues/125).
-  - Refactored to remove code duplication by creating Get-CertificateStorePath.
-  - Improved unit tests to meet standards and provide better coverage.
-  - Improved integration tests to meet standards and provide better coverage.
-- CertificateDsc.Common:
-  - Corrected to meet style guidelines.
-  - Added function Get-CertificateStorePath for generating Certificate Store path.
-  - Remove false verbose message from `Test-Thumbprint` - fixes [Issue 127](https://github.com/PowerShell/CertificateDsc/issues/127).
-- CertReq:
-  - Added detection for FIPS mode in Test-Thumbprint - fixes [Issue 107](https://github.com/PowerShell/CertificateDsc/issues/107).
+        ReleaseNotes = '- Updated certificate import to only use Import-CertificateEx - fixes [Issue 161](https://github.com/PowerShell/CertificateDsc/issues/161)
+- Update LICENSE file to match the Microsoft Open Source Team standard -fixes
+  [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
+- Opted into Common Tests - fixes [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
+  - Required Script Analyzer Rules
+  - Flagged Script Analyzer Rules
+  - New Error-Level Script Analyzer Rules
+  - Custom Script Analyzer Rules
+  - Validate Example Files To Be Published
+  - Validate Markdown Links
+  - Relative Path Length
+- CertificateExport:
+  - Fixed bug causing PFX export with matchsource enabled to fail - fixes
+    [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
 
 '
 
@@ -72,6 +75,8 @@
     } # End of PrivateData hashtable
 
 }
+
+
 
 
 

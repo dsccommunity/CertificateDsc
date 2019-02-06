@@ -118,7 +118,7 @@ try
         Describe "$DSCResourceName\Set-TargetResource" {
             $null | Set-Content -Path $validPath
 
-            Mock Import-Certificate
+            Mock Import-CertificateEx
             Mock Get-ChildItem
             Mock Remove-Item
 
@@ -126,7 +126,7 @@ try
                 Set-TargetResource @PresentParams
 
                 It 'calls Import-Certificate with the parameters supplied' {
-                    Assert-MockCalled Import-Certificate -Exactly 1 -ParameterFilter {
+                    Assert-MockCalled Import-Certificate -Exactly -Times 1 -ParameterFilter {
                         $CertStoreLocation -eq $validCertPath -and `
                         $FilePath -eq $validPath
                     }
@@ -146,14 +146,14 @@ try
             Context "Valid path + thumbprint and Ensure is Absent" {
                 Set-TargetResource @AbsentParams
 
-                It 'does not call Import-Certificate' {
-                    Assert-MockCalled Import-Certificate -Exactly 0
+                It 'does not call Import-CertificateEx' {
+                    Assert-MockCalled Import-CertificateEx -Exactly 0
                 }
                 It 'calls Get-ChildItem' {
-                    Assert-MockCalled Get-ChildItem -Exactly 1
+                    Assert-MockCalled Get-ChildItem -Exactly -Times 1
                 }
                 It 'calls Remove-Item' {
-                    Assert-MockCalled Remove-Item -Exactly 1
+                    Assert-MockCalled Remove-Item -Exactly -Times 1
                 }
             }
         }

@@ -21,4 +21,5 @@ ConvertFrom-StringData @'
     CertReqOutNotFoundError = CertReq.exe output file '{0}' not found.
     CertTemplateMismatch = The certificate with subject '{0}' issued by '{1}' with thumbprint {2} has the wrong template {3}.
     CertFriendlyNameMismatch = The certificate with subject '{0}' issued by '{1}' with thumbprint {2} has the wrong friendly name '{3}'.
+    InvalidKeySize = The key length '{0}' specified is invalid for '{1}' key types.
 '@
