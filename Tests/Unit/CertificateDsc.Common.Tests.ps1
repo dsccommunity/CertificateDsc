@@ -1066,6 +1066,7 @@ Minor Version Number=5
             }
 
             Mock -CommandName New-Object -ParameterFilter $newObject_mock -MockWith $newObject_parameterFilter
+            Mock -CommandName Get-DirectoryEntry
 
             Context 'When certificate templates are retrieved from Active Directory successfully' {
                 It 'Should get 3 mocked search results' {

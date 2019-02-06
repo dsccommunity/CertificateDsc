@@ -524,177 +524,11 @@ function Test-CertificateAuthority
 
 <#
     .SYNOPSIS
-    Gets the certificate templates from Active Directory
-
-    .DESCRIPTION
-    Gets the certificate templates from Active Directory by using a
-    DirectorySearcher object to find all objects with a objectClass
-    of pKICertificateTemplate from the search root of
-    CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration
-
-    .NOTES
-    The domain variable is populated based on the domain of the user running the
-    function. When run as System this will return the domain of computer.
-    Normally this won't make any difference unless the user is from a foreign
-    domain.
-#>
-function Get-CertificateTemplatesFromActiveDirectory
-{
-    [CmdletBinding()]
-    [OutputType([PSCustomObject[]])]
-    param ()
-
-    try
-    {
-        $domain   = Get-DirectoryEntry
-        $searcher = New-Object -TypeName DirectoryServices.DirectorySearcher
-
-        $searcher.Filter     = '(objectclass=pKICertificateTemplate)'
-        $searcher.SearchRoot = 'LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,{0}' -f $domain
-
-        $searchResults = $searcher.FindAll()
-    }
-    catch
-    {
-        Write-Warning -Message $LocalizedData.ActiveDirectoryTemplateSearch
-    }
-
-    $adTemplates = @()
-
-    foreach ($searchResult in $searchResults)
-    {
-        $templateData = @{}
-        $properties   =  New-Object -TypeName Object[] -ArgumentList $searchResult.Properties.Count
-
-        $searchResult.Properties.CopyTo($properties, 0)
-        $properties.ForEach({
-            $templateData[$_.Name] = ($_.Value | Out-String).Trim()
-        })
-
-        $adTemplates += [PSCustomObject] $templateData
-    }
-
-    return $adTemplates
-}
-
-<#
-    .SYNOPSIS
-    Gets information about the certificate template.
-
-    .DESCRIPTION
-    If the certificate template is "1.3.6.1.4.1.311.20.2" then this function returns
-    the name fo the template from the formatted text of the extension.
-    If the certificate template is "1.3.6.1.4.1.311.21.7" then this function returns
-    the information about the certificate template by retreiving the available templates
-    from Active Directory and matching the certificate template against this list.
-    In addition to the template name the display name, template OID, the major version
-    and minor version is also returned.
-
-    .PARAMETER FormattedTemplate
-    The text from the certificate template extension, retrieved from
-    Get-CertificateTemplateText.
-#>
-function Get-CertificateTemplateInformation
-{
-    [OutputType([PSCustomObject])]
-    param
-    (
-        [Parameter(Mandatory)]
-        [String]
-        $FormattedTemplate
-    )
-
-    $templateInformation = @{}
-
-    switch -Regex ($FormattedTemplate)
-    {
-        'Template=(?:(?<DisplayName>.+?)\((?<Oid>[\d.]+)\)|(?<Oid>[\d.]+))\s*Major\sVersion\sNumber=(?<MajorVersion>\d+)\s*Minor\sVersion\sNumber=(?<MinorVersion>\d+)'
-        {
-            [Array] $adTemplates = Get-CertificateTemplatesFromActiveDirectory
-
-            if ([String]::IsNullOrEmpty($Matches.DisplayName))
-            {
-                $template = $adTemplates.Where({
-                    $_.'msPKI-Cert-Template-OID' -eq $Matches.Oid
-                })
-
-                $Matches['DisplayName'] = $template.DisplayName
-            }
-            else
-            {
-                $template = $adTemplates.Where({
-                    $_.'DisplayName' -eq $Matches.DisplayName
-                })
-            }
-
-            $Matches['Name'] = $template.Name
-
-            if ($null -eq $template)
-            {
-                Write-Warning -Message $LocalizedData.TemplateNameResolutionError
-            }
-
-            $TemplateInformation['Name']         = $Matches.Name
-            $TemplateInformation['DisplayName']  = $Matches.DisplayName
-            $TemplateInformation['Oid']          = $Matches.Oid
-            $TemplateInformation['MajorVersion'] = $Matches.MajorVersion
-            $TemplateInformation['MinorVersion'] = $Matches.MinorVersion
-        }
-
-        '^(?<TemplateName>\w+)\s?$'
-        {
-            $TemplateInformation['Name'] = $Matches.TemplateName
-        }
-    }
-
-    return [PSCustomObject] $templateInformation
-}
-
-<#
-    .SYNOPSIS
-    Gets the formatted text output from an X509 certificate template extension.
-
-    .DESCRIPTION
-    The supplied X509 Extension Collected is processed to find any Certificate
-    Template extensions.
-    If a template extension is found the Format method is called with the parameter
-    $true and the text output is returned.
-
-    .PARAMETER TemplateExtensions
-    The X509 extensions collection from and X509 certificate to be searched for a
-    certificate template extension.
-#>
-function Get-CertificateTemplateText
-{
-    [OutputType([String])]
-    param
-    (
-        [Parameter(Mandatory)]
-        [System.Security.Cryptography.X509Certificates.X509ExtensionCollection]
-        $TemplateExtensions
-    )
-
-    $TemplateOidNames = 'Certificate Template Information', 'Certificate Template Name'
-
-    $TemplateExtension = $TemplateExtensions.Where({
-        $_.Oid.FriendlyName -in $TemplateOidNames
-    })[0]
-
-    if ($null -ne $TemplateExtension)
-    {
-        return $TemplateExtension.Format($true)
-    }
-}
-
-<#
-    .SYNOPSIS
     Get a certificate template name from an x509 certificate.
 
     .DESCRIPTION
-
-    .DESCRIPTION
     Gets the certificate templates from Active Directory by using a
-    DirectorySearcher object to find all objects with a objectClass
+    DirectorySearcher object to find all objects with an objectClass
     of pKICertificateTemplate from the search root of
     CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration
 
@@ -748,11 +582,9 @@ function Get-CertificateTemplatesFromActiveDirectory
     Gets information about the certificate template.
 
     .DESCRIPTION
-    If the certificate template is "1.3.6.1.4.1.311.20.2" then this function returns
-    the name of the template from the formatted text of the extension.
-    If the certificate template is "1.3.6.1.4.1.311.21.7" then this function returns
-    the information about the certificate template by retreiving the available templates
-    from Active Directory and matching the certificate template against this list.
+    This function returns the information about the certificate template by retreiving
+    the available templates from Active Directory and matching the formatted certificate
+    template name against this list.
     In addition to the template name the display name, template OID, the major version
     and minor version is also returned.
 
