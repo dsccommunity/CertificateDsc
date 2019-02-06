@@ -2,12 +2,12 @@
 
 ## Unreleased
 
-- Minor style corrections from PR for 
+- Minor style corrections from PR for
 [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
 that were missed.
 - Opt-in to Example publishing to PowerShell Gallery - fixes
 [Issue #177](https://github.com/PowerShell/CertificateDsc/issues/177).
-- Changed Test-CertificateAuthority to return the template name if it finds the 
+- Changed Test-CertificateAuthority to return the template name if it finds the
 display name of the template in the certificate -fixes Issue #147.
 
 ## 4.3.0.0
@@ -17,7 +17,7 @@ display name of the template in the certificate -fixes Issue #147.
     [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161).
 - Update LICENSE file to match the Microsoft Open Source Team standard - fixes
   [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
-- Opted into Common Tests - fixes 
+- Opted into Common Tests - fixes
 [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
   - Required Script Analyzer Rules
   - Flagged Script Analyzer Rules
@@ -42,7 +42,7 @@ display name of the template in the certificate -fixes Issue #147.
     incorrect section - fixes
     [Issue 172](https://github.com/PowerShell/CertificateDsc/issues/172)
   - Fixed bug in certificate renewal when subject contains X500 path that
-    is in a different order - fixes 
+    is in a different order - fixes
     [Issue 173](https://github.com/PowerShell/CertificateDsc/issues/173)
 
 ## 4.2.0.0
@@ -50,69 +50,67 @@ display name of the template in the certificate -fixes Issue #147.
 - Added a CODE_OF_CONDUCT.md with the same content as in the README.md - fixes
   [Issue #139](https://github.com/PowerShell/CertificateDsc/issues/139).
 - Refactored module folder structure to move resource to root folder of
-  repository and remove test harness - fixes 
+  repository and remove test harness - fixes
   [Issue #142](https://github.com/PowerShell/CertificateDsc/issues/142).
 - Updated Examples to support deployment to PowerShell Gallery scripts.
 - Changed Test-CertificateAuthority to return the template name if it finds the
   display name of the template in the certificate -fixes
   [Issue #147](https://github.com/PowerShell/CertificateDsc/issues/147).
-- Correct configuration names in Examples - fixes 
+- Correct configuration names in Examples - fixes
 [Issue #150](https://github.com/PowerShell/CertificateDsc/issues/150).
-- Correct filename case of `CertificateDsc.Common.psm1` - fixes 
+- Correct filename case of `CertificateDsc.Common.psm1` - fixes
 [Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
 - Remove exclusion of all tags in appveyor.yml, so all common tests can be run
   if opt-in.
 - PfxImport:
   - Added requirements to README.MD to specify cryptographic algorithm
-    support - fixes 
+    support - fixes
     [Issue #153](https://github.com/PowerShell/CertificateDsc/issues/153).
   - Changed Path parameter to be optional to fix error when ensuring certificate
-    is absent and certificate file does not exist on disk - fixes 
+    is absent and certificate file does not exist on disk - fixes
     [Issue #136](https://github.com/PowerShell/CertificateDsc/issues/136).
   - Removed ShouldProcess because it is not required by DSC Resources.
   - Minor style corrections.
   - Changed unit tests to be non-destructive.
   - Improved naming and description of example files.
   - Added localization string ID suffix for all strings.
-- Added .VSCode settings for applying DSC PSSA rules - fixes 
+- Added .VSCode settings for applying DSC PSSA rules - fixes
 [Issue #157](https://github.com/PowerShell/CertificateDsc/issues/157).
 
 ## 4.1.0.0
 
 - PfxImport:
   - Changed so that PFX will be reimported if private key is not
-    installed - fixes 
+    installed - fixes
     [Issue #129](https://github.com/PowerShell/CertificateDsc/issues/129).
   - Corrected to meet style guidelines.
-  - Corrected path parameter description - fixes 
+  - Corrected path parameter description - fixes
   [Issue #125](https://github.com/PowerShell/CertificateDsc/issues/125).
   - Refactored to remove code duplication by creating Get-CertificateStorePath.
   - Improved unit tests to meet standards and provide better coverage.
   - Improved integration tests to meet standards and provide better coverage.
 - CertificateDsc.Common:
   - Corrected to meet style guidelines.
-  - Added function Get-CertificateStorePath for generating Certificate Store 
+  - Added function Get-CertificateStorePath for generating Certificate Store
     path.
-  - Remove false verbose message from `Test-Thumbprint` - fixes 
+  - Remove false verbose message from `Test-Thumbprint` - fixes
   [Issue #127](https://github.com/PowerShell/CertificateDsc/issues/127).
 - CertReq:
-  - Added detection for FIPS mode in Test-Thumbprint - fixes 
+  - Added detection for FIPS mode in Test-Thumbprint - fixes
   [Issue #107](https://github.com/PowerShell/CertificateDsc/issues/107).
 
 ## 4.0.0.0
 
 - BREAKING CHANGE
-  - Renamed xCertificate to CertificateDsc - fixes 
+  - Renamed xCertificate to CertificateDsc - fixes
   [Issue #114](https://github.com/PowerShell/xCertificate/issues/114).
   - Changed all MSFT_xResourceName to MSFT_ResourceName.
   - Updated DSCResources, Examples, Modules and Tests for new naming.
   - Updated Year to 2018 in License and Manifest.
   - Updated README.md from xCertificate to CertifcateDsc
   - Removed unnecessary code from:
-    - CertificateDsc\Modules\CertificateDsc\DSCResources
-\MSFT_CertReq\MSFT_CertReq.psm1
-      - Deleted $rspPath = 
-[System.IO.Path]::ChangeExtension($workingPath, '.rsp')
+    - CertificateDsc\Modules\CertificateDsc\DSCResources\MSFT_CertReq\MSFT_CertReq.psm1
+      - Deleted `$rspPath = [System.IO.Path]::ChangeExtension($workingPath, '.rsp')`
 
 ## 3.2.0.0
 
@@ -125,15 +123,15 @@ display name of the template in the certificate -fixes Issue #147.
 - Added `Documentation and Examples` section to Readme.md file - see
   [issue #98](https://github.com/PowerShell/xCertificate/issues/98).
 - Changed description in Credential parameter of xPfxImport resource
-  to correctly generate parameter documentation in Wiki - see 
+  to correctly generate parameter documentation in Wiki - see
   [Issue #103](https://github.com/PowerShell/xCertificate/issues/103).
 - Changed description in Credential parameter of xCertReq resource
   to clarify that a PSCredential object should be used.
-- Updated tests to meet Pester V4 guidelines - fixes 
+- Updated tests to meet Pester V4 guidelines - fixes
 [Issue #105](https://github.com/PowerShell/xCertificate/issues/105).
 - Add support for Windows Server 2008 R2 which does not contain PKI
   module so is missing `Import-PfxCertificate` and `Import-Certificate`
-  cmdlets - fixes 
+  cmdlets - fixes
   [Issue #46](https://github.com/PowerShell/xCertificate/issues/46).
 
 ## 3.0.0.0
@@ -144,26 +142,25 @@ display name of the template in the certificate -fixes Issue #147.
 - Updated License and Manifest Copyright info to be 2017 Microsoft Corporation.
 - xCertReq:
   - BREAKING CHANGE: Changed default Keylength to 2048 bits to meet
-    [Microsoft Security Advisory](https://support.microsoft.com/en-us/help/
-2661254/microsoft-security-advisory-update-for-minimum-certificate-key-length).
+    [Microsoft Security Advisory](https://support.microsoft.com/en-us/help/2661254/microsoft-security-advisory-update-for-minimum-certificate-key-length).
   - Fixed spelling mistakes in MOF files.
 - Added .github support files:
   - CONTRIBUTING.md
   - ISSUE_TEMPLATE.md
   - PULL_REQUEST_TEMPLATE.md
 - Opted into Common Tests 'Validate Module Files' and 'Validate Script Files'.
-- Converted files with UTF8 with BOM over to UTF8 - fixes 
+- Converted files with UTF8 with BOM over to UTF8 - fixes
 [Issue 87](https://github.com/PowerShell/xCertificate/issues/87).
-- Converted to use auto-documentation/wiki format - fixes 
+- Converted to use auto-documentation/wiki format - fixes
 [Issue 84](https://github.com/PowerShell/xCertificate/issues/84).
 
 ## 2.8.0.0
 
 - xCertReq:
   - Added FriendlyName parameter to xCertReq.
-  - Changed exceptions to be raised using New-InvalidOperationException from 
+  - Changed exceptions to be raised using New-InvalidOperationException from
   PSDscResources.
-  - Changed integration tests to use Config Data instead of value in config to 
+  - Changed integration tests to use Config Data instead of value in config to
   support additional tests.
   - Converted unit tests to use Get-InvalidOperationRecord in CommonTestHelper.
   - Improved unit test style to match standard layout.
@@ -172,17 +169,16 @@ display name of the template in the certificate -fixes Issue #147.
   - Fixed CA auto-detection to work when CA name contains a space.
 - Corrected all makrdown rule violations in README.MD.
 - Added markdownlint.json file to enable line length rule checking in VSCode
-  with [MarkdownLint extension](https://marketplace.visualstudio.com/
-items?itemName=DavidAnson.vscode-markdownlint)
+  with [MarkdownLint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
   installed.
-- Added the VS Code PowerShell extension formatting settings that cause 
+- Added the VS Code PowerShell extension formatting settings that cause
 PowerShell files to be formatted as per the DSC Resource kit style guidelines.
 - Fixed verbose preference not being passed to CertificateDsc.Common functions -
   fixes [Issue 70](https://github.com/PowerShell/xCertificate/issues/70).
-- Converted all calls to `New-InvalidArgumentError` function to 
+- Converted all calls to `New-InvalidArgumentError` function to
 `New-InvalidArgumentException` found in `CertificateDsc.ResourceHelper` - fixes 
 [Issue 68](https://github.com/PowerShell/xCertificate/issues/68)
-- Replaced all calls to `Write-Error` with calls to 
+- Replaced all calls to `Write-Error` with calls to
 `New-InvalidArgumentException` and `New-InvalidOperationException`
 - xWaitForCertificateServices:
   - Added new resource.
@@ -190,25 +186,25 @@ PowerShell files to be formatted as per the DSC Resource kit style guidelines.
   issue 2048 bit certificates.
 - Fixed spelling error in xCertificateExport Issuer parameter description.
 - Prevent unit tests from DSCResource.Tests from running during test
-  execution - fixes 
+  execution - fixes
   [Issue 100](https://github.com/PowerShell/xCertificate/issues/100).
 
 ## 2.7.0.0
 
-- Added integration test to test for conflicts with other common resource kit 
+- Added integration test to test for conflicts with other common resource kit
   modules.
-- Prevented ResourceHelper and Common module cmdlets from being exported to 
+- Prevented ResourceHelper and Common module cmdlets from being exported to
   resolve conflicts with other resource modules.
 
 ## 2.6.0.0
 
 - Added mandatory properties for xPfxImport resource example.
 - xCertReq:
-  - Fixed issue where xCertReq does not identify when DNS Names in SANs are 
+  - Fixed issue where xCertReq does not identify when DNS Names in SANs are
     incorrect.
   - Added Certificate Authority auto-discovery to resource xCertReq.
   - Added SAN and certificate template name to xCertReq's Get-TargetResource
-  - Added new parameter UseMachineContext to be able to use CA templates that 
+  - Added new parameter UseMachineContext to be able to use CA templates that
     try to fill the subject alternative name.
 - CertificateDSc.Common:
   - Added function Get-CertificateTemplateName to retrieve template name
@@ -217,8 +213,8 @@ PowerShell files to be formatted as per the DSC Resource kit style guidelines.
 
 ## 2.5.0.0
 
-- Fixed issue where xCertReq does not process requested certificate when 
-  credentials parameter set and PSDscRunAsCredential not passed. See 
+- Fixed issue where xCertReq does not process requested certificate when
+  credentials parameter set and PSDscRunAsCredential not passed. See
   [issue](https://github.com/PowerShell/xCertificate/issues/49)
 
 ## 2.4.0.0
@@ -236,7 +232,7 @@ PowerShell files to be formatted as per the DSC Resource kit style guidelines.
 ## 2.3.0.0
 
 - xCertReq:
-  - Added additional parameters KeyLength, Exportable, ProviderName, OID, 
+  - Added additional parameters KeyLength, Exportable, ProviderName, OID,
     KeyUsage, CertificateTemplate, SubjectAltName
 - Fixed most markdown errors in Readme.md.
 - Corrected Parameter decoration format to be consistent with guidelines.
@@ -259,7 +255,7 @@ PowerShell files to be formatted as per the DSC Resource kit style guidelines.
 - xCertificateImport:
   - Fixed bug with Test-TargetResource incorrectly detecting change required.
   - Reworked unit tests for improved code coverage to meet HQRM standards.
-  - Created Integration tests for both importing and removing an imported 
+  - Created Integration tests for both importing and removing an imported
     certificate.
   - Added descriptions to MOF file.
   - Removed default parameter values for parameters that are required or keys.
@@ -269,7 +265,7 @@ PowerShell files to be formatted as per the DSC Resource kit style guidelines.
 - xPfxImport:
   - Fixed bug with Test-TargetResource incorrectly detecting change required.
   - Reworked unit tests for improved code coverage to meet HQRM standards.
-  - Created Integration tests for both importing and removing an imported 
+  - Created Integration tests for both importing and removing an imported
     certificate.
   - Added descriptions to MOF file.
   - Removed default parameter values for parameters that are required or keys.

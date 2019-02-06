@@ -1065,7 +1065,7 @@ Minor Version Number=5
                     } -PassThru
             }
 
-            Mock -CommandName New-Object -ParameterFilter $newObject_mock -MockWith $newObject_parameterFilter
+            Mock -CommandName New-Object -ParameterFilter $newObject_parameterFilter -MockWith $newObject_mock
             Mock -CommandName Get-DirectoryEntry
 
             Context 'When certificate templates are retrieved from Active Directory successfully' {
