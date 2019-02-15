@@ -114,7 +114,30 @@ try
             -----END CERTIFICATE-----
             "
 
-        $cerFileWithAltTemplate = "
+        $cerFileWithAltTemplateName = "
+            -----BEGIN CERTIFICATE-----
+            MIIDVjCCAj6gAwIBAgIQIA9TO/nfla5FrjJZIiI6nzANBgkqhkiG9w0BAQsFADAW
+            MRQwEgYDVQQDDAtzb21lbWFjaGluZTAeFw0xOTAyMTUxNjI3NDVaFw0yMDAyMTUx
+            NjQ3NDVaMBYxFDASBgNVBAMMC3NvbWVtYWNoaW5lMIIBIjANBgkqhkiG9w0BAQEF
+            AAOCAQ8AMIIBCgKCAQEAuwr0qT/ekYvp4RIHfEqsZyabdWUIR842P/1+t2b0W5bn
+            LqxER+mUuBOrbdNcekjQjTnq5rYy1WsIwjeuJ7zgmVINvL8KeYna750M5ngAZsqO
+            QoRR9xbQAeht2H1Q9vj/GHbakOKUW45It/0EvZLmF/FJ2+WdIGQMuqQVdr4N+w0f
+            DPIVjDCjRLT5USZOHWJGrKYDSaWSf5tEQAp/6RW3JnFkE2biWsYQ3FGZtVgRxjLS
+            4+602xnLTyjakQiXBosE0AuW36jiFPeW3WVVF1pdinPpIbtzE0CkoeEwPMfWNJaA
+            BfIVmkEKL8HeQGk4kSEvZ/zfNbPr7RfY3S925SeR5QIDAQABo4GfMIGcMA4GA1Ud
+            DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwKAYDVR0R
+            BCEwH4IIZmlyc3RzYW6CCXNlY29uZHNhboIIdGhpcmRzYW4wIgYJKwYBBAGCNxQC
+            BBUeEgBXAGUAYgBTAGUAcgB2AGUAcgAwHQYDVR0OBBYEFNzXV7OE2NNKgKeLPTbT
+            +YBIcPJXMA0GCSqGSIb3DQEBCwUAA4IBAQBigwVwGdmE/RekuKY++7oxIrnWkQ0L
+            VN+ps5pVLM3+P1XaHdtRUVAHErBuRaqZMTHc4REzSE6PNozrznQJknEnMc6d4y4+
+            IZ5pfPl8eyuPs6nBAP5aA3KhC9lW72csjXqe+EJNHfCP0k3AOkBb1A6Cja36h8Ef
+            lJiPqE2bRualoz6iqcHftilLCF+8s7q1sW12730PK1BD+gqQo0o8N0fZrXhWU4/I
+            0nuuz7F7VEaNcpZD7leBPCiNdsyDkLIfkb2cj4R39Fbs0yuuG6Bv1jQ+adXXprCG
+            ZMCE85eAK5et3yur0hVcUHppM6oDPOyoCYnUhDthiO3rwnfRCr/1f3IB
+            -----END CERTIFICATE-----
+            "
+
+        $cerFileWithAltTemplateInformation = "
             -----BEGIN CERTIFICATE-----
             MIIDazCCAlOgAwIBAgIQJx7ZH+jq5YZLy436X4Li3TANBgkqhkiG9w0BAQsFADAW
             MRQwEgYDVQQDDAtzb21lbWFjaGluZTAeFw0xODA4MDcwOTEwNDVaFw0xOTA4MDcw
@@ -140,11 +163,13 @@ try
 
         $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
         $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
-        $cerBytesWithAltTemplate = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplate)
+        $cerBytesWithAltTemplateName = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateName)
+        $cerBytesWithAltTemplateInformation = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateInformation)
 
         $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
         $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
-        $testCertificateWithAltTemplate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplate)
+        $testCertificateWithAltTemplateName = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateName)
+        $testCertificateWithAltTemplateInformation = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateInformation)
 
         Describe "$DSCResourceName\Test-CertificatePath" {
             $null | Set-Content -Path $validPath
@@ -993,7 +1018,7 @@ CertUtil: The parameter is incorrect.
 
             Context 'When a certificate with the extension "Certificate Template Information" is used.' {
                 It 'Should return the template name when there is no display name' {
-                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplate | Should -Be 'WebServer'
+                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
                 }
 
                 Mock -CommandName Get-CertificateTemplateExtensionText -MockWith {
@@ -1005,7 +1030,7 @@ Minor Version Number=5
                 }
 
                 It 'Should return the template name when there is a display name' {
-                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplate | Should -Be 'WebServer'
+                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
                 }
             }
 
@@ -1243,10 +1268,46 @@ Minor Version Number=5
         }
 
         Describe "$DSCResourceName\Get-CertificateTemplateExtensionText" {
-            <#
-                TODO This function takes an [System.Security.Cryptography.X509Certificates.X509ExtensionCollection]
-                This makes it awkward to test.
-            #>
+            Context 'When a certificate contains Certificate Template Name extension' {
+                It 'Should return the Name of the Certificate Template' {
+                    $params = @{
+                        TemplateExtensions = $testCertificateWithAltTemplateName.Extensions
+                    }
+
+                    # Template Names have a trailing carriage return and linefeed.
+                    Get-CertificateTemplateExtensionText @params | Should -Be ('WebServer' + [Char]13 + [Char]10)
+                }
+            }
+
+            Context 'When a certificate contains Certificate Template Information extension' {
+                It 'Should return the Oid, Major and Minor Version of the Certificate Template' {
+                    $CertificateTemplateInformation = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16
+Major Version Number=100
+Minor Version Number=5
+
+'@
+                    
+                    $params = @{
+                        TemplateExtensions = $testCertificateWithAltTemplateInformation.Extensions
+                    }
+
+                    # Template Names have a trailing carriage return and linefeed.
+                    Get-CertificateTemplateExtensionText @params | Should -Be $CertificateTemplateInformation
+                }
+            }
+
+            Context 'When a certificate does not contain a Certificate Template extension' {
+                It 'Should not return anything' {
+                    $params = @{
+                        TemplateExtensions = $testCertificateWithoutSan.Extensions
+                    }
+
+                    # Template Names have a trailing carriage return and linefeed.
+                    Get-CertificateTemplateExtensionText @params | Should -Be $null
+                }
+            }
+
         }
 
         Describe "$DSCResourceName\Get-CertificateSan" {
