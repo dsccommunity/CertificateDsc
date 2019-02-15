@@ -524,7 +524,7 @@ function Test-CertificateAuthority
 
 <#
     .SYNOPSIS
-    Get a certificate template name from an x509 certificate.
+    Get certificate template names from Active Directory for x509 certificates.
 
     .DESCRIPTION
     Gets the certificate templates from Active Directory by using a
@@ -598,7 +598,7 @@ function Get-CertificateTemplateInformation
     [OutputType([PSCustomObject])]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [String]
         $FormattedTemplate
     )
@@ -607,7 +607,23 @@ function Get-CertificateTemplateInformation
 
     switch -Regex ($FormattedTemplate)
     {
-        'Template=(?:(?<DisplayName>.+?)\((?<Oid>[\d.]+)\)|(?<Oid>[\d.]+))\s*Major\sVersion\sNumber=(?<MajorVersion>\d+)\s*Minor\sVersion\sNumber=(?<MinorVersion>\d+)'
+        <#
+            Example of the certificate extension template text
+
+            Template=Display Name 1(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567)
+            Major Version Number=100
+            Minor Version Number=5
+
+            If the Display Name of the template has not been found then FormattedText would like something like this.
+
+            Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567
+            Major Version Number=100
+            Minor Version Number=5
+
+            The Name of the template is found by matching the OID or the Display Name against the list of temples in AD.
+        #>
+
+        'Template=(?:(?<DisplayName>.+)\((?<Oid>[\d.]+)\))|(?<Oid>[\d.]+)\s*Major\sVersion\sNumber=(?<MajorVersion>\d+)\s*Minor\sVersion\sNumber=(?<MinorVersion>\d+)'
         {
             [Array] $adTemplates = Get-CertificateTemplatesFromActiveDirectory
 
@@ -628,9 +644,9 @@ function Get-CertificateTemplateInformation
 
             $Matches['Name'] = $template.Name
 
-            if ($null -eq $template)
+            if ($template.Count -eq 0)
             {
-                Write-Warning -Message $LocalizedData.TemplateNameResolutionError
+                Write-Warning -Message ($LocalizedData.TemplateNameResolutionError -f ('{0}({1})' -f $Matches.DisplayName, $Matches.Oid))
             }
 
             $templateInformation['Name']         = $Matches.Name
@@ -640,6 +656,8 @@ function Get-CertificateTemplateInformation
             $templateInformation['MinorVersion'] = $Matches.MinorVersion
         }
 
+        # The certificate extension template text just contains the name of the template so return that.
+
         '^(?<TemplateName>\w+)\s?$'
         {
             $templateInformation['Name'] = $Matches.TemplateName
@@ -647,7 +665,7 @@ function Get-CertificateTemplateInformation
 
         default
         {
-            Write-Warning -Message $LocalizedData.TemplateNameNotFound
+            Write-Warning -Message ($LocalizedData.TemplateNameNotFound -f $FormattedTemplate)
         }
     }
 
@@ -668,12 +686,12 @@ function Get-CertificateTemplateInformation
     The X509 extensions collection from and X509 certificate to be searched for a
     certificate template extension.
 #>
-function Get-CertificateTemplateText
+function Get-CertificateTemplateExtensionText
 {
     [OutputType([String])]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [System.Security.Cryptography.X509Certificates.X509ExtensionCollection]
         $TemplateExtensions
     )
@@ -718,11 +736,12 @@ function Get-CertificateTemplateName
         return
     }
 
-    $TemplateExtensionText = Get-CertificateTemplateText -TemplateExtensions $Certificate.Extensions
+    $templateExtensionText = Get-CertificateTemplateExtensionText -TemplateExtensions $Certificate.Extensions
 
-    if ($null -ne $TemplateExtensionText)
+    if ($null -ne $templateExtensionText)
     {
-        return Get-CertificateTemplateInformation -FormattedTemplate $TemplateExtensionText | Select-Object -ExpandProperty Name
+        return Get-CertificateTemplateInformation -FormattedTemplate $templateExtensionText | 
+            Select-Object -ExpandProperty Name
     }
 }
 

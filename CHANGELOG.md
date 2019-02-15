@@ -3,13 +3,13 @@
 ## Unreleased
 
 - Minor style corrections from PR for
-[Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
+  [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
 that were missed.
 - Opt-in to Example publishing to PowerShell Gallery - fixes
-[Issue #177](https://github.com/PowerShell/CertificateDsc/issues/177).
+  [Issue #177](https://github.com/PowerShell/CertificateDsc/issues/177).
 - Changed Test-CertificateAuthority to return the template name if it finds the
-display name of the template in the certificate -fixes
-[Issue #147](https://github.com/PowerShell/CertificateDsc/issues/147).
+  display name of the template in the certificate -fixes
+  [Issue #147](https://github.com/PowerShell/CertificateDsc/issues/147).
 
 ## 4.3.0.0
 
@@ -19,7 +19,7 @@ display name of the template in the certificate -fixes
 - Update LICENSE file to match the Microsoft Open Source Team standard - fixes
   [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
 - Opted into Common Tests - fixes
-[Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
+  [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
   - Required Script Analyzer Rules
   - Flagged Script Analyzer Rules
   - New Error-Level Script Analyzer Rules
@@ -54,13 +54,10 @@ display name of the template in the certificate -fixes
   repository and remove test harness - fixes
   [Issue #142](https://github.com/PowerShell/CertificateDsc/issues/142).
 - Updated Examples to support deployment to PowerShell Gallery scripts.
-- Changed Test-CertificateAuthority to return the template name if it finds the
-  display name of the template in the certificate -fixes
-  [Issue #147](https://github.com/PowerShell/CertificateDsc/issues/147).
 - Correct configuration names in Examples - fixes
-[Issue #150](https://github.com/PowerShell/CertificateDsc/issues/150).
+  [Issue #150](https://github.com/PowerShell/CertificateDsc/issues/150).
 - Correct filename case of `CertificateDsc.Common.psm1` - fixes
-[Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
+  [Issue #149](https://github.com/PowerShell/CertificateDsc/issues/149).
 - Remove exclusion of all tags in appveyor.yml, so all common tests can be run
   if opt-in.
 - PfxImport:
@@ -129,7 +126,7 @@ display name of the template in the certificate -fixes
 - Changed description in Credential parameter of xCertReq resource
   to clarify that a PSCredential object should be used.
 - Updated tests to meet Pester V4 guidelines - fixes
-[Issue #105](https://github.com/PowerShell/xCertificate/issues/105).
+  [Issue #105](https://github.com/PowerShell/xCertificate/issues/105).
 - Add support for Windows Server 2008 R2 which does not contain PKI
   module so is missing `Import-PfxCertificate` and `Import-Certificate`
   cmdlets - fixes
@@ -151,9 +148,9 @@ display name of the template in the certificate -fixes
   - PULL_REQUEST_TEMPLATE.md
 - Opted into Common Tests 'Validate Module Files' and 'Validate Script Files'.
 - Converted files with UTF8 with BOM over to UTF8 - fixes
-[Issue 87](https://github.com/PowerShell/xCertificate/issues/87).
+  [Issue 87](https://github.com/PowerShell/xCertificate/issues/87).
 - Converted to use auto-documentation/wiki format - fixes
-[Issue 84](https://github.com/PowerShell/xCertificate/issues/84).
+  [Issue 84](https://github.com/PowerShell/xCertificate/issues/84).
 
 ## 2.8.0.0
 
@@ -173,14 +170,14 @@ display name of the template in the certificate -fixes
   with [MarkdownLint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
   installed.
 - Added the VS Code PowerShell extension formatting settings that cause
-PowerShell files to be formatted as per the DSC Resource kit style guidelines.
+  PowerShell files to be formatted as per the DSC Resource kit style guidelines.
 - Fixed verbose preference not being passed to CertificateDsc.Common functions -
   fixes [Issue 70](https://github.com/PowerShell/xCertificate/issues/70).
 - Converted all calls to `New-InvalidArgumentError` function to
-`New-InvalidArgumentException` found in `CertificateDsc.ResourceHelper` - fixes
-[Issue 68](https://github.com/PowerShell/xCertificate/issues/68)
+  `New-InvalidArgumentException` found in `CertificateDsc.ResourceHelper` - fixes
+  [Issue 68](https://github.com/PowerShell/xCertificate/issues/68)
 - Replaced all calls to `Write-Error` with calls to
-`New-InvalidArgumentException` and `New-InvalidOperationException`
+  `New-InvalidArgumentException` and `New-InvalidOperationException`
 - xWaitForCertificateServices:
   - Added new resource.
 - Cleaned up example format to meet style guidelines and changed examples to

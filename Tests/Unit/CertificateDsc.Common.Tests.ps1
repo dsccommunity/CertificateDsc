@@ -17,6 +17,10 @@ Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot 
 # Begin Testing
 try
 {
+    $localizedData = Get-LocalizedData `
+        -ResourceName $script:ModuleName `
+        -ResourcePath (Join-Path -Path $script:moduleRoot -ChildPath "Modules\$script:ModuleName")
+
     InModuleScope $script:ModuleName {
         $DSCResourceName = 'CertificateDsc.Common'
         $invalidThumbprint = 'Zebra'
@@ -981,18 +985,18 @@ CertUtil: The parameter is incorrect.
                 )
             }
 
-            Context 'A certificate with the extension "Certificate Template Name" is used' {
+            Context 'When a certificate with the extension "Certificate Template Name" is used' {
                 It 'Should return the template name' {
                     Get-CertificateTemplateName -Certificate $testCertificate | Should -Be 'WebServer'
                 }
             }
 
-            Context 'A certificate with the extension "Certificate Template Information" is used.' {
+            Context 'When a certificate with the extension "Certificate Template Information" is used.' {
                 It 'Should return the template name when there is no display name' {
                     Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplate | Should -Be 'WebServer'
                 }
 
-                Mock -CommandName Get-CertificateTemplateText -MockWith {
+                Mock -CommandName Get-CertificateTemplateExtensionText -MockWith {
 @'
 Template=Web Server(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16)
 Major Version Number=100
@@ -1005,7 +1009,7 @@ Minor Version Number=5
                 }
             }
 
-            Context 'A certificate with no template name is used' {
+            Context 'When a certificate with no template name is used' {
                 It 'Should return null' {
                     Get-CertificateTemplateName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
                 }
@@ -1087,9 +1091,162 @@ Minor Version Number=5
                 It 'Should display a warning message' {
                     $Message = 'Failed to get the certificate templates from Active Directory.'
 
-                    Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1 | Should -Be $Message
+                    (Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1).Message | Should -Be $Message
+                }
+
+                It 'Should display a verbose message' {
+                    $Message = 'Mock Function Failure'
+
+                    (Get-CertificateTemplatesFromActiveDirectory -Verbose 4>&1).Message | Should -Be $Message
                 }
             }
+        }
+
+        Describe "$DSCResourceName\Get-CertificateTemplateInformation" {
+
+            $mockADTemplates = @(
+                @{
+                    'Name'                    = 'DisplayName1'
+                    'DisplayName'             = 'Display Name 1'
+                    'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567'
+                }
+                @{
+                    'Name'                    = 'DisplayName2'
+                    'DisplayName'             = 'Display Name 2'
+                    'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678'
+                }
+            )
+
+            $certificateTemplateExtensionFormattedText1 = @'
+Template=Display Name 1(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567)
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText1NoDisplayName = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText2 = @'
+Template=Display Name 2(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678)
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText2NoDisplayName = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText3 = @'
+Template=Display Name 3(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.3456789)
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText3NoDisplayName = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.3456789
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $RegexTemplatePattern = '^\w+=(?<Name>.*)\((?<Oid>[\.\d]+)\)'
+
+            Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith {$mockADTemplates}
+
+            Context 'When FormattedTemplate contains a Template OID with a Template Display Name' {
+
+                It 'Should return the Template Name "DisplayName1"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText1
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
+                }
+                It 'Should return the Template Name "DisplayName2"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText2
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
+                }
+                It 'Should write a warning when there is no match in Active Directory' {
+                    $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
+
+                    $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
+
+                    $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
+
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText3
+                    }
+
+                    (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
+                }
+            }
+
+            Context 'When FormattedTemplate contains a Template OID without a Template Display Name' {
+                It 'Should return the Template Name "DisplayName1"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText1NoDisplayName
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
+                }
+                It 'Should return the Template Name "DisplayName2"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText2NoDisplayName
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
+                }
+                It 'Should write a warning when there is no match in Active Directory' {
+                    $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
+
+                    $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
+
+                    $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
+
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText3
+                    }
+
+                    (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
+                }
+            }
+
+            Context 'When FormattedTemplate contains a the Template Name' {
+                It 'Should return the FormattedText' {
+                    $templateName  = 'TemplateName'
+
+                    (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName
+                }
+                It 'Should return the FormattedText Without a Trailing Carriage Return' {
+                    $templateName  = 'TemplateName' + [Char]13
+
+                    (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName.TrimEnd([Char]13)
+                }
+            }
+
+            Context 'When FormattedTemplate does not contain a recognised format' {
+                It 'Should write a warning when there is no match in Active Directory' {
+                    $formattedTemplate = 'Unrecognized Format'
+
+                    $warningMessage = $localizedData.TemplateNameNotFound -f $formattedTemplate
+
+                    (Get-CertificateTemplateInformation -FormattedTemplate $formattedTemplate 3>&1)[0].Message | Should -Be $warningMessage
+                }
+            }
+        }
+
+        Describe "$DSCResourceName\Get-CertificateTemplateExtensionText" {
+            <#
+                TODO This function takes an [System.Security.Cryptography.X509Certificates.X509ExtensionCollection]
+                This makes it awkward to test.
+            #>
         }
 
         Describe "$DSCResourceName\Get-CertificateSan" {
