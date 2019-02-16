@@ -125,17 +125,17 @@ try
             Context "Valid path + thumbprint and Ensure is Present" {
                 Set-TargetResource @PresentParams
 
-                It 'calls Import-CertificateEx with the parameters supplied' {
-                    Assert-MockCalled Import-CertificateEx -Exactly 1 -ParameterFilter {
+                It 'calls Import-Certificate with the parameters supplied' {
+                    Assert-MockCalled Import-CertificateEx -Exactly -Times 1 -ParameterFilter {
                         $CertStoreLocation -eq $validCertPath -and `
                         $FilePath -eq $validPath
                     }
                 }
                 It 'does not call Get-ChildItem' {
-                    Assert-MockCalled Get-ChildItem -Exactly 0
+                    Assert-MockCalled Get-ChildItem -Exactly -Times 0
                 }
                 It 'does not call Remove-Item' {
-                    Assert-MockCalled Remove-Item -Exactly 0
+                    Assert-MockCalled Remove-Item -Exactly -Times 0
                 }
             }
 
@@ -147,13 +147,13 @@ try
                 Set-TargetResource @AbsentParams
 
                 It 'does not call Import-CertificateEx' {
-                    Assert-MockCalled Import-CertificateEx -Exactly 0
+                    Assert-MockCalled Import-CertificateEx -Exactly -Times 0
                 }
                 It 'calls Get-ChildItem' {
-                    Assert-MockCalled Get-ChildItem -Exactly 1
+                    Assert-MockCalled Get-ChildItem -Exactly -Times 1
                 }
                 It 'calls Remove-Item' {
-                    Assert-MockCalled Remove-Item -Exactly 1
+                    Assert-MockCalled Remove-Item -Exactly -Times 1
                 }
             }
         }

@@ -17,6 +17,10 @@ Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot 
 # Begin Testing
 try
 {
+    $localizedData = Get-LocalizedData `
+        -ResourceName $script:ModuleName `
+        -ResourcePath (Join-Path -Path $script:moduleRoot -ChildPath "Modules\$script:ModuleName")
+
     InModuleScope $script:ModuleName {
         $DSCResourceName = 'CertificateDsc.Common'
         $invalidThumbprint = 'Zebra'
@@ -110,11 +114,62 @@ try
             -----END CERTIFICATE-----
             "
 
+        $cerFileWithAltTemplateName = "
+            -----BEGIN CERTIFICATE-----
+            MIIDVjCCAj6gAwIBAgIQIA9TO/nfla5FrjJZIiI6nzANBgkqhkiG9w0BAQsFADAW
+            MRQwEgYDVQQDDAtzb21lbWFjaGluZTAeFw0xOTAyMTUxNjI3NDVaFw0yMDAyMTUx
+            NjQ3NDVaMBYxFDASBgNVBAMMC3NvbWVtYWNoaW5lMIIBIjANBgkqhkiG9w0BAQEF
+            AAOCAQ8AMIIBCgKCAQEAuwr0qT/ekYvp4RIHfEqsZyabdWUIR842P/1+t2b0W5bn
+            LqxER+mUuBOrbdNcekjQjTnq5rYy1WsIwjeuJ7zgmVINvL8KeYna750M5ngAZsqO
+            QoRR9xbQAeht2H1Q9vj/GHbakOKUW45It/0EvZLmF/FJ2+WdIGQMuqQVdr4N+w0f
+            DPIVjDCjRLT5USZOHWJGrKYDSaWSf5tEQAp/6RW3JnFkE2biWsYQ3FGZtVgRxjLS
+            4+602xnLTyjakQiXBosE0AuW36jiFPeW3WVVF1pdinPpIbtzE0CkoeEwPMfWNJaA
+            BfIVmkEKL8HeQGk4kSEvZ/zfNbPr7RfY3S925SeR5QIDAQABo4GfMIGcMA4GA1Ud
+            DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwKAYDVR0R
+            BCEwH4IIZmlyc3RzYW6CCXNlY29uZHNhboIIdGhpcmRzYW4wIgYJKwYBBAGCNxQC
+            BBUeEgBXAGUAYgBTAGUAcgB2AGUAcgAwHQYDVR0OBBYEFNzXV7OE2NNKgKeLPTbT
+            +YBIcPJXMA0GCSqGSIb3DQEBCwUAA4IBAQBigwVwGdmE/RekuKY++7oxIrnWkQ0L
+            VN+ps5pVLM3+P1XaHdtRUVAHErBuRaqZMTHc4REzSE6PNozrznQJknEnMc6d4y4+
+            IZ5pfPl8eyuPs6nBAP5aA3KhC9lW72csjXqe+EJNHfCP0k3AOkBb1A6Cja36h8Ef
+            lJiPqE2bRualoz6iqcHftilLCF+8s7q1sW12730PK1BD+gqQo0o8N0fZrXhWU4/I
+            0nuuz7F7VEaNcpZD7leBPCiNdsyDkLIfkb2cj4R39Fbs0yuuG6Bv1jQ+adXXprCG
+            ZMCE85eAK5et3yur0hVcUHppM6oDPOyoCYnUhDthiO3rwnfRCr/1f3IB
+            -----END CERTIFICATE-----
+            "
+
+        $cerFileWithAltTemplateInformation = "
+            -----BEGIN CERTIFICATE-----
+            MIIDazCCAlOgAwIBAgIQJx7ZH+jq5YZLy436X4Li3TANBgkqhkiG9w0BAQsFADAW
+            MRQwEgYDVQQDDAtzb21lbWFjaGluZTAeFw0xODA4MDcwOTEwNDVaFw0xOTA4MDcw
+            OTMwNDVaMBYxFDASBgNVBAMMC3NvbWVtYWNoaW5lMIIBIjANBgkqhkiG9w0BAQEF
+            AAOCAQ8AMIIBCgKCAQEA98nll0sk4LiGTJcbZ+jIY86ongKRNE6CH+LZ0gp4mzUY
+            FRufTwmWqqoTjg6Q/Ri+CvofX1CbeaHCSdvI76/vIzF0ij+Y3wGg4Ot8YljbTjsF
+            aig3hGaWp+/Q345+O+sTlppwipcmdlp8vS8PNWx+FRbPFyPYSNTHbdFQXGjlz7Lu
+            s1gFe9VGbBqditYhvYPJeHjUSBWVDve2vd+E9ECRKssxn3UME74yuRSzEq30ly44
+            LPZYRYd8maypJERcMAkRz19bXZ1BNYp1kesxoi0KK7LLodSSzPG01Pls/K51KhZA
+            6NuFe14kA+jsAnstWQ2lIofUZxHrQ4IfykmgmP3NmQIDAQABo4G0MIGxMA4GA1Ud
+            DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwKAYDVR0R
+            BCEwH4IIZmlyc3RzYW6CCXNlY29uZHNhboIIdGhpcmRzYW4wNwYJKwYBBAGCNxUH
+            BCowKAYgKwYBBAGCNxUIgt3/eIL6kR6HjYUJhpmDKIHSoVI+ARACAWQCAQUwHQYD
+            VR0OBBYEFNt1uNJH8KG4/X0Gzh4rnAPR5lBfMA0GCSqGSIb3DQEBCwUAA4IBAQBI
+            MyZvohjsm1wbxJvowp5QrKXvGs8XVl+97zY79h8QqtcZALtIHkZd8rj2Bvkd+qyU
+            o01rPj7+LS7HzkdqfmDRUxbAnDclOkUTCMskzxon9CzEsizomFyTq4khWh/p+7fE
+            mR2Rq/kA95aupS4Dm7HcncHn89nw9BKcP7WLgIzjRC3ZBzplEGCCL7aKDv66+dv/
+            HM2uI47A8kHCFMvaq6O0bjlJfmXvrX8OgVQlRDItiuM+pu9LMkWc0t8U4ekRRQdj
+            kVIXdpdvNQmud6JHv3OI0HrjtL7Da1dK7Q8qye3qHBzHwva6SMVbMmFC3ACxukBU
+            v+M0WvuaEOEmAQoYaY6K
+            -----END CERTIFICATE-----
+            "
+
         $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
         $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
+        $cerBytesWithAltTemplateName = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateName)
+        $cerBytesWithAltTemplateInformation = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateInformation)
 
         $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
         $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
+        $testCertificateWithAltTemplateName = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateName)
+        $testCertificateWithAltTemplateInformation = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateInformation)
 
         Describe "$DSCResourceName\Test-CertificatePath" {
             $null | Set-Content -Path $validPath
@@ -945,38 +1000,336 @@ CertUtil: The parameter is incorrect.
         }
 
         Describe "$DSCResourceName\Get-CertificateTemplateName" {
-            Context 'A certificate with a valid template name is used' {
+            Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith {
+                @(
+                    [PSCustomObject] @{
+                        'Name'                    = 'WebServer'
+                        'DisplayName'             = 'Web Server'
+                        'mspki-cert-template-oid' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16'
+                    }
+                )
+            }
+
+            Context 'When a certificate with the extension "Certificate Template Name" is used' {
                 It 'Should return the template name' {
                     Get-CertificateTemplateName -Certificate $testCertificate | Should -Be 'WebServer'
                 }
             }
 
-            Context 'A certificate with no template name is used' {
+            Context 'When a certificate with the extension "Certificate Template Information" is used.' {
+                It 'Should return the template name when there is no display name' {
+                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
+                }
+
+                Mock -CommandName Get-CertificateTemplateExtensionText -MockWith {
+@'
+Template=Web Server(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16)
+Major Version Number=100
+Minor Version Number=5
+'@
+                }
+
+                It 'Should return the template name when there is a display name' {
+                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
+                }
+            }
+
+            Context 'When a certificate with no template name is used' {
                 It 'Should return null' {
                     Get-CertificateTemplateName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
                 }
             }
         }
 
+        Describe "$DSCResourceName\Get-CertificateTemplatesFromActiveDirectory" {
+            $MockSearchResults = @(
+                @{
+                    Properties = @(
+                        @{
+                            Name  = 'name'
+                            Value = 'MockData1'
+                        }
+                        @{
+                            Name  = 'displayName'
+                            Value = 'Mock Data 1'
+                        }
+                    )
+                }
+                @{
+                    Properties = @(
+                        @{
+                            Name  = 'name'
+                            Value = 'MockData2'
+                        }
+                        @{
+                            Name  = 'displayName'
+                            Value = 'Mock Data 2'
+                        }
+                    )
+                }
+                @{
+                    Properties = @(
+                        @{
+                            Name  = 'name'
+                            Value = 'MockData3'
+                        }
+                        @{
+                            Name  = 'displayName'
+                            Value = 'Mock Data 3'
+                        }
+                    )
+                }
+            )
+
+            $newObject_parameterFilter = {
+                $TypeName  -eq 'DirectoryServices.DirectorySearcher'
+            }
+
+            $newObject_mock = {
+                [PSCustomObject] @{
+                    Filter     = $null
+                    SearchRoot = $null
+                } | Add-Member -MemberType ScriptMethod -Name FindAll -Value {
+                    $MockSearchResults
+                    } -PassThru
+            }
+
+            Mock -CommandName New-Object -ParameterFilter $newObject_parameterFilter -MockWith $newObject_mock
+            Mock -CommandName Get-DirectoryEntry
+
+            Context 'When certificate templates are retrieved from Active Directory successfully' {
+                It 'Should get 3 mocked search results' {
+                    $SearchResults = Get-CertificateTemplatesFromActiveDirectory
+
+                    Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly -Times 1
+                    Assert-MockCalled -CommandName New-Object         -Exactly -Times 1
+
+                    $SearchResults.Count | Should -Be 3
+                }
+            }
+
+            Context 'When certificate templates are not retrieved from Active Directory successfully' {
+                Mock -CommandName Get-DirectoryEntry -MockWith {
+                    throw 'Mock Function Failure'
+                }
+
+                It 'Should display a warning message' {
+                    $Message = 'Failed to get the certificate templates from Active Directory.'
+
+                    (Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1).Message | Should -Be $Message
+                }
+
+                It 'Should display a verbose message' {
+                    $Message = 'Mock Function Failure'
+
+                    (Get-CertificateTemplatesFromActiveDirectory -Verbose 4>&1).Message | Should -Be $Message
+                }
+            }
+        }
+
+        Describe "$DSCResourceName\Get-CertificateTemplateInformation" {
+
+            $mockADTemplates = @(
+                @{
+                    'Name'                    = 'DisplayName1'
+                    'DisplayName'             = 'Display Name 1'
+                    'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567'
+                }
+                @{
+                    'Name'                    = 'DisplayName2'
+                    'DisplayName'             = 'Display Name 2'
+                    'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678'
+                }
+            )
+
+            $certificateTemplateExtensionFormattedText1 = @'
+Template=Display Name 1(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567)
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText1NoDisplayName = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText2 = @'
+Template=Display Name 2(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678)
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText2NoDisplayName = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText3 = @'
+Template=Display Name 3(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.3456789)
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $certificateTemplateExtensionFormattedText3NoDisplayName = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.3456789
+Major Version Number=100
+Minor Version Number=5
+'@
+
+            $RegexTemplatePattern = '^\w+=(?<Name>.*)\((?<Oid>[\.\d]+)\)'
+
+            Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith {$mockADTemplates}
+
+            Context 'When FormattedTemplate contains a Template OID with a Template Display Name' {
+
+                It 'Should return the Template Name "DisplayName1"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText1
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
+                }
+                It 'Should return the Template Name "DisplayName2"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText2
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
+                }
+                It 'Should write a warning when there is no match in Active Directory' {
+                    $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
+
+                    $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
+
+                    $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
+
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText3
+                    }
+
+                    (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
+                }
+            }
+
+            Context 'When FormattedTemplate contains a Template OID without a Template Display Name' {
+                It 'Should return the Template Name "DisplayName1"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText1NoDisplayName
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
+                }
+                It 'Should return the Template Name "DisplayName2"' {
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText2NoDisplayName
+                    }
+
+                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
+                }
+                It 'Should write a warning when there is no match in Active Directory' {
+                    $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
+
+                    $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
+
+                    $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
+
+                    $params =  @{
+                        FormattedTemplate = $certificateTemplateExtensionFormattedText3
+                    }
+
+                    (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
+                }
+            }
+
+            Context 'When FormattedTemplate contains a the Template Name' {
+                It 'Should return the FormattedText' {
+                    $templateName  = 'TemplateName'
+
+                    (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName
+                }
+                It 'Should return the FormattedText Without a Trailing Carriage Return' {
+                    $templateName  = 'TemplateName' + [Char]13
+
+                    (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName.TrimEnd([Char]13)
+                }
+            }
+
+            Context 'When FormattedTemplate does not contain a recognised format' {
+                It 'Should write a warning when there is no match in Active Directory' {
+                    $formattedTemplate = 'Unrecognized Format'
+
+                    $warningMessage = $localizedData.TemplateNameNotFound -f $formattedTemplate
+
+                    (Get-CertificateTemplateInformation -FormattedTemplate $formattedTemplate 3>&1)[0].Message | Should -Be $warningMessage
+                }
+            }
+        }
+
+        Describe "$DSCResourceName\Get-CertificateTemplateExtensionText" {
+            Context 'When a certificate contains Certificate Template Name extension' {
+                It 'Should return the Name of the Certificate Template' {
+                    $params = @{
+                        TemplateExtensions = $testCertificateWithAltTemplateName.Extensions
+                    }
+
+                    # Template Names have a trailing carriage return and linefeed.
+                    Get-CertificateTemplateExtensionText @params | Should -Be ('WebServer' + [Char]13 + [Char]10)
+                }
+            }
+
+            Context 'When a certificate contains Certificate Template Information extension' {
+                It 'Should return the Oid, Major and Minor Version of the Certificate Template' {
+                    $CertificateTemplateInformation = @'
+Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16
+Major Version Number=100
+Minor Version Number=5
+
+'@
+                    
+                    $params = @{
+                        TemplateExtensions = $testCertificateWithAltTemplateInformation.Extensions
+                    }
+
+                    # Template Names have a trailing carriage return and linefeed.
+                    Get-CertificateTemplateExtensionText @params | Should -Be $CertificateTemplateInformation
+                }
+            }
+
+            Context 'When a certificate does not contain a Certificate Template extension' {
+                It 'Should not return anything' {
+                    $params = @{
+                        TemplateExtensions = $testCertificateWithoutSan.Extensions
+                    }
+
+                    # Template Names have a trailing carriage return and linefeed.
+                    Get-CertificateTemplateExtensionText @params | Should -Be $null
+                }
+            }
+
+        }
+
         Describe "$DSCResourceName\Get-CertificateSan" {
-            Context 'A certificate with a SAN is used' {
+            Context 'When a certificate with a SAN is used' {
                 It 'Should return the SAN' {
                     Get-CertificateSan -Certificate $testCertificate | Should -Be 'firstsan'
                 }
             }
 
-            Context 'A certificate without SAN is used' {
+            Context 'When a certificate without SAN is used' {
                 It 'Should return null' {
                     Get-CertificateSan -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
                 }
             }
         }
+
         Describe 'Test-CommandExists' {
             $testCommandName = 'TestCommandName'
 
             Mock -CommandName 'Get-Command' -MockWith { return $Name }
 
-            Context 'Get-Command returns the command' {
+            Context 'When Get-Command returns' {
                 It 'Should not throw' {
                     { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
                 }
@@ -986,7 +1339,7 @@ CertUtil: The parameter is incorrect.
                         return $Name -eq $testCommandName
                     }
 
-                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
                 }
 
                 It 'Should return true' {
@@ -994,7 +1347,7 @@ CertUtil: The parameter is incorrect.
                 }
             }
 
-            Context 'Get-Command returns null' {
+            Context 'When Get-Command returns null' {
                 Mock -CommandName 'Get-Command' -MockWith { return $null }
 
                 It 'Should not throw' {
@@ -1006,7 +1359,7 @@ CertUtil: The parameter is incorrect.
                         return $Name -eq $testCommandName
                     }
 
-                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly 1 -Scope 'Context'
+                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
                 }
 
                 It 'Should return false' {
@@ -1016,7 +1369,7 @@ CertUtil: The parameter is incorrect.
         }
 
         Describe 'Get-CertificateStorePath' {
-            Context 'Get-CertificateStorePath called with Store and Location' {
+            Context 'When Get-CertificateStorePath called with Store and Location' {
                 It 'Should not throw' {
                     { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
                 }
