@@ -23,7 +23,6 @@ if ([String]::IsNullOrEmpty($Result))
     return
 } # if
 
-#region HEADER
 # Integration Test Template Version: 1.1.0
 [System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
@@ -37,12 +36,10 @@ $TestEnvironment = Initialize-TestEnvironment `
     -DSCModuleName $script:DSCModuleName `
     -DSCResourceName $script:DSCResourceName `
     -TestType Integration
-#endregion
 
 # Using try/finally to always cleanup even if something awful happens.
 try
 {
-    #region Integration Tests
     $ConfigFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName).config.ps1"
     . $ConfigFile
 
@@ -52,17 +49,31 @@ try
             $certUtilResult       = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
             $caServerFQDN         = ([regex]::matches($certUtilResult,'Server:[ \t]+`([A-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
             $caRootName           = ([regex]::matches($certUtilResult,'Name:[ \t]+`([\sA-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
-            $keyLength            = '2048'
             $exportable           = $true
             $providerName         = '"Microsoft RSA SChannel Cryptographic Provider"'
             $oid                  = '1.3.6.1.5.5.7.3.1'
             $keyUsage             = '0xa0'
-            $certificateTemplate  = 'WebServer'
-            $subject              = "$($script:DSCResourceName)_Test"
             $dns1                 = 'contoso.com'
             $dns2                 = 'fabrikam.com'
             $subjectAltName       = "dns=$dns1&dns=$dns2"
             $friendlyName         = "$($script:DSCResourceName) Integration Test"
+
+            $paramsRsaCmcRequest = @{
+                keyLength            = '2048'
+                subject              = "$($script:DSCResourceName)_Test"
+                certificateTemplate  = 'WebServer'
+                keyType              = 'RSA'
+                RequestType          = 'CMC'
+            }
+
+            $paramsEcdhPkcs10Request = @{
+                keyLength            = '521'
+                subject              = "$($script:DSCResourceName)_Test2"
+                providerName         = '"Microsoft Software Key Storage Provider"'
+                certificateTemplate  = 'WebServer'
+                keyType              = 'ECDH'
+                RequestType          = 'PKCS10'
+            }
 
             <#
                 If automated testing with a real CA can be performed then the credentials should be
@@ -75,18 +86,45 @@ try
                 AllNodes = @(
                     @{
                         NodeName                    = 'localhost'
-                        Subject                     = $subject
+                        Subject                     = $paramsRsaCmcRequest.subject
                         CAServerFQDN                = $caServerFQDN
                         CARootName                  = $caRootName
                         Credential                  = $credential
-                        KeyLength                   = $keyLength
+                        KeyLength                   = $paramsRsaCmcRequest.keyLength
                         Exportable                  = $exportable
                         ProviderName                = $providerName
                         OID                         = $oid
                         KeyUsage                    = $keyUsage
-                        CertificateTemplate         = $certificateTemplate
+                        CertificateTemplate         = $paramsRsaCmcRequest.certificateTemplate
                         SubjectAltName              = $subjectAltName
                         FriendlyName                = $friendlyName
+                        KeyType                     = $paramsRsaCmcRequest.keyType
+                        RequestType                 = $paramsRsaCmcRequest.requestType
+                        PsDscAllowDomainUser        = $true
+                        PsDscAllowPlainTextPassword = $true
+                    }
+                )
+            }
+
+            $configDataTest2 = @{
+                AllNodes = @(
+                    @{
+                        NodeName                    = 'localhost'
+                        Subject                     = $paramsEcdhPkcs10Request.subject
+                        CAServerFQDN                = $caServerFQDN
+                        CARootName                  = $caRootName
+                        Credential                  = $credential
+                        KeyLength                   = $paramsEcdhPkcs10Request.keyLength
+                        Exportable                  = $exportable
+                        ProviderName                = $paramsEcdhPkcs10Request.providerName
+                        OID                         = $oid
+                        KeyUsage                    = $keyUsage
+                        CertificateTemplate         = $paramsEcdhPkcs10Request.certificateTemplate
+                        SubjectAltName              = $subjectAltName
+                        FriendlyName                = $friendlyName
+                        KeyType                     = $paramsEcdhPkcs10Request.keyType
+                        RequestType                 = $paramsEcdhPkcs10Request.requestType
+                        #UseMachineContext           = $true
                         PsDscAllowDomainUser        = $true
                         PsDscAllowPlainTextPassword = $true
                     }
@@ -94,8 +132,7 @@ try
             }
         }
 
-        #region DEFAULT TESTS
-        Context 'WebServer certificate does not exist' {
+        Context 'When WebServer certificate does not exist, Testing with RSA KeyType and CMC RequestType' {
             It 'Should compile and apply the MOF without throwing' {
                 {
                     & "$($script:DSCResourceName)_Config" `
@@ -114,25 +151,62 @@ try
                 # Get the Certificate details
                 $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
                     Where-Object -FilterScript {
-                        $_.Subject -eq "CN=$($subject)" -and `
+                        $_.Subject -eq "CN=$($paramsRsaCmcRequest.subject)" -and `
                         $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
                     }
-                $CertificateNew.Subject                        | Should -Be "CN=$($subject)"
+                $CertificateNew.Subject                        | Should -Be "CN=$($paramsRsaCmcRequest.subject)"
                 $CertificateNew.Issuer.split(',')[0]           | Should -Be "CN=$($caRootName)"
-                $CertificateNew.Publickey.Key.KeySize          | Should -Be $keyLength
+                $CertificateNew.Publickey.Key.KeySize          | Should -Be $paramsRsaCmcRequest.keyLength
                 $CertificateNew.FriendlyName                   | Should -Be $friendlyName
                 $CertificateNew.DnsNameList[0]                 | Should -Be $dns1
                 $CertificateNew.DnsNameList[1]                 | Should -Be $dns2
                 $CertificateNew.EnhancedKeyUsageList.ObjectId  | Should -Be $oid
             }
         }
-        #endregion
+
+        Context 'When WebServer certificate does not exist, Testing with ECDH KeyType and PKCS10 RequestType' {
+            It 'Should compile and apply the MOF without throwing' {
+                {
+                    & "$($script:DSCResourceName)_Config" `
+                        -OutputPath $TestDrive `
+                        -ConfigurationData $configDataTest2
+
+                    Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                # Get the Certificate details
+                $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
+                    Where-Object -FilterScript {
+                        $_.Subject -eq "CN=$($paramsEcdhPkcs10Request.subject)" -and `
+                        $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
+                    }
+
+                # Removed check for key length becuase in the ECDH certificate PowerShell cannot see the length
+                $CertificateNew.Subject                        | Should -Be "CN=$($paramsEcdhPkcs10Request.subject)"
+                $CertificateNew.Issuer.split(',')[0]           | Should -Be "CN=$($caRootName)"
+                $CertificateNew.FriendlyName                   | Should -Be $friendlyName
+                $CertificateNew.DnsNameList[0]                 | Should -Be $dns1
+                $CertificateNew.DnsNameList[1]                 | Should -Be $dns2
+                $CertificateNew.EnhancedKeyUsageList.ObjectId  | Should -Be $oid
+            }
+        }
 
         AfterAll {
             # Cleanup
             $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
                 Where-Object -FilterScript {
-                    $_.Subject -eq "CN=$($subject)" -and `
+                    $_.Subject -eq "CN=$($paramsRsaCmcRequest.subject)" -and `
+                    $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
+                }
+            $CertificateNew2 = Get-Childitem -Path Cert:\LocalMachine\My |
+                Where-Object -FilterScript {
+                    $_.Subject -eq "CN=$($paramsEcdhPkcs10Request.subject)" -and `
                     $_.Issuer.split(',')[0] -eq "CN=$($caRootName)"
                 }
 
@@ -140,13 +214,16 @@ try
                 -Path $CertificateNew.PSPath `
                 -Force `
                 -ErrorAction SilentlyContinue
+
+            Remove-Item `
+                -Path $CertificateNew2.PSPath `
+                -Force `
+                -ErrorAction SilentlyContinue
         }
     }
-    #endregion
 }
 finally
 {
-    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
-    #endregion
 }
+

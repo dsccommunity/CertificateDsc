@@ -445,6 +445,18 @@ function Find-CertificateAuthority
 
 <#
     .SYNOPSIS
+    Wraps a single ADSI command to get the domain naming context so it can be mocked.
+#>
+function Get-DirectoryEntry
+{
+    [CmdletBinding()]
+    param ()
+
+    return ([adsi] 'LDAP://RootDSE').Get('rootDomainNamingContext')
+}
+
+<#
+    .SYNOPSIS
     Test to see if the specified ADCS CA is available.
 
     .PARAMETER CAServerFQDN
@@ -512,13 +524,201 @@ function Test-CertificateAuthority
 
 <#
     .SYNOPSIS
-    Get a certificate template name
+    Get certificate template names from Active Directory for x509 certificates.
 
     .DESCRIPTION
-    Gets the name of the template used for the certificate that is passed to this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or "1.3.6.1.4.1.311.20.2"
+    Gets the certificate templates from Active Directory by using a
+    DirectorySearcher object to find all objects with an objectClass
+    of pKICertificateTemplate from the search root of
+    CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration
+
+    .NOTES
+    The domain variable is populated based on the domain of the user running the
+    function. When run as System this will return the domain of computer.
+    Normally this won't make any difference unless the user is from a foreign
+    domain.
+#>
+function Get-CertificateTemplatesFromActiveDirectory
+{
+    [CmdletBinding()]
+    [OutputType([PSCustomObject[]])]
+    param ()
+
+    try
+    {
+        $domain   = Get-DirectoryEntry
+        $searcher = New-Object -TypeName DirectoryServices.DirectorySearcher
+
+        $searcher.Filter     = '(objectclass=pKICertificateTemplate)'
+        $searcher.SearchRoot = 'LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,{0}' -f $domain
+
+        $searchResults = $searcher.FindAll()
+    }
+    catch
+    {
+        Write-Verbose -Message $_.Exception.Message
+        Write-Warning -Message $LocalizedData.ActiveDirectoryTemplateSearch
+    }
+
+    $adTemplates = @()
+
+    foreach ($searchResult in $searchResults)
+    {
+        $templateData = @{}
+        $properties   =  New-Object -TypeName Object[] -ArgumentList $searchResult.Properties.Count
+
+        $searchResult.Properties.CopyTo($properties, 0)
+        $properties.ForEach({
+            $templateData[$_.Name] = ($_.Value | Out-String).Trim()
+        })
+
+        $adTemplates += [PSCustomObject] $templateData
+    }
+
+    return $adTemplates
+}
+
+<#
+    .SYNOPSIS
+    Gets information about the certificate template.
+
+    .DESCRIPTION
+    This function returns the information about the certificate template by retreiving
+    the available templates from Active Directory and matching the formatted certificate
+    template name against this list.
+    In addition to the template name the display name, template OID, the major version
+    and minor version is also returned.
+
+    .PARAMETER FormattedTemplate
+    The text from the certificate template extension, retrieved from
+    Get-CertificateTemplateText.
+#>
+function Get-CertificateTemplateInformation
+{
+    [OutputType([PSCustomObject])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [String]
+        $FormattedTemplate
+    )
+
+    $templateInformation = @{}
+
+    switch -Regex ($FormattedTemplate)
+    {
+        <#
+            Example of the certificate extension template text
+
+            Template=Display Name 1(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567)
+            Major Version Number=100
+            Minor Version Number=5
+
+            If the Display Name of the template has not been found then FormattedText would like something like this.
+
+            Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567
+            Major Version Number=100
+            Minor Version Number=5
+
+            The Name of the template is found by matching the OID or the Display Name against the list of temples in AD.
+        #>
+
+        'Template=(?:(?<DisplayName>.+)\((?<Oid>[\d.]+)\))|(?<Oid>[\d.]+)\s*Major\sVersion\sNumber=(?<MajorVersion>\d+)\s*Minor\sVersion\sNumber=(?<MinorVersion>\d+)'
+        {
+            [Array] $adTemplates = Get-CertificateTemplatesFromActiveDirectory
+
+            if ([String]::IsNullOrEmpty($Matches.DisplayName))
+            {
+                $template = $adTemplates.Where({
+                    $_.'msPKI-Cert-Template-OID' -eq $Matches.Oid
+                })
+
+                $Matches['DisplayName'] = $template.DisplayName
+            }
+            else
+            {
+                $template = $adTemplates.Where({
+                    $_.'DisplayName' -eq $Matches.DisplayName
+                })
+            }
+
+            $Matches['Name'] = $template.Name
+
+            if ($template.Count -eq 0)
+            {
+                Write-Warning -Message ($LocalizedData.TemplateNameResolutionError -f ('{0}({1})' -f $Matches.DisplayName, $Matches.Oid))
+            }
+
+            $templateInformation['Name']         = $Matches.Name
+            $templateInformation['DisplayName']  = $Matches.DisplayName
+            $templateInformation['Oid']          = $Matches.Oid
+            $templateInformation['MajorVersion'] = $Matches.MajorVersion
+            $templateInformation['MinorVersion'] = $Matches.MinorVersion
+        }
+
+        # The certificate extension template text just contains the name of the template so return that.
+
+        '^(?<TemplateName>\w+)\s?$'
+        {
+            $templateInformation['Name'] = $Matches.TemplateName
+        }
+
+        default
+        {
+            Write-Warning -Message ($LocalizedData.TemplateNameNotFound -f $FormattedTemplate)
+        }
+    }
+
+    return [PSCustomObject] $templateInformation
+}
+
+<#
+    .SYNOPSIS
+    Gets the formatted text output from an X509 certificate template extension.
+
+    .DESCRIPTION
+    The supplied X509 Extension Collected is processed to find any Certificate
+    Template extensions.
+    If a template extension is found the Format method is called with the parameter
+    $true and the text output is returned.
+
+    .PARAMETER TemplateExtensions
+    The X509 extensions collection from and X509 certificate to be searched for a
+    certificate template extension.
+#>
+function Get-CertificateTemplateExtensionText
+{
+    [OutputType([String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Security.Cryptography.X509Certificates.X509ExtensionCollection]
+        $TemplateExtensions
+    )
+
+    $templateOidNames = 'Certificate Template Information', 'Certificate Template Name'
+
+    $templateExtension = $TemplateExtensions.Where({
+        $_.Oid.FriendlyName -in $templateOidNames
+    })[0]
+
+    if ($null -ne $templateExtension)
+    {
+        return $templateExtension.Format($true)
+    }
+}
+
+<#
+    .SYNOPSIS
+    Get a certificate template name from an x509 certificate.
+
+    .DESCRIPTION
+    Gets the name of the template used for the certificate that is passed to
+    this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or
+    "1.3.6.1.4.1.311.20.2".
 
     .PARAMETER Certificate
-    The certificate object the template name is needed for
+    The certificate object the template name is needed for.
 #>
 function Get-CertificateTemplateName
 {
@@ -526,7 +726,6 @@ function Get-CertificateTemplateName
     [OutputType([System.String])]
     param
     (
-        # The certificate for which a template is needed
         [Parameter(Mandatory = $true)]
         [object]
         $Certificate
@@ -537,50 +736,13 @@ function Get-CertificateTemplateName
         return
     }
 
-    # Test the different OIDs
-    if ('1.3.6.1.4.1.311.21.7' -in $Certificate.Extensions.oid.Value)
+    $templateExtensionText = Get-CertificateTemplateExtensionText -TemplateExtensions $Certificate.Extensions
+
+    if ($null -ne $templateExtensionText)
     {
-        $temp = $Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.21.7' }
-        $null = $temp.Format(0) -match 'Template=(?<TemplateName>.*)\('
-        $templateName = $Matches.TemplateName
-
-        # If the template name is empty, try to get it by it's OID
-        if ([System.String]::IsNullOrEmpty($templateName))
-        {
-            # Extract the template OID
-            $null = $temp.Format(0) -match 'Template=(?<TemplateOid>[0-9.]*)\,'
-            $templateOid = $Matches.TemplateOid
-
-            if (![System.String]::IsNullOrEmpty($templateOid))
-            {
-                <#
-                    Query the domain for all template entries with their OIDs.
-                    Use Select-Object to extract the first array element in the
-                    cn and msPKI-Cert-Template-OID properties.
-                #>
-                try
-                {
-                    $domain    = ([adsi] "LDAP://RootDSE").Get("rootDomainNamingContext")
-                    $templates = ([adsi] "LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,$domain").Children |
-                                    Select-Object -Property @{ N = 'Name'; E = { $_.cn[0] } }, @{ N = 'Oid'; E = { $_.'msPKI-Cert-Template-OID'[0] } }
-
-                    # Now extract the template name for the matching OID
-                    $templateName = $templates | Where-Object -FilterScript { $_.Oid -eq $templateOid } | Select-Object -ExpandProperty 'Name'
-                }
-                catch
-                {
-                    Write-Warning -Message ($LocalizedData.TemplateNameResolutionError -f $_)
-                }
-            }
-        }
+        return Get-CertificateTemplateInformation -FormattedTemplate $templateExtensionText | 
+            Select-Object -ExpandProperty Name
     }
-
-    if ('1.3.6.1.4.1.311.20.2' -in $Certificate.Extensions.oid.Value)
-    {
-        $templateName = ($Certificate.Extensions | Where-Object { $PSItem.Oid.Value -eq '1.3.6.1.4.1.311.20.2' }).Format(0)
-    }
-
-    return $templateName
 }
 
 <#
@@ -664,7 +826,6 @@ function Test-CommandExists
     .PARAMETER CertStoreLocation
     The Certificate Store and Location Path to import the certificate to.
 #>
-
 function Import-CertificateEx
 {
     [CmdletBinding()]
@@ -711,7 +872,6 @@ function Import-CertificateEx
     .PARAMETER Password
     The password that the certificate located at the FilePath needs to be imported.
   #>
-
 function Import-PfxCertificateEx
 {
     [CmdletBinding()]
