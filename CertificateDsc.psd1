@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    moduleVersion = '4.3.0.0'
+    moduleVersion = '4.4.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -53,20 +53,14 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- Updated certificate import to only use Import-CertificateEx - fixes [Issue 161](https://github.com/PowerShell/CertificateDsc/issues/161)
-- Update LICENSE file to match the Microsoft Open Source Team standard -fixes
-  [Issue 164](https://github.com/PowerShell/CertificateDsc/issues/164).
-- Opted into Common Tests - fixes [Issue 168](https://github.com/PowerShell/CertificateDsc/issues/168):
-  - Required Script Analyzer Rules
-  - Flagged Script Analyzer Rules
-  - New Error-Level Script Analyzer Rules
-  - Custom Script Analyzer Rules
-  - Validate Example Files To Be Published
-  - Validate Markdown Links
-  - Relative Path Length
-- CertificateExport:
-  - Fixed bug causing PFX export with matchsource enabled to fail - fixes
-    [Issue 117](https://github.com/PowerShell/CertificateDsc/issues/117)
+        ReleaseNotes = '- Minor style corrections from PR for
+  [Issue 161](https://github.com/PowerShell/CertificateDsc/issues/161)
+that were missed.
+- Opt-in to Example publishing to PowerShell Gallery - fixes
+  [Issue 177](https://github.com/PowerShell/CertificateDsc/issues/177).
+- Changed Test-CertificateAuthority to return the template name if it finds the
+  display name of the template in the certificate -fixes
+  [Issue 147](https://github.com/PowerShell/CertificateDsc/issues/147).
 
 '
 
@@ -75,6 +69,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.4.0.0
+
 - Minor style corrections from PR for
   [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
 that were missed.
