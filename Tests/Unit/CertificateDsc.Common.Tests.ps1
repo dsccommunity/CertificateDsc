@@ -27,7 +27,7 @@ try
 
         # This thumbprint is valid (but not FIPS valid)
         $validThumbprint = (
-            [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
+            ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes() | Where-Object {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
             } | Select-Object -First 1 | ForEach-Object {
@@ -39,7 +39,7 @@ try
 
         # This thumbprint is valid for FIPS
         $validFipsThumbprint = (
-            [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
+            ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes() | Where-Object {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
             } | Select-Object -First 1 | ForEach-Object {
@@ -1287,7 +1287,7 @@ Major Version Number=100
 Minor Version Number=5
 
 '@
-                    
+
                     $params = @{
                         TemplateExtensions = $testCertificateWithAltTemplateInformation.Extensions
                     }

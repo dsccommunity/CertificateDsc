@@ -27,7 +27,7 @@ try
 {
     InModuleScope $script:DSCResourceName {
         $validThumbprint = (
-            [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
+            ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes() | Where-Object {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
             } | Select-Object -First 1 | ForEach-Object {
