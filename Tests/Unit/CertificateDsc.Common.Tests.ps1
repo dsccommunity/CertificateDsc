@@ -24,14 +24,15 @@ try
     InModuleScope $script:ModuleName {
         $DSCResourceName = 'CertificateDsc.Common'
         $invalidThumbprint = 'Zebra'
+        $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes}).GetTypes()
 
         # This thumbprint is valid (but not FIPS valid)
         $validThumbprint = (
-            [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
+            $definedRuntimeTypes | Where-Object -FilterScript {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            } | Select-Object -First 1 | ForEach-Object {
-                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object {
+            } | Select-Object -First 1 | ForEach-Object -Process {
+                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
                     '{0:x2}' -f $_
                 }
             }
@@ -39,11 +40,11 @@ try
 
         # This thumbprint is valid for FIPS
         $validFipsThumbprint = (
-            [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() | Where-Object {
+            $definedRuntimeTypes | Where-Object -FilterScript {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
-            } | Select-Object -First 1 | ForEach-Object {
-                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object {
+            } | Select-Object -First 1 | ForEach-Object -Process {
+                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
                     '{0:x2}' -f $_
                 }
             }
@@ -1287,7 +1288,7 @@ Major Version Number=100
 Minor Version Number=5
 
 '@
-                    
+
                     $params = @{
                         TemplateExtensions = $testCertificateWithAltTemplateInformation.Extensions
                     }

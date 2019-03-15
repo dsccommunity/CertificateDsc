@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- CertificateDsc.Common.psm1
+  - Exclude assemblies that set DefinedTypes to null instead of an empty array
+    to prevent failures on GetTypes(). This issue occurred with the
+    Microsoft.WindowsAzure.Storage.dll assembly.
+
 ## 4.4.0.0
 
 - Minor style corrections from PR for
