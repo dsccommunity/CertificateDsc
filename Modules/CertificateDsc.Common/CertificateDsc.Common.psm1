@@ -117,8 +117,10 @@ function Test-Thumbprint
         # Get FIPS registry key
         $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
 
-        # Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
-        # Otherwise, the call to GetTypes() fails.
+        <#
+        Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
+        Otherwise, the call to GetTypes() fails.
+        #>
         $allHashProviders = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes()
 
         if ($fips -eq $true)

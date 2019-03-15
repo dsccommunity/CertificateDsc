@@ -26,12 +26,13 @@ $TestEnvironment = Initialize-TestEnvironment `
 try
 {
     InModuleScope $script:DSCResourceName {
+        $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes}).GetTypes()
         $validThumbprint = (
-            ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes() | Where-Object {
+            $definedRuntimeTypes | Where-Object -FilterScript {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            } | Select-Object -First 1 | ForEach-Object {
-                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object {
+            } | Select-Object -First 1 | ForEach-Object -Process {
+                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
                     '{0:x2}' -f $_
                 }
             }
