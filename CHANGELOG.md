@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix example publish to PowerShell Gallery by adding `gallery_api`
+  environment variable to `AppVeyor.yml` - fixes [Issue #187](https://github.com/PowerShell/CertificateDsc/issues/187).
 - CertificateDsc.Common.psm1
   - Exclude assemblies that set DefinedTypes to null instead of an empty array
     to prevent failures on GetTypes(). This issue occurred with the
@@ -11,7 +13,7 @@
 
 - Minor style corrections from PR for
   [Issue #161](https://github.com/PowerShell/CertificateDsc/issues/161)
-that were missed.
+  that were missed.
 - Opt-in to Example publishing to PowerShell Gallery - fixes
   [Issue #177](https://github.com/PowerShell/CertificateDsc/issues/177).
 - Changed Test-CertificateAuthority to return the template name if it finds the
