@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    moduleVersion = '4.4.0.0'
+    moduleVersion = '4.5.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -53,14 +53,12 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- Minor style corrections from PR for
-  [Issue 161](https://github.com/PowerShell/CertificateDsc/issues/161)
-that were missed.
-- Opt-in to Example publishing to PowerShell Gallery - fixes
-  [Issue 177](https://github.com/PowerShell/CertificateDsc/issues/177).
-- Changed Test-CertificateAuthority to return the template name if it finds the
-  display name of the template in the certificate -fixes
-  [Issue 147](https://github.com/PowerShell/CertificateDsc/issues/147).
+        ReleaseNotes = '- Fix example publish to PowerShell Gallery by adding `gallery_api`
+  environment variable to `AppVeyor.yml` - fixes [Issue 187](https://github.com/PowerShell/CertificateDsc/issues/187).
+- CertificateDsc.Common.psm1
+  - Exclude assemblies that set DefinedTypes to null instead of an empty array
+    to prevent failures on GetTypes(). This issue occurred with the
+    Microsoft.WindowsAzure.Storage.dll assembly.
 
 '
 
@@ -69,6 +67,7 @@ that were missed.
     } # End of PrivateData hashtable
 
 }
+
 
 
 

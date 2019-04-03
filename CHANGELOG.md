@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.5.0.0
+
 - Fix example publish to PowerShell Gallery by adding `gallery_api`
   environment variable to `AppVeyor.yml` - fixes [Issue #187](https://github.com/PowerShell/CertificateDsc/issues/187).
 - CertificateDsc.Common.psm1
