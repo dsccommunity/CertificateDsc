@@ -7,8 +7,8 @@
     Certificate Issuer matches the CA Root Name.
   - Changed `Compare-CertificateSubject` function to return false
     if `ReferenceSubject` is null.
-  - Fixed error occuring when Certificate with empty Subject
-    exists in Certificate Store - fixes [Issue #190](https://github.com/PowerShell/CertificateDsc/issues/190).
+  - Fixed exception when Certificate with empty Subject exists in
+    Certificate Store - fixes [Issue #190](https://github.com/PowerShell/CertificateDsc/issues/190).
 
 ## 4.5.0.0
 
