@@ -1700,6 +1700,22 @@ OID = $oid
                         -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
                 }
             }
+
+            Context 'When called with a null ReferenceSubject' {
+                It 'Should return a false' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject $null `
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                }
+            }
+
+            Context 'When called with an empty ReferenceSubject' {
+                It 'Should return a false' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject '' `
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                }
+            }
         }
 
         Describe 'MSFT_CertReq\Compare-CertificateIssuer' {
