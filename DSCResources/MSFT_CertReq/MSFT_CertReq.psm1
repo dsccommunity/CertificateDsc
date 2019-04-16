@@ -198,8 +198,8 @@ function Get-TargetResource
 
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-        $_.Subject -eq "CN=$Subject" -and `
-            $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+            $_.Subject -eq "CN=$Subject" -and `
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
     }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
@@ -420,8 +420,8 @@ function Set-TargetResource
     {
         $certs = Get-Childitem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
-            $_.Subject -eq $Subject -and `
-                $_.Issuer.split(',')[0] -eq "CN=$CARootName" -and `
+                $_.Subject -eq $Subject -and `
+                (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
                 $_.NotAfter -lt (Get-Date).AddDays(30)
         }
 
@@ -868,7 +868,7 @@ function Test-TargetResource
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
             (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
-            $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
     }
 
     # Exception for standard template DomainControllerAuthentication
@@ -876,8 +876,8 @@ function Test-TargetResource
     {
         $cert = Get-Childitem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
-            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
-                $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+                (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+                (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
         }
     }
 
@@ -1033,7 +1033,8 @@ function Assert-ResourceProperty
     Compares two certificate subjects.
 
     .PARAMETER ReferenceSubject
-    The certificate subject to compare.
+    The certificate subject to compare. If the ReferenceSubject
+    is null the function will return False.
 
     .PARAMETER DifferenceSubject
     The certificate subject to compare with the ReferenceSubject.
@@ -1045,7 +1046,7 @@ function Compare-CertificateSubject
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]
         $ReferenceSubject,
 
@@ -1055,6 +1056,11 @@ function Compare-CertificateSubject
         $DifferenceSubject
     )
 
+    if ([System.String]::IsNullOrEmpty($ReferenceSubject))
+    {
+        return $false
+    }
+
     $referenceSubjectArray = ($ReferenceSubject -split ',').Trim() | Sort-Object
     $differenceSubjectArray = ($DifferenceSubject -split ',').Trim() | Sort-Object
 
@@ -1063,4 +1069,35 @@ function Compare-CertificateSubject
         -DifferenceObject $differenceSubjectArray
 
     return ($difference.Count -eq 0)
+}
+
+<#
+    .SYNOPSIS
+    Checks if the Certificate Issuer matches the CA Root Name.
+
+    .PARAMETER Issuer
+    The Certificate Issuer.
+
+    .PARAMETER CARootName
+    The CA Root Name to compare with the Certificate Issuer.
+#>
+
+function Compare-CertificateIssuer
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Issuer,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CARootName
+    )
+
+    return ($Issuer.split(',')[0] -eq "CN=$CARootName")
 }
