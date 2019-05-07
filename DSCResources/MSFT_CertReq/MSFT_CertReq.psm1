@@ -224,7 +224,7 @@ function Get-TargetResource
             OID                 = $null # This value can't be determined from the cert
             KeyUsage            = $null # This value can't be determined from the cert
             CertificateTemplate = Get-CertificateTemplateName -Certificate $Cert
-            SubjectAltName      = Get-CertificateSan -Certificate $Cert
+            SubjectAltName      = Get-CertificateSubjectAlternativeName -Certificate $Cert
             FriendlyName        = $Cert.FriendlyName
         }
     }
@@ -922,33 +922,44 @@ function Test-TargetResource
         {
             # Split the desired SANs into an array
             $sanList = $SubjectAltName.Split('&')
-            $correctDNS = @()
+            $correctDns = @()
 
             foreach ($san in $sanList)
             {
                 if ($san -like 'dns*')
                 {
                     # This SAN is a DNS name
-                    $correctDNS += $san.split('=')[1]
+                    $correctDns += $san.split('=')[1]
                 }
             }
 
             # Find out what SANs are on the current cert
             if ($cert.Extensions.Count -gt 0)
             {
-                $currentSanList = ($cert.Extensions | Where-Object {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
-                $currentDNS = @()
+                $currentSan = $cert.Extensions | Where-Object -FilterScript { $_.Oid.Value -eq '2.5.29.17' }
+
+                if ([System.String]::IsNullOrEmpty($currentSan))
+                {
+                    $currentSanList = @()
+                }
+                else
+                {
+                    $currentSanList = $currentSan.Format(1).Split("`n").TrimEnd()
+                }
+
+                $currentDns = @()
+
                 foreach ($san in $currentSanList)
                 {
                     if ($san -like 'dns*')
                     {
                         # This SAN is a DNS name
-                        $currentDNS += $san.split('=')[1]
+                        $currentDns += $san.split('=')[1]
                     }
                 }
 
                 # Do the cert's DNS SANs and the desired DNS SANs match?
-                if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0)
+                if (@(Compare-Object -ReferenceObject $currentDns -DifferenceObject $correctDns).Count -gt 0)
                 {
                     return $false
                 }

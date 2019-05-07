@@ -1129,7 +1129,6 @@ Minor Version Number=5
         }
 
         Describe "$DSCResourceName\Get-CertificateTemplateInformation" {
-
             $mockADTemplates = @(
                 @{
                     'Name'                    = 'DisplayName1'
@@ -1268,11 +1267,75 @@ Minor Version Number=5
             }
         }
 
+        Describe "$DSCResourceName\Get-CertificateExtension" {
+            Context 'When a certificate contains an extension that matches the Oid parameter' {
+                It 'Should return the extension with Oid ''2.5.29.17''' {
+                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17'
+                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                    $extension | Should -HaveCount 1
+                    $extension.Oid.Value | Should -Be '2.5.29.17'
+                }
+            }
+
+            Context 'When a certificate does not contain an extension that matches the Oid parameter' {
+                It 'Should return no extension' {
+                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.9.9.9'
+                    $extension | Should -BeNullOrEmpty
+                }
+            }
+
+            Context 'When a certificate does not contain an extension that matches the Oid parameter and First is set to 2' {
+                It 'Should return no extension' {
+                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.9.9.9' -First 2
+                    $extension | Should -BeNullOrEmpty
+                }
+            }
+
+            Context 'When a certificate contains an extension that matches only one of the Oid parameter values' {
+                It 'Should return the extension with Oid ''2.5.29.17''' {
+                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.9.9.9'
+                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                    $extension | Should -HaveCount 1
+                    $extension.Oid.Value | Should -Be '2.5.29.17'
+                }
+            }
+
+            Context 'When a certificate contains an extension that matches both of the Oid parameter values' {
+                It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
+                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.5.29.31'
+                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                    $extension | Should -HaveCount 1
+                    $extension.Oid.Value | Should -Contain '2.5.29.17'
+                }
+            }
+
+            Context 'When a certificate contains an extension that matches both of the Oid parameter values but First is set to 2' {
+                It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
+                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.5.29.31' -First 2
+                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                    $extension | Should -HaveCount 2
+                    $extension.Oid.Value | Should -Contain '2.5.29.17'
+                    $extension.Oid.Value | Should -Contain '2.5.29.31'
+                }
+            }
+
+            Context 'When a certificate contains an extension that matches both of the Oid parameter values but First is set to 3' {
+                It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
+                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.5.29.31' -First 3
+                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                    $extension | Should -HaveCount 2
+                    $extension.Oid.Value | Should -Contain '2.5.29.17'
+                    $extension.Oid.Value | Should -Contain '2.5.29.31'
+                }
+            }
+
+        }
+
         Describe "$DSCResourceName\Get-CertificateTemplateExtensionText" {
             Context 'When a certificate contains Certificate Template Name extension' {
                 It 'Should return the Name of the Certificate Template' {
                     $params = @{
-                        TemplateExtensions = $testCertificateWithAltTemplateName.Extensions
+                        Certificate = $testCertificateWithAltTemplateName
                     }
 
                     # Template Names have a trailing carriage return and linefeed.
@@ -1290,7 +1353,7 @@ Minor Version Number=5
 '@
 
                     $params = @{
-                        TemplateExtensions = $testCertificateWithAltTemplateInformation.Extensions
+                        Certificate = $testCertificateWithAltTemplateInformation
                     }
 
                     # Template Names have a trailing carriage return and linefeed.
@@ -1301,26 +1364,25 @@ Minor Version Number=5
             Context 'When a certificate does not contain a Certificate Template extension' {
                 It 'Should not return anything' {
                     $params = @{
-                        TemplateExtensions = $testCertificateWithoutSan.Extensions
+                        Certificate = $testCertificateWithoutSan
                     }
 
                     # Template Names have a trailing carriage return and linefeed.
                     Get-CertificateTemplateExtensionText @params | Should -Be $null
                 }
             }
-
         }
 
-        Describe "$DSCResourceName\Get-CertificateSan" {
+        Describe "$DSCResourceName\Get-CertificateSubjectAlternativeName" {
             Context 'When a certificate with a SAN is used' {
                 It 'Should return the SAN' {
-                    Get-CertificateSan -Certificate $testCertificate | Should -Be 'firstsan'
+                    Get-CertificateSubjectAlternativeName -Certificate $testCertificate | Should -Be 'firstsan'
                 }
             }
 
             Context 'When a certificate without SAN is used' {
                 It 'Should return null' {
-                    Get-CertificateSan -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
+                    Get-CertificateSubjectAlternativeName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
                 }
             }
         }

@@ -622,7 +622,7 @@ OID = $oid
                 Mock -CommandName Get-CertificateTemplateName `
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                Mock -CommandName Get-CertificateSan `
+                Mock -CommandName Get-CertificateSubjectAlternativeName `
                     -MockWith { $subjectAltName }
 
                 Mock -CommandName Find-CertificateAuthority -MockWith {
@@ -1417,7 +1417,7 @@ OID = $oid
                 Mock -CommandName Get-CertificateTemplateName `
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                Mock -CommandName Get-CertificateSan `
+                Mock -CommandName Get-CertificateSubjectAlternativeName `
                     -MockWith $mock_getCertificateSan_subjectAltName
 
                 It 'Should return true' {
@@ -1436,7 +1436,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateTemplateName `
                         -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                    Mock -CommandName Get-CertificateSan `
+                    Mock -CommandName Get-CertificateSubjectAlternativeName `
                         -MockWith $mock_getCertificateSan_subjectAltName
 
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
@@ -1591,7 +1591,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateTemplateName `
                         -MockWith $mock_getCertificateTemplateName_validDCCertificateTemplate
 
-                    Mock -CommandName Get-CertificateSan `
+                    Mock -CommandName Get-CertificateSubjectAlternativeName `
                         -MockWith $mock_getCertificateSan_subjectAltName
 
                     Test-TargetResource @paramsStandardDomainController -Verbose | Should -Be $true
