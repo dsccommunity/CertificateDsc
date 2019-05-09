@@ -914,7 +914,7 @@ function Import-CertificateEx
     $location = Split-Path -Path (Split-Path -Path $CertStoreLocation -Parent) -Leaf
     $store = Split-Path -Path $CertStoreLocation -Leaf
 
-    $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
+    $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2Collection
     $cert.Import($FilePath)
 
     $certStore = New-Object `
@@ -922,7 +922,7 @@ function Import-CertificateEx
         -ArgumentList ($store, $location)
 
     $certStore.Open('MaxAllowed')
-    $certStore.Add($cert)
+    $certStore.AddRange($cert)
     $certStore.Close()
 }
 
