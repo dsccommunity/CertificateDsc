@@ -70,10 +70,10 @@ try
             DSC LCM runs under a different context (Local System).
         #>
         $containingCertificate = New-SelfSignedCertificate `
-            -Subject "SN=ContainingCertificate" `
+            -DnsName "ContainingCertificate" `
             -CertStoreLocation Cert:\LocalMachine\My
         $includedCertificate = New-SelfSignedCertificate `
-            -Subject "SN=IncludedCertificate" `
+            -DnsName "IncludedCertificate" `
             -CertStoreLocation Cert:\LocalMachine\My
 
         $certificatePath = Join-Path `
