@@ -39,7 +39,7 @@ function Test-CertificatePath
     (
         [Parameter(Mandatory = $true,
             ValueFromPipeline)]
-        [String[]]
+        [System.String[]]
         $Path,
 
         [Parameter()]
@@ -118,8 +118,8 @@ function Test-Thumbprint
         $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
 
         <#
-        Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
-        Otherwise, the call to GetTypes() fails.
+            Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
+            Otherwise, the call to GetTypes() fails.
         #>
         $allHashProviders = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes()
 
@@ -141,6 +141,7 @@ function Test-Thumbprint
 
         # Get a list of all Valid Hash types and lengths into an array
         $validHashes = @()
+
         foreach ($hashProvider in $hashProviders)
         {
             $bitSize = ( New-Object -TypeName $hashProvider ).HashSize
@@ -225,15 +226,15 @@ function Find-Certificate
     param
     (
         [Parameter()]
-        [String]
+        [System.String]
         $Thumbprint,
 
         [Parameter()]
-        [String]
+        [System.String]
         $FriendlyName,
 
         [Parameter()]
-        [String]
+        [System.String]
         $Subject,
 
         [Parameter()]
@@ -241,7 +242,7 @@ function Find-Certificate
         $DNSName,
 
         [Parameter()]
-        [String]
+        [System.String]
         $Issuer,
 
         [Parameter()]
@@ -253,7 +254,7 @@ function Find-Certificate
         $EnhancedKeyUsage,
 
         [Parameter()]
-        [String]
+        [System.String]
         $Store = 'My',
 
         [Parameter()]
@@ -273,6 +274,7 @@ function Find-Certificate
 
     # Assemble the filter to use to select the certificate
     $certFilters = @()
+
     if ($PSBoundParameters.ContainsKey('Thumbprint'))
     {
         $certFilters += @('($_.Thumbprint -eq $Thumbprint)')
@@ -347,9 +349,10 @@ function Get-CdpContainer
 {
     [cmdletBinding()]
     [OutputType([psobject])]
-    param(
+    param
+    (
         [Parameter()]
-        [String]
+        [System.String]
         $DomainName
     )
 
@@ -395,10 +398,11 @@ function Get-CdpContainer
 function Find-CertificateAuthority
 {
     [cmdletBinding()]
-    [OutputType([psobject])]
-    param(
+    [OutputType([System.Management.Automation.PSObject])]
+    param
+    (
         [Parameter()]
-        [String]
+        [System.String]
         $DomainName
     )
 
@@ -409,6 +413,7 @@ function Find-CertificateAuthority
     $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
 
     $caFound = $false
+
     foreach ($item in $cdpContainer.Children)
     {
         if (-not $caFound)
@@ -471,8 +476,9 @@ function Get-DirectoryEntry
 function Test-CertificateAuthority
 {
     [cmdletBinding()]
-    [OutputType([Boolean])]
-    param(
+    [OutputType([System.Boolean])]
+    param
+    (
         [Parameter()]
         [System.String]
         $CAServerFQDN,
@@ -602,7 +608,7 @@ function Get-CertificateTemplateInformation
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $FormattedTemplate
     )
 
@@ -630,7 +636,7 @@ function Get-CertificateTemplateInformation
         {
             [Array] $adTemplates = Get-CertificateTemplatesFromActiveDirectory
 
-            if ([String]::IsNullOrEmpty($Matches.DisplayName))
+            if ([System.String]::IsNullOrEmpty($Matches.DisplayName))
             {
                 $template = $adTemplates.Where({
                     $_.'msPKI-Cert-Template-OID' -eq $Matches.Oid
@@ -699,7 +705,7 @@ function Get-CertificateExtension
     param
     (
         [Parameter(Mandatory = $true)]
-        [System.Security.Cryptography.X509Certificates.X509Certificate2]
+        [System.Object]
         $Certificate,
 
         [Parameter(Mandatory = $true)]
@@ -814,25 +820,48 @@ function Get-CertificateSubjectAlternativeName
         return
     }
 
-    $subjectAlternativeName = $null
+    $list = Get-CertificateSubjectAlternativeNameList -Certificate $Certificate
 
-    $subjectAlternativeNameExtension = Get-CertificateExtension -Certificate $Certificate -Oid '2.5.29.17'
-
-    if ($null -eq $subjectAlternativeNameExtension)
+    if ($null -ne $list)
     {
-        return $subjectAlternativeName
+        $firstSubjectAlternativeName = Get-CertificateSubjectAlternativeNameList -Certificate $Certificate |
+            Select-Object -First 1
+
+        return $firstSubjectAlternativeName.Split('=')[1]
+    }
+}
+
+<#
+    .SYNOPSIS
+    Get the list of Subject Alternative Name entries in a Certificate.
+
+    .DESCRIPTION
+    Gets the list of Subject Alternative Name entries in the extension
+    with Oid 2.5.29.17 from the certificate provided.
+
+    .PARAMETER Certificate
+    The certificate to return the Subject Alternative Name entry list from.
+#>
+function Get-CertificateSubjectAlternativeNameList
+{
+    [cmdletBinding()]
+    [OutputType([System.String[]])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Object]
+        $Certificate
+    )
+
+    $subjectAlternateNameExtensions = Get-CertificateExtension -Certificate $Certificate -Oid '2.5.29.17'
+    $subjectAlternateNames = @()
+
+    if ($null -ne $subjectAlternateNameExtensions)
+    {
+        $subjectAlternateNames = ($subjectAlternateNameExtensions.Format($false) -split ',').Trim()
     }
 
-    $extensionDecoder = New-Object -ComObject X509Enrollment.CX509ExtensionAlternativeNames
-    $extensionString = [System.Convert]::ToBase64String($subjectAlternativeNameExtension.RawData)
-    $extensionDecoder.InitializeDecode(1, $extensionString)
-
-    if ($extensionDecoder.AlternativeNames.Count -gt 0)
-    {
-        $subjectAlternativeName = $extensionDecoder.AlternativeNames[0].strValue
-    }
-
-    return $subjectAlternativeName
+    return $subjectAlternateNames
 }
 
 <#

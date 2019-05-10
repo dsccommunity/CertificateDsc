@@ -1387,6 +1387,26 @@ Minor Version Number=5
             }
         }
 
+        Describe "$DSCResourceName\Get-CertificateSubjectAlternativeNameList" {
+            Context 'When a certificate with a Subject Alternative Name is used' {
+                It 'Should return the list of Subject Alternative Name entries' {
+                    $global:certificate = $testCertificate
+                    $result = Get-CertificateSubjectAlternativeNameList -Certificate $testCertificate
+                    $result | Should -HaveCount 3
+                    $result | Should -Contain 'DNS Name=firstsan'
+                    $result | Should -Contain 'DNS Name=secondsan'
+                    $result | Should -Contain 'DNS Name=thirdsan'
+                }
+            }
+
+            Context 'When a certificate without Subject Alternative Name is used' {
+                It 'Should return null' {
+                    $result = Get-CertificateSubjectAlternativeNameList -Certificate $testCertificateWithoutSan
+                    $result | Should -BeNullOrEmpty
+                }
+            }
+        }
+
         Describe 'Test-CommandExists' {
             $testCommandName = 'TestCommandName'
 

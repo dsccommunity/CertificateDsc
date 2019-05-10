@@ -114,8 +114,8 @@ try
         }
 
         $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{FriendlyName = 'Subject Alternative Name'}
-        $sanExt = @{
-            oid      = $(,$sanOid)
+        $sanExt = [PSCustomObject] @{
+            Oid      = $sanOid
             Critical = $false
         }
         Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
@@ -140,15 +140,15 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = $sanExt
+            Extensions   = @($sanExt)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
 
-        $incorrectSanExt = @{
-            oid      = $(,$sanOid)
+        $incorrectSanExt = [PSCustomObject] @{
+            Oid      = $sanOid
             Critical = $false
         }
         Add-Member -InputObject $incorrectSanExt -MemberType ScriptMethod -Name Format -Force -Value {
@@ -161,7 +161,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = $incorrectSanExt
+            Extensions   = @($incorrectSanExt)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $incorrectSANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -613,7 +613,7 @@ OID = $oid
             )
         }
 
-        Describe 'MSFT_CertReq\Get-TargetResource' {
+        Describe 'MSFT_CertReq\Get-TargetResource' -Tag 'Get' {
             BeforeAll {
                 Mock -CommandName Get-ChildItem `
                     -Mockwith { $validCert } `
@@ -693,9 +693,7 @@ OID = $oid
             }
         }
 
-
-        #region Set-TargetResource
-        Describe "$dscResourceName\Set-TargetResource" -Tag 'Set' {
+        Describe 'MSFT_CertReq\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Test-Path -MockWith { $true } `
                     -ParameterFilter $pathCertReqTestReq_parameterFilter
@@ -1347,7 +1345,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Test-TargetResource' {
+        Describe 'MSFT_CertReq\Test-TargetResource' -Tag 'Test' {
             Context 'When a valid certificate does not exist and a certificate with an empty Subject exists in the Store' {
                 Mock -CommandName Find-CertificateAuthority `
                     -MockWith {
@@ -1620,7 +1618,7 @@ OID = $oid
             }
         }
 
-        Describe "$dscResourceName\Assert-ResourceProperty"{
+        Describe 'MSFT_CertReq\Assert-ResourceProperty'{
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramRsaValid -Verbose } | Should -Not -Throw
@@ -1755,7 +1753,5 @@ OID = $oid
 }
 finally
 {
-    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $testEnvironment
-    #endregion
 }
