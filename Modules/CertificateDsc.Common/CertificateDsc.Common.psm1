@@ -39,7 +39,7 @@ function Test-CertificatePath
     (
         [Parameter(Mandatory = $true,
             ValueFromPipeline)]
-        [String[]]
+        [System.String[]]
         $Path,
 
         [Parameter()]
@@ -118,8 +118,8 @@ function Test-Thumbprint
         $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
 
         <#
-        Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
-        Otherwise, the call to GetTypes() fails.
+            Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
+            Otherwise, the call to GetTypes() fails.
         #>
         $allHashProviders = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes()
 
@@ -141,6 +141,7 @@ function Test-Thumbprint
 
         # Get a list of all Valid Hash types and lengths into an array
         $validHashes = @()
+
         foreach ($hashProvider in $hashProviders)
         {
             $bitSize = ( New-Object -TypeName $hashProvider ).HashSize
@@ -225,35 +226,35 @@ function Find-Certificate
     param
     (
         [Parameter()]
-        [String]
+        [System.String]
         $Thumbprint,
 
         [Parameter()]
-        [String]
+        [System.String]
         $FriendlyName,
 
         [Parameter()]
-        [String]
+        [System.String]
         $Subject,
 
         [Parameter()]
-        [String[]]
+        [System.String[]]
         $DNSName,
 
         [Parameter()]
-        [String]
+        [System.String]
         $Issuer,
 
         [Parameter()]
-        [String[]]
+        [System.String[]]
         $KeyUsage,
 
         [Parameter()]
-        [String[]]
+        [System.String[]]
         $EnhancedKeyUsage,
 
         [Parameter()]
-        [String]
+        [System.String]
         $Store = 'My',
 
         [Parameter()]
@@ -273,6 +274,7 @@ function Find-Certificate
 
     # Assemble the filter to use to select the certificate
     $certFilters = @()
+
     if ($PSBoundParameters.ContainsKey('Thumbprint'))
     {
         $certFilters += @('($_.Thumbprint -eq $Thumbprint)')
@@ -347,9 +349,10 @@ function Get-CdpContainer
 {
     [cmdletBinding()]
     [OutputType([psobject])]
-    param(
+    param
+    (
         [Parameter()]
-        [String]
+        [System.String]
         $DomainName
     )
 
@@ -395,10 +398,11 @@ function Get-CdpContainer
 function Find-CertificateAuthority
 {
     [cmdletBinding()]
-    [OutputType([psobject])]
-    param(
+    [OutputType([System.Management.Automation.PSObject])]
+    param
+    (
         [Parameter()]
-        [String]
+        [System.String]
         $DomainName
     )
 
@@ -409,6 +413,7 @@ function Find-CertificateAuthority
     $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
 
     $caFound = $false
+
     foreach ($item in $cdpContainer.Children)
     {
         if (-not $caFound)
@@ -471,8 +476,9 @@ function Get-DirectoryEntry
 function Test-CertificateAuthority
 {
     [cmdletBinding()]
-    [OutputType([Boolean])]
-    param(
+    [OutputType([System.Boolean])]
+    param
+    (
         [Parameter()]
         [System.String]
         $CAServerFQDN,
@@ -602,7 +608,7 @@ function Get-CertificateTemplateInformation
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $FormattedTemplate
     )
 
@@ -630,7 +636,7 @@ function Get-CertificateTemplateInformation
         {
             [Array] $adTemplates = Get-CertificateTemplatesFromActiveDirectory
 
-            if ([String]::IsNullOrEmpty($Matches.DisplayName))
+            if ([System.String]::IsNullOrEmpty($Matches.DisplayName))
             {
                 $template = $adTemplates.Where({
                     $_.'msPKI-Cert-Template-OID' -eq $Matches.Oid
@@ -677,37 +683,76 @@ function Get-CertificateTemplateInformation
 
 <#
     .SYNOPSIS
-    Gets the formatted text output from an X509 certificate template extension.
+    Returns one or more matching extensions matching the requested Oid.
 
     .DESCRIPTION
-    The supplied X509 Extension Collected is processed to find any Certificate
-    Template extensions.
-    If a template extension is found the Format method is called with the parameter
-    $true and the text output is returned.
+    This function finds all extensions matching one of the specified Oid values
+    and returns one or more of them.
 
-    .PARAMETER TemplateExtensions
-    The X509 extensions collection from and X509 certificate to be searched for a
-    certificate template extension.
+    .PARAMETER Certificate
+    The X509 certificate to return the extensions from.
+
+    .PARAMETER Oid
+    The list of Oid's to extract extensions from.
+
+    .PARAMETER First
+    The number of matching extensions to return.
 #>
-function Get-CertificateTemplateExtensionText
+function Get-CertificateExtension
 {
-    [OutputType([String])]
+    [CmdletBinding()]
+    [OutputType([System.Security.Cryptography.X509Certificates.X509Extension[]])]
     param
     (
         [Parameter(Mandatory = $true)]
-        [System.Security.Cryptography.X509Certificates.X509ExtensionCollection]
-        $TemplateExtensions
+        [System.Object]
+        $Certificate,
+
+        [Parameter(Mandatory = $true)]
+        [System.String[]]
+        $Oid,
+
+        [Parameter()]
+        [System.Int32]
+        $First = 1
     )
 
-    $templateOidNames = 'Certificate Template Information', 'Certificate Template Name'
+    $extensions = $certificate.Extensions | Where-Object -FilterScript {
+        $_.Oid.value -in $Oid
+    } | Select-Object -First $First
 
-    $templateExtension = $TemplateExtensions.Where({
-        $_.Oid.FriendlyName -in $templateOidNames
-    })[0]
+    return $extensions
+}
 
-    if ($null -ne $templateExtension)
+<#
+    .SYNOPSIS
+    Gets the formatted text output from an X509 certificate template extension.
+
+    .DESCRIPTION
+    Looks up the extensions with either the Oid "1.3.6.1.4.1.311.21.7" or
+    "1.3.6.1.4.1.311.20.2" and returns the formatted extension value.
+
+    .PARAMETER Certificate
+    The x509 certificate to return the template extension from.
+#>
+function Get-CertificateTemplateExtensionText
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]
+        $Certificate
+    )
+
+    $templateOidNames = '1.3.6.1.4.1.311.21.7', '1.3.6.1.4.1.311.20.2'
+    $firstTemplateExtension = Get-CertificateExtension @PSBoundParameters `
+        -Oid $templateOidNames
+
+    if ($null -ne $firstTemplateExtension)
     {
-        return $templateExtension.Format($true)
+        return $firstTemplateExtension.Format($true)
     }
 }
 
@@ -721,7 +766,7 @@ function Get-CertificateTemplateExtensionText
     "1.3.6.1.4.1.311.20.2".
 
     .PARAMETER Certificate
-    The certificate object the template name is needed for.
+    The x509 certificate to return the formatted template extension from.
 #>
 function Get-CertificateTemplateName
 {
@@ -730,7 +775,7 @@ function Get-CertificateTemplateName
     param
     (
         [Parameter(Mandatory = $true)]
-        [object]
+        [System.Object]
         $Certificate
     )
 
@@ -739,7 +784,7 @@ function Get-CertificateTemplateName
         return
     }
 
-    $templateExtensionText = Get-CertificateTemplateExtensionText -TemplateExtensions $Certificate.Extensions
+    $templateExtensionText = Get-CertificateTemplateExtensionText @PSBoundParameters
 
     if ($null -ne $templateExtensionText)
     {
@@ -750,23 +795,23 @@ function Get-CertificateTemplateName
 
 <#
     .SYNOPSIS
-    Get certificate SAN
+    Get the first Subject Alternative Name entry for a certificate.
 
     .DESCRIPTION
-    Gets the first subject alternative name for the certificate that is passed to this cmdlet
+    Gets the first entry in the Subject Alternative Name extension from the
+    certificate provided.
 
     .PARAMETER Certificate
-    The certificate object the subject alternative name is needed for
+    The certificate to return the Subject Alternative Name from.
 #>
-function Get-CertificateSan
+function Get-CertificateSubjectAlternativeName
 {
     [cmdletBinding()]
     [OutputType([System.String])]
     param
     (
-        # The certificate for which the subject alternative names are needed
         [Parameter(Mandatory = $true)]
-        [object]
+        [System.Object]
         $Certificate
     )
 
@@ -775,25 +820,48 @@ function Get-CertificateSan
         return
     }
 
-    $subjectAlternativeName = $null
+    $list = Get-CertificateSubjectAlternativeNameList -Certificate $Certificate
 
-    $sanExtension = $Certificate.Extensions | Where-Object { $_.Oid.FriendlyName -match 'subject alternative name' }
-
-    if ($null -eq $sanExtension)
+    if ($null -ne $list)
     {
-        return $subjectAlternativeName
+        $firstSubjectAlternativeName = Get-CertificateSubjectAlternativeNameList -Certificate $Certificate |
+            Select-Object -First 1
+
+        return $firstSubjectAlternativeName.Split('=')[1]
+    }
+}
+
+<#
+    .SYNOPSIS
+    Get the list of Subject Alternative Name entries in a Certificate.
+
+    .DESCRIPTION
+    Gets the list of Subject Alternative Name entries in the extension
+    with Oid 2.5.29.17 from the certificate provided.
+
+    .PARAMETER Certificate
+    The certificate to return the Subject Alternative Name entry list from.
+#>
+function Get-CertificateSubjectAlternativeNameList
+{
+    [cmdletBinding()]
+    [OutputType([System.String[]])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Object]
+        $Certificate
+    )
+
+    $subjectAlternateNameExtensions = Get-CertificateExtension -Certificate $Certificate -Oid '2.5.29.17'
+    $subjectAlternateNames = @()
+
+    if ($null -ne $subjectAlternateNameExtensions)
+    {
+        $subjectAlternateNames = ($subjectAlternateNameExtensions.Format($false) -split ',').Trim()
     }
 
-    $sanObjects = New-Object -ComObject X509Enrollment.CX509ExtensionAlternativeNames
-    $altNamesStr = [System.Convert]::ToBase64String($sanExtension.RawData)
-    $sanObjects.InitializeDecode(1, $altNamesStr)
-
-    if ($sanObjects.AlternativeNames.Count -gt 0)
-    {
-        $subjectAlternativeName = $sanObjects.AlternativeNames[0].strValue
-    }
-
-    return $subjectAlternativeName
+    return $subjectAlternateNames
 }
 
 <#
@@ -888,11 +956,11 @@ function Import-PfxCertificateEx
         [System.String]
         $CertStoreLocation,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [Switch]
         $Exportable,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [System.Security.SecureString]
         $Password
     )
@@ -937,7 +1005,8 @@ function Import-PfxCertificateEx
     .PARAMETER Store
     The Windows Certificate Store Name.
 #>
-function Get-CertificateStorePath {
+function Get-CertificateStorePath
+{
     [CmdletBinding()]
     [OutputType([System.String])]
     param

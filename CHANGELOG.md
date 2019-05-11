@@ -9,6 +9,12 @@
     if `ReferenceSubject` is null.
   - Fixed exception when Certificate with empty Subject exists in
     Certificate Store - fixes [Issue #190](https://github.com/PowerShell/CertificateDsc/issues/190).
+  - Fixed bug matching existing certificate when Subject Alternate
+    Name is specified and machine language is not en-US - fixes
+    [Issue #193](https://github.com/PowerShell/CertificateDsc/issues/193).
+  - Fixed bug matching existing certificate when Template Name
+    is specified and machine language is not en-US - fixes
+    [Issue #193](https://github.com/PowerShell/CertificateDsc/issues/193).
 
 ## 4.5.0.0
 
