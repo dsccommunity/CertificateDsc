@@ -957,7 +957,6 @@ function Test-TargetResource
             else
             {
                 # There are no SANs and there should be
-                Write-Verbose -Message 'B' -Verbose
                 return $false
             }
         }

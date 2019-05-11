@@ -1268,7 +1268,7 @@ Minor Version Number=5
         }
 
         Describe "$DSCResourceName\Get-CertificateExtension" {
-            Context 'When a certificate contains an extension that matches the Oid parameter' {
+            Context 'When a certificate contains an extension that matches the Oid parameter and First is not specified' {
                 It 'Should return the extension with Oid ''2.5.29.17''' {
                     $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17'
                     $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
@@ -1277,7 +1277,7 @@ Minor Version Number=5
                 }
             }
 
-            Context 'When a certificate does not contain an extension that matches the Oid parameter' {
+            Context 'When a certificate does not contain an extension that matches the Oid parameter and First is not specified' {
                 It 'Should return no extension' {
                     $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.9.9.9'
                     $extension | Should -BeNullOrEmpty
@@ -1291,7 +1291,7 @@ Minor Version Number=5
                 }
             }
 
-            Context 'When a certificate contains an extension that matches only one of the Oid parameter values' {
+            Context 'When a certificate contains an extension that matches only one of the Oid parameter values and First is not specified' {
                 It 'Should return the extension with Oid ''2.5.29.17''' {
                     $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.9.9.9'
                     $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
@@ -1300,8 +1300,8 @@ Minor Version Number=5
                 }
             }
 
-            Context 'When a certificate contains an extension that matches both of the Oid parameter values' {
-                It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
+            Context 'When a certificate contains an extension that matches both of the Oid parameter values and First is not specified' {
+                It 'Should return the extension with Oid ''2.5.29.17''' {
                     $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.5.29.31'
                     $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
                     $extension | Should -HaveCount 1
@@ -1328,7 +1328,6 @@ Minor Version Number=5
                     $extension.Oid.Value | Should -Contain '2.5.29.31'
                 }
             }
-
         }
 
         Describe "$DSCResourceName\Get-CertificateTemplateExtensionText" {

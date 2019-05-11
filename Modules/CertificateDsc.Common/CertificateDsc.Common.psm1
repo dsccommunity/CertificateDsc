@@ -238,7 +238,7 @@ function Find-Certificate
         $Subject,
 
         [Parameter()]
-        [String[]]
+        [System.String[]]
         $DNSName,
 
         [Parameter()]
@@ -246,11 +246,11 @@ function Find-Certificate
         $Issuer,
 
         [Parameter()]
-        [String[]]
+        [System.String[]]
         $KeyUsage,
 
         [Parameter()]
-        [String[]]
+        [System.String[]]
         $EnhancedKeyUsage,
 
         [Parameter()]
