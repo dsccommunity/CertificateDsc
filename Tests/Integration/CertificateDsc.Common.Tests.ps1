@@ -65,6 +65,63 @@ try
         Remove-Item -Path ('Cert:\CurrentUser\My\{0}' -f $certificate.Thumbprint) -Force -ErrorAction SilentlyContinue
 
         <#
+            Generate two certificates, export both to a P7B and remove them from the store to use for testing.
+            Don't use CurrentUser certificates for this test because they won't be found because
+            DSC LCM runs under a different context (Local System).
+        #>
+        $containingCertificate = New-SelfSignedCertificate `
+            -DnsName "ContainingCertificate" `
+            -CertStoreLocation Cert:\LocalMachine\My
+        $includedCertificate = New-SelfSignedCertificate `
+            -DnsName "IncludedCertificate" `
+            -CertStoreLocation Cert:\LocalMachine\My
+
+        $certificatePath = Join-Path `
+            -Path $ENV:Temp `
+            -ChildPath "CertificateDsc.Common.Tests-$($containingCertificate.Thumbprint).p7b"
+        $certificateExportPath = Join-Path `
+            -Path $ENV:Temp `
+            -ChildPath "CertificateDsc.Common.Tests.Export-$($containingCertificate.Thumbprint).p7b"
+        $testUsername = 'DummyUsername'
+        $testPassword = 'DummyPassword'
+        $testPasswordSecure = (ConvertTo-SecureString $testPassword -AsPlainText -Force)
+        $testCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList @($testUsername, $testPasswordSecure)
+
+        $null = @($containingCertificate, $includedCertificate) | Export-Certificate `
+            -FilePath $certificatePath `
+            -Type p7b
+        $null = Remove-Item `
+            -Path $containingCertificate.PSPath `
+            -Force
+        $null = Remove-Item `
+            -Path $includedCertificate.PSPath `
+            -Force
+
+        Describe "$ModuleName\Import-CertificateEx" {
+            Context 'Import a valid p7b Certificate chain into "CurrentUser\My" store' {
+                It 'Should not throw an exception' {
+                    { Import-CertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\CurrentUser\My' } | Should -Not -Throw
+                }
+
+                It 'Should have imported the containing certificate with the correct values' {
+                    $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $containingCertificate.Thumbprint)
+                    $importedCert.Thumbprint | Should -Be $containingCertificate.Thumbprint
+                    $importedCert.HasPrivateKey | Should -Be $false
+                }
+
+                It 'Should have imported the included certificate with the correct values' {
+                    $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $includedCertificate.Thumbprint)
+                    $importedCert.Thumbprint | Should -Be $includedCertificate.Thumbprint
+                    $importedCert.HasPrivateKey | Should -Be $false
+                }
+            }
+        }
+
+        # Remove the imported certificate
+        Remove-Item -Path ('Cert:\CurrentUser\My\{0}' -f $containingCertificate.Thumbprint) -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path ('Cert:\CurrentUser\My\{0}' -f $includedCertificate.Thumbprint) -Force -ErrorAction SilentlyContinue
+
+        <#
             Generate a self-signed certificate, export it and remove it from the store to use for testing.
             Don't use CurrentUser certificates for this test because they won't be found because
             DSC LCM runs under a different context (Local System).

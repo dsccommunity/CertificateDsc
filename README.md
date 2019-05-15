@@ -35,7 +35,8 @@ directly to this branch.
 
 ### dev
 
-[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/dev?svg=true)](https://ci.appveyor.com/project/PowerShell/CertificateDsc/branch/dev)[![codecov](https://codecov.io/gh/PowerShell/CertificateDsc/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/CertificateDsc/branch/dev)
+[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/dev?svg=true)](https://ci.appveyor.com/project/PowerShell/CertificateDsc/branch/dev)
+[![codecov](https://codecov.io/gh/PowerShell/CertificateDsc/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/CertificateDsc/branch/dev)
 
 This is the development branch to which contributions should be proposed by contributors
 as pull requests. This development branch will periodically be merged to the master

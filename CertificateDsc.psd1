@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    moduleVersion = '4.5.0.0'
+    moduleVersion = '4.6.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -53,12 +53,21 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- Fix example publish to PowerShell Gallery by adding `gallery_api`
-  environment variable to `AppVeyor.yml` - fixes [Issue 187](https://github.com/PowerShell/CertificateDsc/issues/187).
-- CertificateDsc.Common.psm1
-  - Exclude assemblies that set DefinedTypes to null instead of an empty array
-    to prevent failures on GetTypes(). This issue occurred with the
-    Microsoft.WindowsAzure.Storage.dll assembly.
+        ReleaseNotes = '- CertReq:
+  - Added `Compare-CertificateIssuer` function to checks if the
+    Certificate Issuer matches the CA Root Name.
+  - Changed `Compare-CertificateSubject` function to return false
+    if `ReferenceSubject` is null.
+  - Fixed exception when Certificate with empty Subject exists in
+    Certificate Store - fixes [Issue 190](https://github.com/PowerShell/CertificateDsc/issues/190).
+  - Fixed bug matching existing certificate when Subject Alternate
+    Name is specified and machine language is not en-US - fixes
+    [Issue 193](https://github.com/PowerShell/CertificateDsc/issues/193).
+  - Fixed bug matching existing certificate when Template Name
+    is specified and machine language is not en-US - fixes
+    [Issue 193](https://github.com/PowerShell/CertificateDsc/issues/193).
+  - Changed `Import-CertificateEx` function to use `X509Certificate2Collection`
+    instead of `X509Certificate2` to support importing certificate chains
 
 '
 
@@ -67,6 +76,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 

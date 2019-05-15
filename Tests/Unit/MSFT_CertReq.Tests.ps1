@@ -66,6 +66,15 @@ try
             FriendlyName = $friendlyName
         }
 
+        $validCertWithoutSubject = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = $validThumbprint
+            Subject      = ''
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-30) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            FriendlyName = $friendlyName
+        }
+
         $invalidCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $invalidThumbprint
             Subject      = "CN=$invalidSubject"
@@ -105,8 +114,8 @@ try
         }
 
         $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{FriendlyName = 'Subject Alternative Name'}
-        $sanExt = @{
-            oid      = $(,$sanOid)
+        $sanExt = [PSCustomObject] @{
+            Oid      = $sanOid
             Critical = $false
         }
         Add-Member -InputObject $sanExt -MemberType ScriptMethod -Name Format -Force -Value {
@@ -131,15 +140,15 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = $sanExt
+            Extensions   = @($sanExt)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
             return $true
         }
 
-        $incorrectSanExt = @{
-            oid      = $(,$sanOid)
+        $incorrectSanExt = [PSCustomObject] @{
+            Oid      = $sanOid
             Critical = $false
         }
         Add-Member -InputObject $incorrectSanExt -MemberType ScriptMethod -Name Format -Force -Value {
@@ -152,7 +161,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = $incorrectSanExt
+            Extensions   = @($incorrectSanExt)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $incorrectSANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -191,6 +200,20 @@ try
         $testUsername   = 'DummyUsername'
         $testPassword   = 'DummyPassword'
         $testCredential = New-Object System.Management.Automation.PSCredential $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
+
+        $mock_getCertificateTemplateName_validCertificateTemplate = { $certificateTemplate }
+        $mock_getCertificateTemplateName_invalidCertificateTemplate = { $invalidCertificateTemplate }
+        $mock_getCertificateTemplateName_validDCCertificateTemplate = { $certificateDCTemplate }
+        $mock_GetChildItem_validCertWithoutSubject = { $validCertWithoutSubject }
+        $mock_getChildItem_validCert = { $validCert }
+        $mock_getChildItem_expiredCert = { $expiredCert }
+        $mock_getChildItem_expiringCert = { $expiringCert }
+        $mock_getChildItem_validSANCert = { $validSANCert }
+        $mock_getChildItem_validCertSubjectDifferentOrder = { $validCertSubjectDifferentOrder }
+        $mock_getChildItem_incorrectSANCert = { $incorrectSANCert }
+        $mock_getChildItem_emptySANCert = { $emptySANCert }
+        $mock_getChildItem_incorrectFriendlyName = { $incorrectFriendlyName }
+        $mock_getCertificateSan_subjectAltName = { $subjectAltName }
 
         $paramsStandard = @{
             Subject               = $validSubject
@@ -590,16 +613,16 @@ OID = $oid
             )
         }
 
-        Describe 'MSFT_CertReq\Get-TargetResource' {
+        Describe 'MSFT_CertReq\Get-TargetResource' -Tag 'Get' {
             BeforeAll {
                 Mock -CommandName Get-ChildItem `
                     -Mockwith { $validCert } `
                     -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 Mock -CommandName Get-CertificateTemplateName `
-                    -MockWith { $certificateTemplate }
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                Mock -CommandName Get-CertificateSan `
+                Mock -CommandName Get-CertificateSubjectAlternativeName `
                     -MockWith { $subjectAltName }
 
                 Mock -CommandName Find-CertificateAuthority -MockWith {
@@ -670,9 +693,7 @@ OID = $oid
             }
         }
 
-
-        #region Set-TargetResource
-        Describe "$dscResourceName\Set-TargetResource" -Tag 'Set' {
+        Describe 'MSFT_CertReq\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Test-Path -MockWith { $true } `
                     -ParameterFilter $pathCertReqTestReq_parameterFilter
@@ -1324,16 +1345,36 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Test-TargetResource' {
-            Context 'When a valid certificate does not exist' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+        Describe 'MSFT_CertReq\Test-TargetResource' -Tag 'Test' {
+            Context 'When a valid certificate does not exist and a certificate with an empty Subject exists in the Store' {
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_GetChildItem_validCertWithoutSubject
+
+                It 'Should return false' {
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                }
+            }
+
+            Context 'When a valid certificate does not exist' {
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
+                    }
+
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
@@ -1341,14 +1382,17 @@ OID = $oid
             }
 
             Context 'When a valid certificate already exists' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter
+                Mock `
+                    -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
@@ -1356,19 +1400,23 @@ OID = $oid
             }
 
             Context 'When a valid certificate already exists and is not about to expire' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName  Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                    -Mockwith { $validCert }
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_validCert
 
-                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                Mock -CommandName Get-CertificateSan -MockWith { $subjectAltName }
+                Mock -CommandName Get-CertificateSubjectAlternativeName `
+                    -MockWith $mock_getCertificateSan_subjectAltName
 
                 It 'Should return true' {
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $true
@@ -1377,45 +1425,56 @@ OID = $oid
 
             Context 'When an expired certificate exists and autorenew set' {
                 It 'Should return true' {
-                    Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
-                        -Mockwith { $expiredCert }
+                    Mock -CommandName Get-ChildItem `
+                        -ParameterFilter {
+                            $Path -eq 'Cert:\LocalMachine\My'
+                        } `
+                        -Mockwith $mock_getChildItem_expiredCert
 
-                    Mock Get-CertificateTemplateName -MockWith { $certificateTemplate }
+                    Mock -CommandName Get-CertificateTemplateName `
+                        -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                    Mock Get-CertificateSan -MockWith { $subjectAltName }
+                    Mock -CommandName Get-CertificateSubjectAlternativeName `
+                        -MockWith $mock_getCertificateSan_subjectAltName
 
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
                 }
             }
 
             Context 'When a valid certificate already exists and is about to expire and autorenew set' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                    -Mockwith { $expiringCert }
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_expiringCert
 
-                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                    Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $false
+                Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $false
             }
 
             Context 'When a valid certificate already exists and X500 subjects are in a different order but match' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                    -Mockwith { $validCertSubjectDifferentOrder }
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_validCertSubjectDifferentOrder
 
-                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
                     Test-TargetResource @paramsSubjectDifferentOrder -Verbose | Should -Be $true
@@ -1423,17 +1482,20 @@ OID = $oid
             }
 
             Context 'When a valid certificate already exists and DNS SANs match' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                    -Mockwith { $validSANCert }
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_validSANCert
 
-                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
                     Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $true
@@ -1441,17 +1503,20 @@ OID = $oid
             }
 
             Context 'When a certificate exists but contains incorrect DNS SANs' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                    -Mockwith { $incorrectSANCert }
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_incorrectSANCert
 
-                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
                     Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
@@ -1466,10 +1531,12 @@ OID = $oid
                     }
                 }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                    -Mockwith { $emptySANCert }
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_emptySANCert
 
-                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
                     Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
@@ -1477,18 +1544,20 @@ OID = $oid
             }
 
             Context 'When a certificate exists but does not match the Friendly Name' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                    -Mockwith { $incorrectFriendlyName }
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_incorrectFriendlyName
 
-                Mock -CommandName Get-CertificateTemplateName -MockWith { $certificateTemplate }
-
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
@@ -1498,10 +1567,14 @@ OID = $oid
 
             Context 'When a certificate exists but does not match the Certificate Template' {
                 It 'Should return false' {
-                    Mock Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
-                        -Mockwith { $validcert }
+                    Mock -CommandName Get-ChildItem `
+                        -ParameterFilter {
+                            $Path -eq 'Cert:\LocalMachine\My'
+                        } `
+                        -Mockwith $mock_getChildItem_validCert
 
-                    Mock Get-CertificateTemplateName -MockWith { $invalidCertificateTemplate }
+                    Mock -CommandName Get-CertificateTemplateName `
+                        -MockWith $mock_getCertificateTemplateName_invalidCertificateTemplate
 
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
                 }
@@ -1509,26 +1582,31 @@ OID = $oid
 
             Context 'When a Domain Controller certificate template is used, A valid certificate already exists and is not about to expire' {
                 It 'Should return true' {
-                    Mock Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
-                        -Mockwith { $validCert }
+                    Mock -CommandName Get-ChildItem `
+                        -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                        -Mockwith $mock_getChildItem_validCert
 
-                    Mock Get-CertificateTemplateName -MockWith { $certificateDCTemplate }
+                    Mock -CommandName Get-CertificateTemplateName `
+                        -MockWith $mock_getCertificateTemplateName_validDCCertificateTemplate
 
-                    Mock Get-CertificateSan -MockWith { $subjectAltName }
+                    Mock -CommandName Get-CertificateSubjectAlternativeName `
+                        -MockWith $mock_getCertificateSan_subjectAltName
 
                     Test-TargetResource @paramsStandardDomainController -Verbose | Should -Be $true
                 }
             }
 
             Context 'When auto-discover of the CA is enabled' {
-                Mock -CommandName Find-CertificateAuthority -MockWith {
-                    return New-Object -TypeName psobject -Property @{
-                        CARootName = "ContosoCA"
-                        CAServerFQDN = "ContosoVm.contoso.com"
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                        return New-Object -TypeName psobject -Property @{
+                            CARootName = "ContosoCA"
+                            CAServerFQDN = "ContosoVm.contoso.com"
+                        }
                     }
-                }
 
-                Mock -CommandName Get-ChildItem -ParameterFilter $pathCertLocalMachineMy_parameterFilter
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
                     Test-TargetResource @paramsAutoDiscovery -Verbose | Should -Be $false
@@ -1540,7 +1618,7 @@ OID = $oid
             }
         }
 
-        Describe "$dscResourceName\Assert-ResourceProperty"{
+        Describe 'MSFT_CertReq\Assert-ResourceProperty'{
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramRsaValid -Verbose } | Should -Not -Throw
@@ -1620,12 +1698,60 @@ OID = $oid
                         -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
                 }
             }
+
+            Context 'When called with a null ReferenceSubject' {
+                It 'Should return a false' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject $null `
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                }
+            }
+
+            Context 'When called with an empty ReferenceSubject' {
+                It 'Should return a false' {
+                    Compare-CertificateSubject `
+                        -ReferenceSubject '' `
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                }
+            }
+        }
+
+        Describe 'MSFT_CertReq\Compare-CertificateIssuer' {
+            Context 'When called with certificate issuer with single X500 paths matching the CA root name' {
+                It 'Should return a true' {
+                    Compare-CertificateIssuer `
+                        -Issuer 'CN=xyz.contoso.com' `
+                        -CARootName 'xyz.contoso.com' | Should -Be $true
+                }
+            }
+
+            Context 'When called with certificate issuer with multiple X500 paths matching the CA root name' {
+                It 'Should return a true' {
+                    Compare-CertificateIssuer `
+                        -Issuer 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
+                        -CARootName 'xyz.contoso.com' | Should -Be $true
+                }
+            }
+
+            Context 'When called with certificate issuer with single X500 paths not matching the CA root name' {
+                It 'Should return a false' {
+                    Compare-CertificateIssuer `
+                        -Issuer 'CN=abc.contoso.com' `
+                        -CARootName 'xyz.contoso.com' | Should -Be $false
+                }
+            }
+
+            Context 'When called with certificate issuer with multiple X500 paths not matching the CA root name' {
+                It 'Should return a true' {
+                    Compare-CertificateIssuer `
+                        -Issuer 'CN=abc.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
+                        -CARootName 'xyz.contoso.com' | Should -Be $false
+                }
+            }
         }
     }
 }
 finally
 {
-    #region FOOTER
     Restore-TestEnvironment -TestEnvironment $testEnvironment
-    #endregion
 }

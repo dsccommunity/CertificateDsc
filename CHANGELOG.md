@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## 4.6.0.0
+
+- CertReq:
+  - Added `Compare-CertificateIssuer` function to checks if the
+    Certificate Issuer matches the CA Root Name.
+  - Changed `Compare-CertificateSubject` function to return false
+    if `ReferenceSubject` is null.
+  - Fixed exception when Certificate with empty Subject exists in
+    Certificate Store - fixes [Issue #190](https://github.com/PowerShell/CertificateDsc/issues/190).
+  - Fixed bug matching existing certificate when Subject Alternate
+    Name is specified and machine language is not en-US - fixes
+    [Issue #193](https://github.com/PowerShell/CertificateDsc/issues/193).
+  - Fixed bug matching existing certificate when Template Name
+    is specified and machine language is not en-US - fixes
+    [Issue #193](https://github.com/PowerShell/CertificateDsc/issues/193).
+  - Changed `Import-CertificateEx` function to use `X509Certificate2Collection`
+    instead of `X509Certificate2` to support importing certificate chains
+
 ## 4.5.0.0
 
 - Fix example publish to PowerShell Gallery by adding `gallery_api`

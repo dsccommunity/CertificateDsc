@@ -198,8 +198,8 @@ function Get-TargetResource
 
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-        $_.Subject -eq "CN=$Subject" -and `
-            $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+            $_.Subject -eq "CN=$Subject" -and `
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
     }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
@@ -224,7 +224,7 @@ function Get-TargetResource
             OID                 = $null # This value can't be determined from the cert
             KeyUsage            = $null # This value can't be determined from the cert
             CertificateTemplate = Get-CertificateTemplateName -Certificate $Cert
-            SubjectAltName      = Get-CertificateSan -Certificate $Cert
+            SubjectAltName      = Get-CertificateSubjectAlternativeName -Certificate $Cert
             FriendlyName        = $Cert.FriendlyName
         }
     }
@@ -420,8 +420,8 @@ function Set-TargetResource
     {
         $certs = Get-Childitem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
-            $_.Subject -eq $Subject -and `
-                $_.Issuer.split(',')[0] -eq "CN=$CARootName" -and `
+                $_.Subject -eq $Subject -and `
+                (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
                 $_.NotAfter -lt (Get-Date).AddDays(30)
         }
 
@@ -865,54 +865,54 @@ function Test-TargetResource
             $($LocalizedData.TestingCertReqStatusMessage -f $Subject, $ca)
         ) -join '' )
 
-    $cert = Get-Childitem -Path Cert:\LocalMachine\My |
+    $certificate = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
             (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
-            $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
     }
 
     # Exception for standard template DomainControllerAuthentication
     if ($CertificateTemplate -eq 'DomainControllerAuthentication')
     {
-        $cert = Get-Childitem -Path Cert:\LocalMachine\My |
+        $certificate = Get-Childitem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
-            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
-                $_.Issuer.split(',')[0] -eq "CN=$CARootName"
+                (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+                (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
         }
     }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
-    $cert = $cert |
+    $certificate = $certificate |
         Sort-Object -Property NotBefore -Descending |
         Select-Object -First 1
 
-    if ($cert)
+    if ($certificate)
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
+                $($LocalizedData.CertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
             ) -join '' )
 
         if ($AutoRenew)
         {
-            if ($Cert.NotAfter -le (Get-Date).AddDays(30))
+            if ($certificate.NotAfter -le (Get-Date).AddDays(30))
             {
                 # The certificate was found but it is expiring within 30 days or has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.ExpiringCertificateMessage -f $Subject, $ca, $cert.Thumbprint)
+                        $($LocalizedData.ExpiringCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
         }
         else
         {
-            if ($cert.NotAfter -le (Get-Date))
+            if ($certificate.NotAfter -le (Get-Date))
             {
                 # The certificate has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.ExpiredCertificateMessage -f $Subject, $ca, $cert.Thumbprint)
+                        $($LocalizedData.ExpiredCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
@@ -922,33 +922,34 @@ function Test-TargetResource
         {
             # Split the desired SANs into an array
             $sanList = $SubjectAltName.Split('&')
-            $correctDNS = @()
+            $correctDns = @()
 
             foreach ($san in $sanList)
             {
                 if ($san -like 'dns*')
                 {
                     # This SAN is a DNS name
-                    $correctDNS += $san.split('=')[1]
+                    $correctDns += $san.split('=')[1]
                 }
             }
 
             # Find out what SANs are on the current cert
-            if ($cert.Extensions.Count -gt 0)
+            if ($certificate.Extensions.Count -gt 0)
             {
-                $currentSanList = ($cert.Extensions | Where-Object {$_.oid.FriendlyName -match 'Subject Alternative Name'}).Format(1).split("`n").TrimEnd()
-                $currentDNS = @()
+                $currentSanList = Get-CertificateSubjectAlternativeNameList -Certificate $certificate
+                $currentDns = @()
+
                 foreach ($san in $currentSanList)
                 {
                     if ($san -like 'dns*')
                     {
                         # This SAN is a DNS name
-                        $currentDNS += $san.split('=')[1]
+                        $currentDns += $san.split('=')[1]
                     }
                 }
 
                 # Do the cert's DNS SANs and the desired DNS SANs match?
-                if (@(Compare-Object -ReferenceObject $currentDNS -DifferenceObject $correctDNS).Count -gt 0)
+                if (@(Compare-Object -ReferenceObject $currentDns -DifferenceObject $correctDns).Count -gt 0)
                 {
                     return $false
                 }
@@ -960,21 +961,23 @@ function Test-TargetResource
             }
         }
 
-        if ($CertificateTemplate -ne (Get-CertificateTemplateName -Certificate $cert))
+        $currentCertificateTemplateName = Get-CertificateTemplateName -Certificate $certificate
+
+        if ($CertificateTemplate -ne $currentCertificateTemplateName)
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.CertTemplateMismatch -f $Subject, $ca, $cert.Thumbprint, (Get-CertificateTemplateName -Certificate $cert))
+                    $($LocalizedData.CertTemplateMismatch -f $Subject, $ca, $certificate.Thumbprint, $currentCertificateTemplateName)
                 ) -join '' )
             return $false
         } # if
 
         # Check the friendly name of the certificate matches
-        if ($FriendlyName -ne $cert.FriendlyName)
+        if ($FriendlyName -ne $certificate.FriendlyName)
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.CertFriendlyNameMismatch -f $Subject, $ca, $cert.Thumbprint, $cert.FriendlyName)
+                    $($LocalizedData.CertFriendlyNameMismatch -f $Subject, $ca, $certificate.Thumbprint, $certificate.FriendlyName)
                 ) -join '' )
             return $false
         } # if
@@ -982,7 +985,7 @@ function Test-TargetResource
         # The certificate was found and is OK - so no change required.
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.ValidCertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
+                $($LocalizedData.ValidCertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
             ) -join '' )
         return $true
     } # if
@@ -1033,7 +1036,8 @@ function Assert-ResourceProperty
     Compares two certificate subjects.
 
     .PARAMETER ReferenceSubject
-    The certificate subject to compare.
+    The certificate subject to compare. If the ReferenceSubject
+    is null the function will return False.
 
     .PARAMETER DifferenceSubject
     The certificate subject to compare with the ReferenceSubject.
@@ -1045,7 +1049,7 @@ function Compare-CertificateSubject
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]
         $ReferenceSubject,
 
@@ -1055,6 +1059,11 @@ function Compare-CertificateSubject
         $DifferenceSubject
     )
 
+    if ([System.String]::IsNullOrEmpty($ReferenceSubject))
+    {
+        return $false
+    }
+
     $referenceSubjectArray = ($ReferenceSubject -split ',').Trim() | Sort-Object
     $differenceSubjectArray = ($DifferenceSubject -split ',').Trim() | Sort-Object
 
@@ -1063,4 +1072,35 @@ function Compare-CertificateSubject
         -DifferenceObject $differenceSubjectArray
 
     return ($difference.Count -eq 0)
+}
+
+<#
+    .SYNOPSIS
+    Checks if the Certificate Issuer matches the CA Root Name.
+
+    .PARAMETER Issuer
+    The Certificate Issuer.
+
+    .PARAMETER CARootName
+    The CA Root Name to compare with the Certificate Issuer.
+#>
+
+function Compare-CertificateIssuer
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Issuer,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $CARootName
+    )
+
+    return ($Issuer.split(',')[0] -eq "CN=$CARootName")
 }
