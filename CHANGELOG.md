@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.6.0.0
+
 - CertReq:
   - Added `Compare-CertificateIssuer` function to checks if the
     Certificate Issuer matches the CA Root Name.
