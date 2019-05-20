@@ -6,7 +6,7 @@ Import-Module -Name (Join-Path -Path $modulePath `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
 # Import Localization Strings.
-$localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.PDT'
+$script:localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.PDT' -ScriptRoot $PSScriptRoot
 
 <#
     .SYNOPSIS
@@ -584,10 +584,10 @@ function Start-Win32Process
     }
     else
     {
-        return ($LocalizedData.ProcessAlreadyStarted -f $Path,$processes.ProcessId)
+        return ($script:localizedData.ProcessAlreadyStarted -f $Path,$processes.ProcessId)
     }
     $processes = @(Get-Win32Process @getArguments)
-    return ($LocalizedData.ProcessStarted -f $Path,$processes.ProcessId)
+    return ($script:localizedData.ProcessStarted -f $Path,$processes.ProcessId)
 } # end function Start-Win32Process
 
 <#
@@ -731,13 +731,13 @@ function Wait-Win32ProcessEnd
     if (-not (Wait-Win32ProcessStart @getArguments))
     {
         New-InvalidOperationException `
-            -Message ($LocalizedData.ProcessFailedToStartError -f $Path,$Arguments)
+            -Message ($script:localizedData.ProcessFailedToStartError -f $Path,$Arguments)
     }
     if (-not (Wait-Win32ProcessStop @getArguments))
     {
         # The process did not stop.
         New-InvalidOperationException `
-            -Message ($LocalizedData.ProcessFailedToStopError -f $Path,$Arguments)
+            -Message ($script:localizedData.ProcessFailedToStopError -f $Path,$Arguments)
     }
 } # end function Wait-Win32ProcessEnd
 

@@ -9,5 +9,4 @@ ConvertFrom-StringData @'
     RemovingPfxMessage = Removing Pfx '{0}' from '{1}'. (PI0008)
     CertificateStoreNotFoundError = Certificate Store '{0}' not found. (PI0009)
     CertificatePfxFileNotFoundError = Certificate Pfx file '{0}' not found. (PI0010)
-    ImportingPfxShould = Importing Pfx '{0}' into '{1}'. (PI0011)
 '@
