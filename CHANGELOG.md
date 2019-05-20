@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Opted into Common Tests 'Common Tests - Validate Localization' -
+  fixes [Issue #195](https://github.com/PowerShell/CertificateDsc/issues/195).
+- Combined all `CertificateDsc.ResourceHelper` module functions into
+  `CertificateDsc.Common` module and renamed to `CertificateDsc.CommonHelper`
+  module.
+
 ## 4.6.0.0
 
 - CertReq:
