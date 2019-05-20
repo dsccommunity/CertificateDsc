@@ -8,7 +8,7 @@ Import-Module -Name (Join-Path -Path $modulePath `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
 # Import Localization Strings.
-$localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateExport'
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateExport'
 
 <#
     .SYNOPSIS
@@ -31,7 +31,7 @@ function Get-TargetResource
     Write-Verbose -Message (
         @(
             "$($MyInvocation.MyCommand): ",
-            $($LocalizedData.GettingCertificateExportMessage -f $Path)
+            $($script:localizedData.GettingCertificateExportMessage -f $Path)
         ) -join '' )
 
     $result = @{
@@ -177,7 +177,7 @@ function Set-TargetResource
     Write-Verbose -Message (
         @(
             "$($MyInvocation.MyCommand): ",
-            $($LocalizedData.SettingCertificateExportMessage -f $Path)
+            $($script:localizedData.SettingCertificateExportMessage -f $Path)
         ) -join '' )
 
     $findCertificateParameters = @{} + $PSBoundParameters
@@ -195,7 +195,7 @@ function Set-TargetResource
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateToExportNotFound -f $Path, $Type, $Store)
+                $($script:localizedData.CertificateToExportNotFound -f $Path, $Type, $Store)
             ) -join '' )
     }
     else
@@ -206,7 +206,7 @@ function Set-TargetResource
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateToExportFound -f $certificateThumbprintToExport, $Path)
+                $($script:localizedData.CertificateToExportFound -f $certificateThumbprintToExport, $Path)
             ) -join '' )
 
         # Export the certificate
@@ -242,7 +242,7 @@ function Set-TargetResource
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateExported -f $certificateThumbprintToExport, $Path, $Type)
+                $($script:localizedData.CertificateExported -f $certificateThumbprintToExport, $Path, $Type)
             ) -join '' )
     } # if
 } # end function Set-TargetResource
@@ -383,7 +383,7 @@ function Test-TargetResource
     Write-Verbose -Message (
         @(
             "$($MyInvocation.MyCommand): ",
-            $($LocalizedData.TestingCertificateExportMessage -f $Path)
+            $($script:localizedData.TestingCertificateExportMessage -f $Path)
         ) -join '' )
 
     $findCertificateParameters = @{} + $PSBoundParameters
@@ -401,7 +401,7 @@ function Test-TargetResource
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateToExportNotFound -f $Path, $Type, $Store)
+                $($script:localizedData.CertificateToExportNotFound -f $Path, $Type, $Store)
             ) -join '' )
 
         return $true
@@ -414,7 +414,7 @@ function Test-TargetResource
         Write-Verbose -Message (
             @(
                 "$($MyInvocation.MyCommand): ",
-                $($LocalizedData.CertificateToExportFound -f $certificateThumbprintToExport, $Path)
+                $($script:localizedData.CertificateToExportFound -f $certificateThumbprintToExport, $Path)
             ) -join '' )
 
         if (Test-Path -Path $Path)
@@ -425,7 +425,7 @@ function Test-TargetResource
                 Write-Verbose -Message (
                     @(
                         "$($MyInvocation.MyCommand): ",
-                        $($LocalizedData.CertificateAlreadyExportedMatchSource -f $certificateThumbprintToExport, $Path)
+                        $($script:localizedData.CertificateAlreadyExportedMatchSource -f $certificateThumbprintToExport, $Path)
                     ) -join '' )
 
                 # Need to now compare the existing exported cert content with the found cert
@@ -444,7 +444,7 @@ function Test-TargetResource
                     Write-Verbose -Message (
                         @(
                             "$($MyInvocation.MyCommand): ",
-                            $($LocalizedData.CertificateAlreadyExportedNotMatchSource -f $certificateThumbprintToExport, $Path)
+                            $($script:localizedData.CertificateAlreadyExportedNotMatchSource -f $certificateThumbprintToExport, $Path)
                         ) -join '' )
 
                     return $false
@@ -457,7 +457,7 @@ function Test-TargetResource
                 Write-Verbose -Message (
                     @(
                         "$($MyInvocation.MyCommand): ",
-                        $($LocalizedData.CertificateAlreadyExported -f $certificateThumbprintToExport, $Path)
+                        $($script:localizedData.CertificateAlreadyExported -f $certificateThumbprintToExport, $Path)
                     ) -join '' )
             } # if
 
@@ -469,7 +469,7 @@ function Test-TargetResource
             Write-Verbose -Message (
                 @(
                     "$($MyInvocation.MyCommand): ",
-                    $($LocalizedData.CertificateNotExported -f $certificateThumbprintToExport, $Path)
+                    $($script:localizedData.CertificateNotExported -f $certificateThumbprintToExport, $Path)
                 ) -join '' )
 
             return $false
