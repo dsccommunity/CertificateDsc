@@ -50,7 +50,7 @@ try
             $caServerFQDN         = ([regex]::matches($certUtilResult,'Server:[ \t]+`([A-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
             $caRootName           = ([regex]::matches($certUtilResult,'Name:[ \t]+`([\sA-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
             $exportable           = $true
-            $providerName         = '"Microsoft RSA SChannel Cryptographic Provider"'
+            $providerName         = 'Microsoft RSA SChannel Cryptographic Provider'
             $oid                  = '1.3.6.1.5.5.7.3.1'
             $keyUsage             = '0xa0'
             $dns1                 = 'contoso.com'
@@ -69,7 +69,7 @@ try
             $paramsEcdhPkcs10Request = @{
                 keyLength            = '521'
                 subject              = "$($script:DSCResourceName)_Test2"
-                providerName         = '"Microsoft Software Key Storage Provider"'
+                providerName         = 'Microsoft Software Key Storage Provider'
                 certificateTemplate  = 'WebServer'
                 keyType              = 'ECDH'
                 RequestType          = 'PKCS10'
@@ -82,7 +82,7 @@ try
             $Credential = Get-Credential
 
             # This is to allow the testing of certreq with domain credentials
-            $configData = @{
+            $configDataRsaCmcRequest = @{
                 AllNodes = @(
                     @{
                         NodeName                    = 'localhost'
@@ -106,7 +106,7 @@ try
                 )
             }
 
-            $configDataTest2 = @{
+            $configDataRsaCmcRequestEcdhPkcs10Request = @{
                 AllNodes = @(
                     @{
                         NodeName                    = 'localhost'
@@ -124,7 +124,6 @@ try
                         FriendlyName                = $friendlyName
                         KeyType                     = $paramsEcdhPkcs10Request.keyType
                         RequestType                 = $paramsEcdhPkcs10Request.requestType
-                        #UseMachineContext           = $true
                         PsDscAllowDomainUser        = $true
                         PsDscAllowPlainTextPassword = $true
                     }
@@ -137,7 +136,7 @@ try
                 {
                     & "$($script:DSCResourceName)_Config" `
                         -OutputPath $TestDrive `
-                        -ConfigurationData $configData
+                        -ConfigurationData $configDataRsaCmcRequest
 
                     Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
                 } | Should -Not -Throw
@@ -169,7 +168,7 @@ try
                 {
                     & "$($script:DSCResourceName)_Config" `
                         -OutputPath $TestDrive `
-                        -ConfigurationData $configDataTest2
+                        -ConfigurationData $configDataRsaCmcRequestEcdhPkcs10Request
 
                     Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
                 } | Should -Not -Throw

@@ -46,7 +46,8 @@ try
         $invalidIssuer                = 'CN=InvalidTest, DC=invalid, DC=com'
         $keyLength                    = '2048'
         $exportable                   = $true
-        $providerName                 = '"Microsoft RSA SChannel Cryptographic Provider"'
+        $providerName                 = 'Microsoft RSA SChannel Cryptographic Provider'
+        $providerNameWithQuotes       = ('"{0}"' -f $providerName)
         $oid                          = '1.3.6.1.5.5.7.3.1'
         $keyUsage                     = '0xa0'
         $certificateTemplate          = 'WebServer'
@@ -222,6 +223,22 @@ try
             KeyLength             = $keyLength
             Exportable            = $exportable
             ProviderName          = $providerName
+            OID                   = $oid
+            KeyUsage              = $keyUsage
+            CertificateTemplate   = $certificateTemplate
+            Credential            = $testCredential
+            AutoRenew             = $false
+            FriendlyName          = $friendlyName
+            KeyType               = 'RSA'
+        }
+
+        $paramsStandardProviderNameWithQuotes = @{
+            Subject               = $validSubject
+            CAServerFQDN          = $caServerFQDN
+            CARootName            = $caRootName
+            KeyLength             = $keyLength
+            Exportable            = $exportable
+            ProviderName          = $providerNameWithQuotes
             OID                   = $oid
             KeyUsage              = $keyUsage
             CertificateTemplate   = $certificateTemplate
@@ -464,7 +481,7 @@ SMIME = FALSE
 PrivateKeyArchive = FALSE
 UserProtected = FALSE
 UseExistingKeySet = FALSE
-ProviderName = $providerName
+ProviderName = $providerNameWithQuotes
 ProviderType = 12
 RequestType = CMC
 KeyUsage = $keyUsage
@@ -486,7 +503,7 @@ SMIME = FALSE
 PrivateKeyArchive = FALSE
 UserProtected = FALSE
 UseExistingKeySet = FALSE
-ProviderName = $providerName
+ProviderName = $providerNameWithQuotes
 ProviderType = 12
 RequestType = CMC
 KeyUsage = $keyUsage
@@ -506,7 +523,7 @@ SMIME = FALSE
 PrivateKeyArchive = FALSE
 UserProtected = FALSE
 UseExistingKeySet = FALSE
-ProviderName = $providerName
+ProviderName = $providerNameWithQuotes
 ProviderType = 12
 RequestType = CMC
 KeyUsage = $keyUsage
@@ -529,7 +546,7 @@ SMIME = FALSE
 PrivateKeyArchive = FALSE
 UserProtected = FALSE
 UseExistingKeySet = FALSE
-ProviderName = $providerName
+ProviderName = $providerNameWithQuotes
 ProviderType = 12
 RequestType = CMC
 KeyUsage = $keyUsage
@@ -552,7 +569,7 @@ SMIME = FALSE
 PrivateKeyArchive = FALSE
 UserProtected = FALSE
 UseExistingKeySet = FALSE
-ProviderName = $providerName
+ProviderName = $providerNameWithQuotes
 ProviderType = 12
 RequestType = CMC
 KeyUsage = $keyUsage
@@ -710,6 +727,37 @@ OID = $oid
             }
 
             Context 'When autorenew is false, credentials not passed' {
+                Mock -CommandName Set-Content `
+                    -ParameterFilter {
+                        $Path -eq 'CertReq-Test.inf' -and `
+                        $Value -eq $certInf
+                    }
+
+                It 'Should not throw' {
+                    { Set-TargetResource @paramsNoCred -Verbose } | Should -Not -Throw
+                }
+
+                It 'Should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1 `
+                        -ParameterFilter $pathTemp_parameterFilter
+
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
+                        -ParameterFilter $pathCertReqTestReq_parameterFilter
+
+                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
+                        -ParameterFilter $pathCertReqTestCer_parameterFilter
+
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly -Times 3
+
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
+                        -ParameterFilter {
+                            $Path -eq 'CertReq-Test.inf' -and `
+                            $Value -eq $certInf
+                        }
+                }
+            }
+
+                        Context 'When autorenew is false, credentials not passed' {
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
                         $Path -eq 'CertReq-Test.inf' -and `
@@ -1066,7 +1114,67 @@ OID = $oid
                 }
             }
 
-            Context 'When autorenew is false, credentials passed, passed ' {
+            Context 'When autorenew is false, credentials passed and provider name encapsulated in quotes' {
+                Mock -CommandName Set-Content `
+                    -ParameterFilter {
+                        $Path -eq 'CertReq-Test.inf'
+                    }
+
+                Mock -CommandName Get-ChildItem
+
+                Mock -CommandName Get-Content -Mockwith { 'Output' } `
+                    -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                Mock -CommandName Remove-Item `
+                    -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                Mock -CommandName Import-Module
+
+                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq
+
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq
+
+                It 'Should not throw' {
+                    { Set-TargetResource @paramsStandardProviderNameWithQuotes -Verbose } | Should -Not -Throw
+                }
+
+                It 'Should call expected mocks' {
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1 `
+                        -ParameterFilter $pathTemp_parameterFilter
+
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
+                        -ParameterFilter $pathCertReqTestReq_parameterFilter
+
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
+                        -ParameterFilter $pathCertReqTestCer_parameterFilter
+
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
+                        -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
+                        -ParameterFilter {
+                            $Path -eq 'CertReq-Test.inf' -and `
+                            $Value -eq $certInf
+                        }
+
+                    Assert-MockCalled -CommandName CertReq.exe -Exactly -Times 2
+
+                    Assert-MockCalled -CommandName Get-Content -Exactly -Times 1 `
+                        -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 1 `
+                        -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
+
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
+
+                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 0 `
+                        -ParameterFilter $pathCertLocalMachineMy_parameterFilter
+                }
+            }
+
+            Context 'When autorenew is false, credentials passed and machine context specified' {
                 Mock -CommandName Get-ChildItem -Mockwith { } `
                     -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' }
 

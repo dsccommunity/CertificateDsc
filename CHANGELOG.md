@@ -7,6 +7,9 @@
 - Combined all `CertificateDsc.ResourceHelper` module functions into
   `CertificateDsc.Common` module and renamed to `CertificateDsc.CommonHelper`
   module.
+- CertReq:
+  - Fix error when ProviderName parameter is not encapsulated in
+    double quotes - fixes [Issue #185](https://github.com/PowerShell/CertificateDsc/issues/185).
 
 ## 4.6.0.0
 
