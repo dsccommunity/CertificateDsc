@@ -432,7 +432,7 @@ function Set-TargetResource
     #>
     $Subject = "`"$Subject`""
     # The ProviderName must be encapsulated in double quotes
-    if ($ProviderName[0] -ne '"')
+    if ($ProviderName -notmatch '^".*"$')
     {
         $ProviderName = '"{0}"' -f $ProviderName
     }
