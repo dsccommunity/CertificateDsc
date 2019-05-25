@@ -1826,6 +1826,28 @@ OID = $oid
                 }
             }
         }
+
+        Describe 'MSFT_CertReq\ConvertTo-StringEnclosedInDoubleQuotes' {
+            Context 'When called with test values' {
+                $testValues = @(
+                    @{ Value = 'test' },
+                    @{ Value = '"test' },
+                    @{ Value = 'test"' },
+                    @{ Value = '"test"' }
+                )
+
+                It 'Should return ''"test"'' when called with ''<Value>''' -TestCases $testValues {
+                    param
+                    (
+                        [Parameter()]
+                        [System.String]
+                        $Value
+                    )
+
+                    ConvertTo-StringEnclosedInDoubleQuotes -Value $Value | Should -Be '"test"'
+                }
+            }
+        }
     }
 }
 finally

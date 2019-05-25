@@ -430,12 +430,8 @@ function Set-TargetResource
         Information that will be used in the INF file to generate the certificate request
         In future versions, select variables from the list below could be moved to parameters!
     #>
-    $Subject = "`"$Subject`""
-    # The ProviderName must be encapsulated in double quotes
-    if ($ProviderName -notmatch '^".*"$')
-    {
-        $ProviderName = '"{0}"' -f $ProviderName
-    }
+    $Subject = ConvertTo-StringEnclosedInDoubleQuotes -Value $Subject
+    $ProviderName = ConvertTo-StringEnclosedInDoubleQuotes -Value $ProviderName
     $keySpec = '1'
     $machineKeySet = 'TRUE'
     $smime = 'FALSE'
@@ -1082,7 +1078,6 @@ function Compare-CertificateSubject
     .PARAMETER CARootName
     The CA Root Name to compare with the Certificate Issuer.
 #>
-
 function Compare-CertificateIssuer
 {
     [CmdletBinding()]
@@ -1101,4 +1096,34 @@ function Compare-CertificateIssuer
     )
 
     return ($Issuer.split(',')[0] -eq "CN=$CARootName")
+}
+
+<#
+    .SYNOPSIS
+    Ensures a string is enclosed in dobule quotes.
+
+    .PARAMETER Value
+    The string to ensure is enclosed in double quotes.
+#>
+function ConvertTo-StringEnclosedInDoubleQuotes
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $Value
+    )
+
+    if ($Value[0] -ne '"')
+    {
+        $Value = '"{0}' -f $Value
+    }
+    if ($Value[$Value.Length-1] -ne '"')
+    {
+        $Value = '{0}"' -f $Value
+    }
+
+    return $Value
 }
