@@ -757,37 +757,6 @@ OID = $oid
                 }
             }
 
-                        Context 'When autorenew is false, credentials not passed' {
-                Mock -CommandName Set-Content `
-                    -ParameterFilter {
-                        $Path -eq 'CertReq-Test.inf' -and `
-                        $Value -eq $certInf
-                    }
-
-                It 'Should not throw' {
-                    { Set-TargetResource @paramsNoCred -Verbose } | Should -Not -Throw
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1 `
-                        -ParameterFilter $pathTemp_parameterFilter
-
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
-                        -ParameterFilter $pathCertReqTestReq_parameterFilter
-
-                    Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
-                        -ParameterFilter $pathCertReqTestCer_parameterFilter
-
-                    Assert-MockCalled -CommandName CertReq.exe -Exactly -Times 3
-
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 1 `
-                        -ParameterFilter {
-                            $Path -eq 'CertReq-Test.inf' -and `
-                            $Value -eq $certInf
-                        }
-                }
-            }
-
             Context 'When autorenew is true, credentials not passed and certificate does not exist' {
                 Mock -CommandName Set-Content `
                     -ParameterFilter {
