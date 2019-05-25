@@ -2,20 +2,13 @@
 
 $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'Modules'
 
-# Import the Certificate Common Modules
+# Import the Certificate Resource Common Module.
 Import-Module -Name (Join-Path -Path $modulePath `
         -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
-# Import the Certificate Resource Helper Module
-Import-Module -Name (Join-Path -Path $modulePath `
-        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
-
-# Import Localization Strings
-$localizedData = Get-LocalizedData `
-    -ResourceName 'MSFT_PfxImport' `
-    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+# Import Localization Strings.
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_PfxImport'
 
 <#
     .SYNOPSIS
@@ -90,13 +83,13 @@ function Get-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.GettingPfxStatusMessage -f $Thumbprint, $certificateStore)
         ) -join '' )
 
     if ((Test-Path -Path $certificateStore) -eq $false)
     {
         New-InvalidArgumentException `
-            -Message ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore) `
+            -Message ($script:localizedData.CertificateStoreNotFoundError -f $certificateStore) `
             -ArgumentName 'Store'
     }
 
@@ -105,7 +98,7 @@ function Get-TargetResource
         (-not (Test-CertificatePath -Path $Path)))
     {
         New-InvalidArgumentException `
-            -Message ($LocalizedData.CertificatePfxFileNotFoundError -f $Path) `
+            -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
             -ArgumentName 'Path'
     }
 
@@ -120,7 +113,7 @@ function Get-TargetResource
             # If the certificate is found and has a private key then consider it Present
             Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateInstalledMessage -f $Thumbprint, $certificateStore)
+                $($script:localizedData.CertificateInstalledMessage -f $Thumbprint, $certificateStore)
             ) -join '' )
 
             $Ensure = 'Present'
@@ -130,7 +123,7 @@ function Get-TargetResource
             # The certificate is found but the private key is missing so it is Absent
             Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateInstalledNoPrivateKeyMessage -f $Thumbprint, $certificateStore)
+                $($script:localizedData.CertificateInstalledNoPrivateKeyMessage -f $Thumbprint, $certificateStore)
             ) -join '' )
 
             $Ensure = 'Absent'
@@ -141,7 +134,7 @@ function Get-TargetResource
         # The certificate is not found
         Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.CertificateNotInstalledMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.CertificateNotInstalledMessage -f $Thumbprint, $certificateStore)
         ) -join '' )
 
         $Ensure = 'Absent'
@@ -230,7 +223,7 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.TestingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.TestingPfxStatusMessage -f $Thumbprint, $certificateStore)
         ) -join '' )
 
     if ($Ensure -ne $result.Ensure)
@@ -310,7 +303,7 @@ function Set-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.SettingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.SettingPfxStatusMessage -f $Thumbprint, $certificateStore)
         ) -join '' )
 
     if ($Ensure -ieq 'Present')
@@ -318,7 +311,7 @@ function Set-TargetResource
         # Import the certificate into the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.ImportingPfxMessage -f $Path, $certificateStore)
+                $($script:localizedData.ImportingPfxMessage -f $Path, $certificateStore)
             ) -join '' )
 
         $importPfxCertificateParameters = @{
@@ -347,7 +340,7 @@ function Set-TargetResource
         # Remove the certificate from the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.RemovingPfxMessage -f $Thumbprint, $certificateStore)
+                $($script:localizedData.RemovingPfxMessage -f $Thumbprint, $certificateStore)
             ) -join '' )
 
         $null = Get-ChildItem -Path $certificateStore |

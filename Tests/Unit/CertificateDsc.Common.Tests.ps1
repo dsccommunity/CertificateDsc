@@ -15,47 +15,546 @@ Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot 
 #endregion HEADER
 
 # Begin Testing
-try
-{
-    $localizedData = Get-LocalizedData `
-        -ResourceName $script:ModuleName `
-        -ResourcePath (Join-Path -Path $script:moduleRoot -ChildPath "Modules\$script:ModuleName")
+InModuleScope 'CertificateDsc.Common' {
+    Describe 'CertificateDsc.Common\Test-DscParameterState' -Tag TestDscParameterState {
+        Context -Name 'When passing values' -Fixture {
+            It 'Should return true for two identical tables' {
+                $mockDesiredValues = @{ Example = 'test' }
 
-    InModuleScope $script:ModuleName {
-        $DSCResourceName = 'CertificateDsc.Common'
-        $invalidThumbprint = 'Zebra'
-        $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes}).GetTypes()
+                $testParameters = @{
+                    CurrentValues = $mockDesiredValues
+                    DesiredValues = $mockDesiredValues
+                }
 
-        # This thumbprint is valid (but not FIPS valid)
-        $validThumbprint = (
-            $definedRuntimeTypes | Where-Object -FilterScript {
-                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            } | Select-Object -First 1 | ForEach-Object -Process {
-                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
-                    '{0:x2}' -f $_
+                Test-DscParameterState @testParameters | Should -Be $true
+            }
+
+            It 'Should return false when a value is different for [System.String]' {
+                $mockCurrentValues = @{ Example = [System.String] 'something' }
+                $mockDesiredValues = @{ Example = [System.String] 'test' }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when a value is different for [System.Int32]' {
+                $mockCurrentValues = @{ Example = [System.Int32] 1 }
+                $mockDesiredValues = @{ Example = [System.Int32] 2 }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when a value is different for [Int16]' {
+                $mockCurrentValues = @{ Example = [System.Int16] 1 }
+                $mockDesiredValues = @{ Example = [System.Int16] 2 }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when a value is different for [UInt16]' {
+                $mockCurrentValues = @{ Example = [System.UInt16] 1 }
+                $mockDesiredValues = @{ Example = [System.UInt16] 2 }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when a value is different for [Boolean]' {
+                $mockCurrentValues = @{ Example = [System.Boolean] $true }
+                $mockDesiredValues = @{ Example = [System.Boolean] $false }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when a value is missing' {
+                $mockCurrentValues = @{ }
+                $mockDesiredValues = @{ Example = 'test' }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return true when only a specified value matches, but other non-listed values do not' {
+                $mockCurrentValues = @{ Example = 'test'; SecondExample = 'true' }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false'  }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                    ValuesToCheck = @('Example')
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $true
+            }
+
+            It 'Should return false when only specified values do not match, but other non-listed values do ' {
+                $mockCurrentValues = @{ Example = 'test'; SecondExample = 'true' }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false'  }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                    ValuesToCheck = @('SecondExample')
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when an empty hash table is used in the current values' {
+                $mockCurrentValues = @{ }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false'  }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return true when evaluating a table against a CimInstance' {
+                $mockCurrentValues = @{ Handle = '0'; ProcessId = '1000'  }
+
+                $mockWin32ProcessProperties = @{
+                    Handle = 0
+                    ProcessId = 1000
+                }
+
+                $mockNewCimInstanceParameters = @{
+                    ClassName = 'Win32_Process'
+                    Property = $mockWin32ProcessProperties
+                    Key = 'Handle'
+                    ClientOnly = $true
+                }
+
+                $mockDesiredValues = New-CimInstance @mockNewCimInstanceParameters
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                    ValuesToCheck = @('Handle','ProcessId')
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $true
+            }
+
+            It 'Should return false when evaluating a table against a CimInstance and a value is wrong' {
+                $mockCurrentValues = @{ Handle = '1'; ProcessId = '1000'  }
+
+                $mockWin32ProcessProperties = @{
+                    Handle = 0
+                    ProcessId = 1000
+                }
+
+                $mockNewCimInstanceParameters = @{
+                    ClassName = 'Win32_Process'
+                    Property = $mockWin32ProcessProperties
+                    Key = 'Handle'
+                    ClientOnly = $true
+                }
+
+                $mockDesiredValues = New-CimInstance @mockNewCimInstanceParameters
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                    ValuesToCheck = @('Handle','ProcessId')
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return true when evaluating a hash table containing an array' {
+                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('1','2') }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $true
+            }
+
+            It 'Should return false when evaluating a hash table containing an array with wrong values' {
+                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('A','B') }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when evaluating a hash table containing an array, but the CurrentValues are missing an array' {
+                $mockCurrentValues = @{ Example = 'test' }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+
+            It 'Should return false when evaluating a hash table containing an array, but the property i CurrentValues is $null' {
+                $mockCurrentValues = @{ Example = 'test'; SecondExample = $null }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+            }
+        }
+
+        Context -Name 'When passing invalid types for DesiredValues' -Fixture {
+            It 'Should throw the correct error when DesiredValues is of wrong type' {
+                $mockCurrentValues = @{ Example = 'something' }
+                $mockDesiredValues = 'NotHashTable'
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                $mockCorrectErrorMessage = ($script:localizedData.PropertyTypeInvalidForDesiredValues -f $testParameters.DesiredValues.GetType().Name)
+                { Test-DscParameterState @testParameters } | Should -Throw $mockCorrectErrorMessage
+            }
+
+            It 'Should write a warning when DesiredValues contain an unsupported type' {
+                Mock -CommandName Write-Warning -Verifiable
+
+                # This is a dummy type to test with a type that could never be a correct one.
+                class MockUnknownType
+                {
+                    [ValidateNotNullOrEmpty()]
+                    [System.String]
+                    $Property1
+
+                    [ValidateNotNullOrEmpty()]
+                    [System.String]
+                    $Property2
+
+                    MockUnknownType()
+                    {
+                    }
+                }
+
+                $mockCurrentValues = @{ Example = New-Object -TypeName MockUnknownType }
+                $mockDesiredValues = @{ Example = New-Object -TypeName MockUnknownType }
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                }
+
+                Test-DscParameterState @testParameters | Should -Be $false
+
+                Assert-MockCalled -CommandName Write-Warning -Exactly -Times 1
+            }
+        }
+
+        Context -Name 'When passing an CimInstance as DesiredValue and ValuesToCheck is $null' -Fixture {
+            It 'Should throw the correct error' {
+                $mockCurrentValues = @{ Example = 'something' }
+
+                $mockWin32ProcessProperties = @{
+                    Handle = 0
+                    ProcessId = 1000
+                }
+
+                $mockNewCimInstanceParameters = @{
+                    ClassName = 'Win32_Process'
+                    Property = $mockWin32ProcessProperties
+                    Key = 'Handle'
+                    ClientOnly = $true
+                }
+
+                $mockDesiredValues = New-CimInstance @mockNewCimInstanceParameters
+
+                $testParameters = @{
+                    CurrentValues = $mockCurrentValues
+                    DesiredValues = $mockDesiredValues
+                    ValuesToCheck = $null
+                }
+
+                $mockCorrectErrorMessage = $script:localizedData.PropertyTypeInvalidForValuesToCheck
+                { Test-DscParameterState @testParameters } | Should -Throw $mockCorrectErrorMessage
+            }
+        }
+
+        Assert-VerifiableMock
+    }
+
+    Describe 'CertificateDsc.Common\Get-LocalizedData' {
+        $mockTestPath = {
+            return $mockTestPathReturnValue
+        }
+
+        $mockImportLocalizedData = {
+            $BaseDirectory | Should -Be $mockExpectedLanguagePath
+        }
+
+        BeforeEach {
+            Mock -CommandName Test-Path -MockWith $mockTestPath -Verifiable
+            Mock -CommandName Import-LocalizedData -MockWith $mockImportLocalizedData -Verifiable
+        }
+
+        Context 'When loading localized data for Swedish' {
+            $mockExpectedLanguagePath = 'sv-SE'
+            $mockTestPathReturnValue = $true
+
+            It 'Should call Import-LocalizedData with sv-SE language' {
+                Mock -CommandName Join-Path -MockWith {
+                    return 'sv-SE'
+                } -Verifiable
+
+                { Get-LocalizedData -ResourceName 'DummyResource' } | Should -Not -Throw
+
+                Assert-MockCalled -CommandName Join-Path -Exactly -Times 3 -Scope It
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Import-LocalizedData -Exactly -Times 1 -Scope It
+            }
+
+            $mockExpectedLanguagePath = 'en-US'
+            $mockTestPathReturnValue = $false
+
+            It 'Should call Import-LocalizedData and fallback to en-US if sv-SE language does not exist' {
+                Mock -CommandName Join-Path -MockWith {
+                    return $ChildPath
+                } -Verifiable
+
+                { Get-LocalizedData -ResourceName 'DummyResource' } | Should -Not -Throw
+
+                Assert-MockCalled -CommandName Join-Path -Exactly -Times 4 -Scope It
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 -Scope It
+                Assert-MockCalled -CommandName Import-LocalizedData -Exactly -Times 1 -Scope It
+            }
+
+            Context 'When $ScriptRoot is set to a path' {
+                $mockExpectedLanguagePath = 'sv-SE'
+                $mockTestPathReturnValue = $true
+
+                It 'Should call Import-LocalizedData with sv-SE language' {
+                    Mock -CommandName Join-Path -MockWith {
+                        return 'sv-SE'
+                    } -Verifiable
+
+                    { Get-LocalizedData -ResourceName 'DummyResource' -ScriptRoot '.' } | Should -Not -Throw
+
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Import-LocalizedData -Exactly -Times 1 -Scope It
+                }
+
+                $mockExpectedLanguagePath = 'en-US'
+                $mockTestPathReturnValue = $false
+
+                It 'Should call Import-LocalizedData and fallback to en-US if sv-SE language does not exist' {
+                    Mock -CommandName Join-Path -MockWith {
+                        return $ChildPath
+                    } -Verifiable
+
+                    { Get-LocalizedData -ResourceName 'DummyResource' -ScriptRoot '.' } | Should -Not -Throw
+
+                    Assert-MockCalled -CommandName Join-Path -Exactly -Times 2 -Scope It
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 -Scope It
+                    Assert-MockCalled -CommandName Import-LocalizedData -Exactly -Times 1 -Scope It
                 }
             }
-        ) -join ''
+        }
 
-        # This thumbprint is valid for FIPS
-        $validFipsThumbprint = (
-            $definedRuntimeTypes | Where-Object -FilterScript {
-                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
-            } | Select-Object -First 1 | ForEach-Object -Process {
-                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
-                    '{0:x2}' -f $_
-                }
+        Context 'When loading localized data for English' {
+            Mock -CommandName Join-Path -MockWith {
+                return 'en-US'
+            } -Verifiable
+
+            $mockExpectedLanguagePath = 'en-US'
+            $mockTestPathReturnValue = $true
+
+            It 'Should call Import-LocalizedData with en-US language' {
+                { Get-LocalizedData -ResourceName 'DummyResource' } | Should -Not -Throw
             }
-        ) -join ''
+        }
 
-        $testFile = 'test.pfx'
+        Assert-VerifiableMock
+    }
 
-        $invalidPath = 'TestDrive:'
-        $validPath = "TestDrive:\$testFile"
+    Describe 'CertificateDsc.Common\New-InvalidResultException' {
+        Context 'When calling with Message parameter only' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
 
-        $cerFileWithSan = "
+                { New-InvalidResultException -Message $mockErrorMessage } | Should -Throw $mockErrorMessage
+            }
+        }
+
+        Context 'When calling with both the Message and ErrorRecord parameter' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+                $mockExceptionErrorMessage = 'Mocked exception error message'
+
+                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+
+                { New-InvalidResultException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.Exception: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
+            }
+        }
+
+        Assert-VerifiableMock
+    }
+
+    Describe 'CertificateDsc.Common\New-ObjectNotFoundException' {
+        Context 'When calling with Message parameter only' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+
+                { New-ObjectNotFoundException -Message $mockErrorMessage } | Should -Throw $mockErrorMessage
+            }
+        }
+
+        Context 'When calling with both the Message and ErrorRecord parameter' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+                $mockExceptionErrorMessage = 'Mocked exception error message'
+
+                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+
+                { New-ObjectNotFoundException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.Exception: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
+            }
+        }
+
+        Assert-VerifiableMock
+    }
+
+    Describe 'CertificateDsc.Common\New-InvalidOperationException' {
+        Context 'When calling with Message parameter only' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+
+                { New-InvalidOperationException -Message $mockErrorMessage } | Should -Throw $mockErrorMessage
+            }
+        }
+
+        Context 'When calling with both the Message and ErrorRecord parameter' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+                $mockExceptionErrorMessage = 'Mocked exception error message'
+
+                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+
+                { New-InvalidOperationException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.InvalidOperationException: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
+            }
+        }
+
+        Assert-VerifiableMock
+    }
+
+    Describe 'CertificateDsc.Common\New-NotImplementedException' {
+        Context 'When called with Message parameter only' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+
+                { New-NotImplementedException -Message $mockErrorMessage } | Should -Throw $mockErrorMessage
+            }
+        }
+
+        Context 'When called with both the Message and ErrorRecord parameter' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+                $mockExceptionErrorMessage = 'Mocked exception error message'
+
+                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+
+                { New-NotImplementedException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.NotImplementedException: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
+            }
+        }
+
+        Assert-VerifiableMock
+    }
+
+    Describe 'CertificateDsc.Common\New-InvalidArgumentException' {
+        Context 'When calling with both the Message and ArgumentName parameter' {
+            It 'Should throw the correct error' {
+                $mockErrorMessage = 'Mocked error'
+                $mockArgumentName = 'MockArgument'
+
+                { New-InvalidArgumentException -Message $mockErrorMessage -ArgumentName $mockArgumentName } | Should -Throw ('Parameter name: {0}' -f $mockArgumentName)
+            }
+        }
+
+        Assert-VerifiableMock
+    }
+
+    $invalidThumbprint = 'Zebra'
+    $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes }).GetTypes()
+
+    # This thumbprint is valid (but not FIPS valid)
+    $validThumbprint = (
+        $definedRuntimeTypes | Where-Object -FilterScript {
+            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+            ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+        } | Select-Object -First 1 | ForEach-Object -Process {
+            (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
+                '{0:x2}' -f $_
+            }
+        }
+    ) -join ''
+
+    # This thumbprint is valid for FIPS
+    $validFipsThumbprint = (
+        $definedRuntimeTypes | Where-Object -FilterScript {
+            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+            ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+        } | Select-Object -First 1 | ForEach-Object -Process {
+            (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
+                '{0:x2}' -f $_
+            }
+        }
+    ) -join ''
+
+    $testFile = 'test.pfx'
+
+    $invalidPath = 'TestDrive:'
+    $validPath = "TestDrive:\$testFile"
+
+    $cerFileWithSan = "
             -----BEGIN CERTIFICATE-----
             MIIGJDCCBAygAwIBAgITewAAAAqQ+bxgiZZPtgAAAAAACjANBgkqhkiG9w0BAQsF
             ADBDMRMwEQYKCZImiZPyLGQBGRYDY29tMRcwFQYKCZImiZPyLGQBGRYHY29udG9z
@@ -93,7 +592,7 @@ try
             -----END CERTIFICATE-----
             "
 
-        $cerFileWithoutSan = "
+    $cerFileWithoutSan = "
             -----BEGIN CERTIFICATE-----
             MIIDBjCCAe6gAwIBAgIQRQyErZRGrolI5DfZCJDaTTANBgkqhkiG9w0BAQsFADAW
             MRQwEgYDVQQDDAtTb21lU2VydmVyMjAeFw0xNzA1MDkxNjI0MTZaFw0xODA1MDkx
@@ -115,7 +614,7 @@ try
             -----END CERTIFICATE-----
             "
 
-        $cerFileWithAltTemplateName = "
+    $cerFileWithAltTemplateName = "
             -----BEGIN CERTIFICATE-----
             MIIDVjCCAj6gAwIBAgIQIA9TO/nfla5FrjJZIiI6nzANBgkqhkiG9w0BAQsFADAW
             MRQwEgYDVQQDDAtzb21lbWFjaGluZTAeFw0xOTAyMTUxNjI3NDVaFw0yMDAyMTUx
@@ -138,7 +637,7 @@ try
             -----END CERTIFICATE-----
             "
 
-        $cerFileWithAltTemplateInformation = "
+    $cerFileWithAltTemplateInformation = "
             -----BEGIN CERTIFICATE-----
             MIIDazCCAlOgAwIBAgIQJx7ZH+jq5YZLy436X4Li3TANBgkqhkiG9w0BAQsFADAW
             MRQwEgYDVQQDDAtzb21lbWFjaGluZTAeFw0xODA4MDcwOTEwNDVaFw0xOTA4MDcw
@@ -162,1309 +661,1303 @@ try
             -----END CERTIFICATE-----
             "
 
-        $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
-        $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
-        $cerBytesWithAltTemplateName = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateName)
-        $cerBytesWithAltTemplateInformation = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateInformation)
+    $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
+    $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
+    $cerBytesWithAltTemplateName = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateName)
+    $cerBytesWithAltTemplateInformation = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateInformation)
 
-        $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
-        $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
-        $testCertificateWithAltTemplateName = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateName)
-        $testCertificateWithAltTemplateInformation = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateInformation)
+    $testCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytes)
+    $testCertificateWithoutSan = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithoutSan)
+    $testCertificateWithAltTemplateName = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateName)
+    $testCertificateWithAltTemplateInformation = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($cerBytesWithAltTemplateInformation)
 
-        Describe "$DSCResourceName\Test-CertificatePath" {
-            $null | Set-Content -Path $validPath
+    Describe 'CertificateDsc.Common\Test-CertificatePath' {
+        $null | Set-Content -Path $validPath
 
-            Context 'a single existing file by parameter' {
-                $result = Test-CertificatePath -Path $validPath
+        Context 'a single existing file by parameter' {
+            $result = Test-CertificatePath -Path $validPath
+            It 'Should return true' {
+                ($result -is [bool]) | Should -Be $true
+                $result | Should -Be $true
+            }
+        }
+
+        Context 'a single missing file by parameter' {
+            It 'Should throw an exception' {
+                # directories are not valid
+                { Test-CertificatePath -Path $invalidPath } | Should -Throw
+            }
+        }
+
+        Context 'a single missing file by parameter with -Quiet' {
+            $result = Test-CertificatePath -Path $invalidPath -Quiet
+            It 'Should return false' {
+                ($result -is [bool]) | Should -Be $true
+                $result | Should -Be $false
+            }
+        }
+
+        Context 'a single existing file by pipeline' {
+            $result = $validPath | Test-CertificatePath
+            It 'Should return true' {
+                ($result -is [bool]) | Should -Be $true
+                $result | Should -Be $true
+            }
+        }
+
+        Context 'a single missing file by pipeline' {
+            It 'Should throw an exception' {
+                # directories are not valid
+                { $invalidPath | Test-CertificatePath } | Should -Throw
+            }
+        }
+
+        Context 'a single missing file by pipeline with -Quiet' {
+            $result = $invalidPath | Test-CertificatePath -Quiet
+            It 'Should return false' {
+                ($result -is [bool]) | Should -Be $true
+                $result | Should -Be $false
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Test-Thumbprint' {
+        Context 'When FIPS not set' {
+            Context 'When a single valid thumbrpint by parameter is passed' {
+                $result = Test-Thumbprint -Thumbprint $validThumbprint
                 It 'Should return true' {
-                    ($result -is [bool]) | Should -Be $true
+                    $result | Should -BeOfType [System.Boolean]
                     $result | Should -Be $true
                 }
             }
 
-            Context 'a single missing file by parameter' {
+            Context 'When a single invalid thumbprint by parameter is passed' {
                 It 'Should throw an exception' {
-                    # directories are not valid
-                    { Test-CertificatePath -Path $invalidPath } | Should -Throw
+                    { Test-Thumbprint -Thumbprint $invalidThumbprint } | Should -Throw
                 }
             }
 
-            Context 'a single missing file by parameter with -Quiet' {
-                $result = Test-CertificatePath -Path $invalidPath -Quiet
+            Context 'When a single invalid thumbprint by parameter with -Quiet is passed' {
+                $result = Test-Thumbprint $invalidThumbprint -Quiet
                 It 'Should return false' {
-                    ($result -is [bool]) | Should -Be $true
+                    $result | Should -BeOfType [System.Boolean]
                     $result | Should -Be $false
                 }
             }
 
-            Context 'a single existing file by pipeline' {
-                $result = $validPath | Test-CertificatePath
+            Context 'When a single valid thumbprint by pipeline is passed' {
+                $result = $validThumbprint | Test-Thumbprint
                 It 'Should return true' {
-                    ($result -is [bool]) | Should -Be $true
+                    $result | Should -BeOfType [System.Boolean]
                     $result | Should -Be $true
                 }
             }
 
-            Context 'a single missing file by pipeline' {
+            Context 'When a single invalid thumbprint by pipeline is passed' {
                 It 'Should throw an exception' {
-                    # directories are not valid
-                    { $invalidPath | Test-CertificatePath } | Should -Throw
+                    { $invalidThumbprint | Test-Thumbprint } | Should -Throw
                 }
             }
 
-            Context 'a single missing file by pipeline with -Quiet' {
-                $result = $invalidPath | Test-CertificatePath -Quiet
+            Context 'When a single invalid thumbprint by pipeline with -Quiet is passed' {
+                $result = $invalidThumbprint | Test-Thumbprint -Quiet
                 It 'Should return false' {
-                    ($result -is [bool]) | Should -Be $true
+                    $result | Should -BeOfType [System.Boolean]
                     $result | Should -Be $false
                 }
             }
         }
 
-        Describe "$DSCResourceName\Test-Thumbprint" {
-            Context 'When FIPS not set' {
-                Context 'When a single valid thumbrpint by parameter is passed' {
-                    $result = Test-Thumbprint -Thumbprint $validThumbprint
-                    It 'Should return true' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $true
-                    }
-                }
+        Context 'When FIPS is enabled' {
+            Mock -CommandName Get-ItemProperty -MockWith { @{ Enabled = 1 } }
 
-                Context 'When a single invalid thumbprint by parameter is passed' {
-                    It 'Should throw an exception' {
-                        { Test-Thumbprint -Thumbprint $invalidThumbprint } | Should -Throw
-                    }
-                }
-
-                Context 'When a single invalid thumbprint by parameter with -Quiet is passed' {
-                    $result = Test-Thumbprint $invalidThumbprint -Quiet
-                    It 'Should return false' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $false
-                    }
-                }
-
-                Context 'When a single valid thumbprint by pipeline is passed' {
-                    $result = $validThumbprint | Test-Thumbprint
-                    It 'Should return true' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $true
-                    }
-                }
-
-                Context 'When a single invalid thumbprint by pipeline is passed' {
-                    It 'Should throw an exception' {
-                        { $invalidThumbprint | Test-Thumbprint } | Should -Throw
-                    }
-                }
-
-                Context 'When a single invalid thumbprint by pipeline with -Quiet is passed' {
-                    $result = $invalidThumbprint | Test-Thumbprint -Quiet
-                    It 'Should return false' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $false
-                    }
+            Context 'When a single valid FIPS thumbrpint by parameter is passed' {
+                $result = Test-Thumbprint -Thumbprint $validFipsThumbprint
+                It 'Should return true' {
+                    $result | Should -BeOfType [System.Boolean]
+                    $result | Should -Be $true
                 }
             }
 
-            Context 'When FIPS is enabled' {
-                Mock -CommandName Get-ItemProperty -MockWith { @{ Enabled = 1 } }
-
-                Context 'When a single valid FIPS thumbrpint by parameter is passed' {
-                    $result = Test-Thumbprint -Thumbprint $validFipsThumbprint
-                    It 'Should return true' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $true
-                    }
+            Context 'When a single invalid FIPS thumbprint by parameter is passed' {
+                It 'Should throw an exception' {
+                    { Test-Thumbprint -Thumbprint $validThumbprint } | Should -Throw
                 }
+            }
 
-                Context 'When a single invalid FIPS thumbprint by parameter is passed' {
-                    It 'Should throw an exception' {
-                        { Test-Thumbprint -Thumbprint $validThumbprint } | Should -Throw
-                    }
+            Context 'When a single invalid FIPS thumbprint by parameter with -Quiet is passed' {
+                $result = Test-Thumbprint $validThumbprint -Quiet
+                It 'Should return false' {
+                    $result | Should -BeOfType [System.Boolean]
+                    $result | Should -Be $false
                 }
+            }
 
-                Context 'When a single invalid FIPS thumbprint by parameter with -Quiet is passed' {
-                    $result = Test-Thumbprint $validThumbprint -Quiet
-                    It 'Should return false' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $false
-                    }
+            Context 'When a single valid FIPS thumbprint by pipeline is passed' {
+                $result = $validFipsThumbprint | Test-Thumbprint
+                It 'Should return true' {
+                    $result | Should -BeOfType [System.Boolean]
+                    $result | Should -Be $true
                 }
+            }
 
-                Context 'When a single valid FIPS thumbprint by pipeline is passed' {
-                    $result = $validFipsThumbprint | Test-Thumbprint
-                    It 'Should return true' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $true
-                    }
+            Context 'When a single invalid FIPS thumbprint by pipeline is passed' {
+                It 'Should throw an exception' {
+                    { $validThumbprint | Test-Thumbprint } | Should -Throw
                 }
+            }
 
-                Context 'When a single invalid FIPS thumbprint by pipeline is passed' {
-                    It 'Should throw an exception' {
-                        { $validThumbprint | Test-Thumbprint } | Should -Throw
-                    }
-                }
-
-                Context 'When a single invalid FIPS thumbprint by pipeline with -Quiet is passed' {
-                    $result = $validThumbprint | Test-Thumbprint -Quiet
-                    It 'Should return false' {
-                        $result | Should -BeOfType [System.Boolean]
-                        $result | Should -Be $false
-                    }
+            Context 'When a single invalid FIPS thumbprint by pipeline with -Quiet is passed' {
+                $result = $validThumbprint | Test-Thumbprint -Quiet
+                It 'Should return false' {
+                    $result | Should -BeOfType [System.Boolean]
+                    $result | Should -Be $false
                 }
             }
         }
+    }
 
-        Describe "$DSCResourceName\Find-Certificate" {
-            # Download and dot source the New-SelfSignedCertificateEx script
-            . (Install-NewSelfSignedCertificateExScript)
+    Describe 'CertificateDsc.Common\Find-Certificate' {
+        # Download and dot source the New-SelfSignedCertificateEx script
+        . (Install-NewSelfSignedCertificateExScript)
 
-            # Generate the Valid certificate for testing but remove it from the store straight away
-            $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
-            $certDNSNamesReverse = @('www.contoso.com', 'www.fabrikam.com')
-            $certDNSNamesNoMatch = $certDNSNames + @('www.nothere.com')
-            $certKeyUsage = @('DigitalSignature', 'DataEncipherment')
-            $certKeyUsageReverse = @('DataEncipherment', 'DigitalSignature')
-            $certKeyUsageNoMatch = $certKeyUsage + @('KeyEncipherment')
-            $certEKU = @('Server Authentication', 'Client authentication')
-            $certEKUReverse = @('Client authentication', 'Server Authentication')
-            $certEKUNoMatch = $certEKU + @('Encrypting File System')
-            $certSubject = 'CN=contoso, DC=com'
-            $certFriendlyName = 'Contoso Test Cert'
-            $validCert = New-SelfSignedCertificateEx `
-                -Subject $certSubject `
-                -KeyUsage $certKeyUsage `
-                -KeySpec 'Exchange' `
-                -EKU $certEKU `
-                -SubjectAlternativeName $certDNSNames `
-                -FriendlyName $certFriendlyName `
-                -StoreLocation 'CurrentUser' `
-                -Exportable
-            # Pull the generated certificate from the store so we have the friendlyname
-            $validThumbprint = $validCert.Thumbprint
-            $validCert = Get-Item -Path "cert:\CurrentUser\My\$validThumbprint"
-            Remove-Item -Path $validCert.PSPath -Force
+        # Generate the Valid certificate for testing but remove it from the store straight away
+        $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
+        $certDNSNamesReverse = @('www.contoso.com', 'www.fabrikam.com')
+        $certDNSNamesNoMatch = $certDNSNames + @('www.nothere.com')
+        $certKeyUsage = @('DigitalSignature', 'DataEncipherment')
+        $certKeyUsageReverse = @('DataEncipherment', 'DigitalSignature')
+        $certKeyUsageNoMatch = $certKeyUsage + @('KeyEncipherment')
+        $certEKU = @('Server Authentication', 'Client authentication')
+        $certEKUReverse = @('Client authentication', 'Server Authentication')
+        $certEKUNoMatch = $certEKU + @('Encrypting File System')
+        $certSubject = 'CN=contoso, DC=com'
+        $certFriendlyName = 'Contoso Test Cert'
+        $validCert = New-SelfSignedCertificateEx `
+            -Subject $certSubject `
+            -KeyUsage $certKeyUsage `
+            -KeySpec 'Exchange' `
+            -EKU $certEKU `
+            -SubjectAlternativeName $certDNSNames `
+            -FriendlyName $certFriendlyName `
+            -StoreLocation 'CurrentUser' `
+            -Exportable
+        # Pull the generated certificate from the store so we have the friendlyname
+        $validThumbprint = $validCert.Thumbprint
+        $validCert = Get-Item -Path "cert:\CurrentUser\My\$validThumbprint"
+        Remove-Item -Path $validCert.PSPath -Force
 
-            # Generate the Expired certificate for testing but remove it from the store straight away
-            $expiredCert = New-SelfSignedCertificateEx `
-                -Subject $certSubject `
-                -KeyUsage $certKeyUsage `
-                -KeySpec 'Exchange' `
-                -EKU $certEKU `
-                -SubjectAlternativeName $certDNSNames `
-                -FriendlyName $certFriendlyName `
-                -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
-                -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
-                -StoreLocation 'CurrentUser' `
-                -Exportable
-            # Pull the generated certificate from the store so we have the friendlyname
-            $expiredThumbprint = $expiredCert.Thumbprint
-            $expiredCert = Get-Item -Path "cert:\CurrentUser\My\$expiredThumbprint"
-            Remove-Item -Path $expiredCert.PSPath -Force
+        # Generate the Expired certificate for testing but remove it from the store straight away
+        $expiredCert = New-SelfSignedCertificateEx `
+            -Subject $certSubject `
+            -KeyUsage $certKeyUsage `
+            -KeySpec 'Exchange' `
+            -EKU $certEKU `
+            -SubjectAlternativeName $certDNSNames `
+            -FriendlyName $certFriendlyName `
+            -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
+            -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
+            -StoreLocation 'CurrentUser' `
+            -Exportable
+        # Pull the generated certificate from the store so we have the friendlyname
+        $expiredThumbprint = $expiredCert.Thumbprint
+        $expiredCert = Get-Item -Path "cert:\CurrentUser\My\$expiredThumbprint"
+        Remove-Item -Path $expiredCert.PSPath -Force
 
-            $nocertThumbprint = '1111111111111111111111111111111111111111'
+        $nocertThumbprint = '1111111111111111111111111111111111111111'
 
-            # Dynamic mock content for Get-ChildItem
-            $mockGetChildItem = {
-                switch ( $Path )
+        # Dynamic mock content for Get-ChildItem
+        $mockGetChildItem = {
+            switch ( $Path )
+            {
+                'cert:\LocalMachine\My'
                 {
-                    'cert:\LocalMachine\My'
-                    {
-                        return @( $validCert )
-                    }
-
-                    'cert:\LocalMachine\NoCert'
-                    {
-                        return @()
-                    }
-
-                    'cert:\LocalMachine\TwoCerts'
-                    {
-                        return @( $expiredCert, $validCert )
-                    }
-
-                    'cert:\LocalMachine\Expired'
-                    {
-                        return @( $expiredCert )
-                    }
-
-                    default
-                    {
-                        throw 'mock called with unexpected value {0}' -f $Path
-                    }
-                }
-            }
-
-            BeforeEach {
-                Mock `
-                    -CommandName Test-Path `
-                    -MockWith { $true }
-
-                Mock `
-                    -CommandName Get-ChildItem `
-                    -MockWith $mockGetChildItem
-            }
-
-            Context 'Thumbprint only is passed and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -Thumbprint $validThumbprint } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'Thumbprint only is passed and matching certificate does not exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -Thumbprint $nocertThumbprint } | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'FriendlyName only is passed and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'FriendlyName only is passed and matching certificate does not exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -FriendlyName 'Does Not Exist' } | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'Subject only is passed and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -Subject $certSubject } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'Subject only is passed and matching certificate does not exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -Subject 'CN=Does Not Exist' } | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'Issuer only is passed and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -Issuer $certSubject } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'Issuer only is passed and matching certificate does not exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -Issuer 'CN=Does Not Exist' } | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'DNSName only is passed and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -DnsName $certDNSNames } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'DNSName only is passed in reversed order and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -DnsName $certDNSNamesReverse } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'DNSName only is passed with only one matching DNS name and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -DnsName $certDNSNames[0] } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'DNSName only is passed but an entry is missing and matching certificate does not exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -DnsName $certDNSNamesNoMatch } | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'KeyUsage only is passed and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -KeyUsage $certKeyUsage } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'KeyUsage only is passed in reversed order and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -KeyUsage $certKeyUsageReverse } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'KeyUsage only is passed with only one matching DNS name and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -KeyUsage $certKeyUsage[0] } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'KeyUsage only is passed but an entry is missing and matching certificate does not exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -KeyUsage $certKeyUsageNoMatch } | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'EnhancedKeyUsage only is passed and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'EnhancedKeyUsage only is passed in reversed order and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUReverse } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'EnhancedKeyUsage only is passed with only one matching DNS name and matching certificate exists' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU[0] } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'EnhancedKeyUsage only is passed but an entry is missing and matching certificate does not exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUNoMatch } | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'Thumbprint only is passed and matching certificate does not exist in the store' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -Thumbprint $validThumbprint -Store 'NoCert'} | Should -Not -Throw
-                }
-
-                It 'Should return null' {
-                    $script:result | Should -BeNullOrEmpty
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'FriendlyName only is passed and both valid and expired certificates exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'TwoCerts' } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $validThumbprint
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
-                }
-            }
-
-            Context 'FriendlyName only is passed and only expired certificates exist' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' } | Should -Not -Throw
-                }
-
-                It 'Should return expected certificate' {
-                    $script:result | Should -BeNullOrEmpty
+                    return @( $validCert )
                 }
 
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+                'cert:\LocalMachine\NoCert'
+                {
+                    return @()
                 }
-            }
 
-            Context 'FriendlyName only is passed and only expired certificates exist but allowexpired passed' {
-                It 'Should not throw exception' {
-                    { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' -AllowExpired:$true } | Should -Not -Throw
+                'cert:\LocalMachine\TwoCerts'
+                {
+                    return @( $expiredCert, $validCert )
                 }
 
-                It 'Should return expected certificate' {
-                    $script:result.Thumbprint | Should -Be $expiredThumbprint
+                'cert:\LocalMachine\Expired'
+                {
+                    return @( $expiredCert )
                 }
 
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
-                    Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+                default
+                {
+                    throw 'mock called with unexpected value {0}' -f $Path
                 }
             }
         }
 
-        Describe "$DSCResourceName\Find-CertificateAuthority" {
-            Context 'Function is executed with domain connectivity' {
-                Mock `
-                    -CommandName Get-CdpContainer `
-                    -MockWith {
-                    [CmdletBinding()]
-                    param
-                    (
-                        $DomainName
-                    )
-                    return New-Object -TypeName psobject -Property @{
-                        Children = @(
-                            @{
-                                distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                Children          = @{
-                                    distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                }
+        BeforeEach {
+            Mock `
+                -CommandName Test-Path `
+                -MockWith { $true }
+
+            Mock `
+                -CommandName Get-ChildItem `
+                -MockWith $mockGetChildItem
+        }
+
+        Context 'Thumbprint only is passed and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -Thumbprint $validThumbprint } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'Thumbprint only is passed and matching certificate does not exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -Thumbprint $nocertThumbprint } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'FriendlyName only is passed and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'FriendlyName only is passed and matching certificate does not exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -FriendlyName 'Does Not Exist' } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'Subject only is passed and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -Subject $certSubject } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'Subject only is passed and matching certificate does not exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -Subject 'CN=Does Not Exist' } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'Issuer only is passed and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -Issuer $certSubject } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'Issuer only is passed and matching certificate does not exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -Issuer 'CN=Does Not Exist' } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'DNSName only is passed and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -DnsName $certDNSNames } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'DNSName only is passed in reversed order and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -DnsName $certDNSNamesReverse } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'DNSName only is passed with only one matching DNS name and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -DnsName $certDNSNames[0] } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'DNSName only is passed but an entry is missing and matching certificate does not exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -DnsName $certDNSNamesNoMatch } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'KeyUsage only is passed and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -KeyUsage $certKeyUsage } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'KeyUsage only is passed in reversed order and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -KeyUsage $certKeyUsageReverse } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'KeyUsage only is passed with only one matching DNS name and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -KeyUsage $certKeyUsage[0] } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'KeyUsage only is passed but an entry is missing and matching certificate does not exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -KeyUsage $certKeyUsageNoMatch } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'EnhancedKeyUsage only is passed and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'EnhancedKeyUsage only is passed in reversed order and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUReverse } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'EnhancedKeyUsage only is passed with only one matching DNS name and matching certificate exists' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU[0] } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'EnhancedKeyUsage only is passed but an entry is missing and matching certificate does not exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUNoMatch } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'Thumbprint only is passed and matching certificate does not exist in the store' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -Thumbprint $validThumbprint -Store 'NoCert' } | Should -Not -Throw
+            }
+
+            It 'Should return null' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'FriendlyName only is passed and both valid and expired certificates exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'TwoCerts' } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $validThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'FriendlyName only is passed and only expired certificates exist' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+
+        Context 'FriendlyName only is passed and only expired certificates exist but allowexpired passed' {
+            It 'Should not throw exception' {
+                { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' -AllowExpired:$true } | Should -Not -Throw
+            }
+
+            It 'Should return expected certificate' {
+                $script:result.Thumbprint | Should -Be $expiredThumbprint
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Test-Path -Exactly -Times 1
+                Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 1
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Find-CertificateAuthority' {
+        Context 'Function is executed with domain connectivity' {
+            Mock `
+                -CommandName Get-CdpContainer `
+                -MockWith {
+                [CmdletBinding()]
+                param
+                (
+                    $DomainName
+                )
+                return New-Object -TypeName psobject -Property @{
+                    Children = @(
+                        @{
+                            distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                            Children          = @{
+                                distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
                             }
-                        )
-                    }
-                }
-
-                Mock `
-                    -CommandName Test-CertificateAuthority `
-                    -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
-                    -MockWith { return $true }
-
-                It 'Should not throw' {
-                    $script:result = Find-CertificateAuthority -DomainName contoso.com -Verbose
-                }
-
-                It 'Should return the expected CA' {
-                    $script:result.CARootName   | Should -Be 'LabRootCA1'
-                    $script:result.CAServerFQDN | Should -Be 'CA1'
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
-                    Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
+                        }
+                    )
                 }
             }
 
-            Context 'Function is executed with domain connectivity but CA is uncontactable' {
-                Mock `
-                    -CommandName Get-CdpContainer `
-                    -MockWith {
-                    [CmdletBinding()]
-                    param
-                    (
-                        $DomainName
-                    )
-                    return New-Object -TypeName psobject -Property @{
-                        Children = @(
-                            @{
-                                distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                Children          = @{
-                                    distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
-                                }
+            Mock `
+                -CommandName Test-CertificateAuthority `
+                -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
+                -MockWith { return $true }
+
+            It 'Should not throw' {
+                $script:result = Find-CertificateAuthority -DomainName contoso.com -Verbose
+            }
+
+            It 'Should return the expected CA' {
+                $script:result.CARootName | Should -Be 'LabRootCA1'
+                $script:result.CAServerFQDN | Should -Be 'CA1'
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
+            }
+        }
+
+        Context 'Function is executed with domain connectivity but CA is uncontactable' {
+            Mock `
+                -CommandName Get-CdpContainer `
+                -MockWith {
+                [CmdletBinding()]
+                param
+                (
+                    $DomainName
+                )
+                return New-Object -TypeName psobject -Property @{
+                    Children = @(
+                        @{
+                            distinguishedName = 'CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
+                            Children          = @{
+                                distinguishedName = 'CN=LabRootCA1,CN=CA1,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=com'
                             }
-                        )
-                    }
-                }
-
-                Mock `
-                    -CommandName Test-CertificateAuthority `
-                    -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
-                    -MockWith { return $false }
-
-                $errorRecord = Get-InvalidOperationRecord `
-                    -Message ($LocalizedData.NoCaFoundError)
-
-                It 'Should throw NoCaFoundError exception' {
-                    { Find-CertificateAuthority -DomainName contoso.com -Verbose } | Should -Throw $errorRecord
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
-                    Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
+                        }
+                    )
                 }
             }
 
-            Context 'Function is executed without domain connectivity' {
-                Mock `
-                    -CommandName Get-CdpContainer `
-                    -MockWith {
-                    [CmdletBinding()]
-                    param
-                    (
-                        $DomainName
-                    )
-                    New-InvalidOperationException `
-                        -Message ($LocalizedData.DomainNotJoinedError)
-                }
+            Mock `
+                -CommandName Test-CertificateAuthority `
+                -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
+                -MockWith { return $false }
 
-                Mock `
-                    -CommandName Test-CertificateAuthority `
-                    -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
-                    -MockWith { return $false }
+            $errorRecord = Get-InvalidOperationRecord `
+                -Message ($LocalizedData.NoCaFoundError)
 
-                $errorRecord = Get-InvalidOperationRecord `
+            It 'Should throw NoCaFoundError exception' {
+                { Find-CertificateAuthority -DomainName contoso.com -Verbose } | Should -Throw $errorRecord
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 1
+            }
+        }
+
+        Context 'Function is executed without domain connectivity' {
+            Mock `
+                -CommandName Get-CdpContainer `
+                -MockWith {
+                [CmdletBinding()]
+                param
+                (
+                    $DomainName
+                )
+                New-InvalidOperationException `
                     -Message ($LocalizedData.DomainNotJoinedError)
+            }
 
-                It 'Should throw DomainNotJoinedError exception' {
-                    { Find-CertificateAuthority -DomainName 'somewhere.overtherainbow' -Verbose } | Should -Throw $errorRecord
-                }
+            Mock `
+                -CommandName Test-CertificateAuthority `
+                -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
+                -MockWith { return $false }
 
-                It 'Should call expected mocks' {
-                    Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
-                    Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 0
-                }
+            $errorRecord = Get-InvalidOperationRecord `
+                -Message ($LocalizedData.DomainNotJoinedError)
+
+            It 'Should throw DomainNotJoinedError exception' {
+                { Find-CertificateAuthority -DomainName 'somewhere.overtherainbow' -Verbose } | Should -Throw $errorRecord
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-CdpContainer -Exactly -Times 1
+                Assert-MockCalled -CommandName Test-CertificateAuthority -Exactly -Times 0
             }
         }
+    }
 
-        Describe "$DSCResourceName\Test-CertificateAuthority" {
+    Describe 'CertificateDsc.Common\Test-CertificateAuthority' {
+        Mock `
+            -CommandName New-Object `
+            -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+            -MockWith {
+            $retObj = New-Object -TypeName psobject -Property @{
+                FileName               = ''
+                Arguments              = ''
+                RedirectStandardError  = $false
+                RedirectStandardOutput = $true
+                UseShellExecute        = $false
+                CreateNoWindow         = $true
+            }
+
+            return $retObj
+        }
+
+        Context 'Function is executed with CA online' {
             Mock `
                 -CommandName New-Object `
-                -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
                 -MockWith {
                 $retObj = New-Object -TypeName psobject -Property @{
-                    FileName               = ''
-                    Arguments              = ''
-                    RedirectStandardError  = $false
-                    RedirectStandardOutput = $true
-                    UseShellExecute        = $false
-                    CreateNoWindow         = $true
-                }
-
-                return $retObj
-            }
-
-            Context 'Function is executed with CA online' {
-                Mock `
-                    -CommandName New-Object `
-                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
-                    -MockWith {
-                    $retObj = New-Object -TypeName psobject -Property @{
-                        StartInfo      = $null
-                        ExitCode       = 0
-                        StandardOutput = New-Object -TypeName psobject |
-                            Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
-                            return @"
+                    StartInfo      = $null
+                    ExitCode       = 0
+                    StandardOutput = New-Object -TypeName psobject |
+                    Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                        return @"
 Connecting to LabRootCA1\CA1 ...
 Server "CA1" ICertRequest2 interface is alive (32ms)
 CertUtil: -ping command completed successfully.
 "@
-                        } -PassThru
-                    }
-
-                    $retObj |
-                        Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
-
-                    return $retObj
+                    } -PassThru
                 }
 
-                It 'Should not throw' {
-                    $script:result = Test-CertificateAuthority `
-                        -CARootName 'LabRootCA1' `
-                        -CAServerFQDN 'CA1' `
-                        -Verbose
-                }
+                $retObj |
+                Add-Member -MemberType ScriptMethod -Name Start -Value { } -PassThru |
+                Add-Member -MemberType ScriptMethod -Name WaitForExit -Value { }
 
-                It 'Should return true' {
-                    $script:result | Should -Be $True
-                }
-
-                It 'Should call expected mocks' {
-                    Assert-MockCalled `
-                        -CommandName New-Object `
-                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
-                        -Exactly -Times 1
-
-                    Assert-MockCalled `
-                        -CommandName New-Object `
-                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
-                        -Exactly -Times 1
-                }
+                return $retObj
             }
 
-            Context 'Function is executed with CA offline' {
-                Mock `
+            It 'Should not throw' {
+                $script:result = Test-CertificateAuthority `
+                    -CARootName 'LabRootCA1' `
+                    -CAServerFQDN 'CA1' `
+                    -Verbose
+            }
+
+            It 'Should return true' {
+                $script:result | Should -Be $True
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled `
+                    -CommandName New-Object `
+                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                    -Exactly -Times 1
+
+                Assert-MockCalled `
                     -CommandName New-Object `
                     -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
-                    -MockWith {
-                    $retObj = New-Object -TypeName psobject -Property @{
-                        StartInfo      = $null
-                        ExitCode       = -2147024809
-                        StandardOutput = New-Object -TypeName psobject |
-                            Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
-                            return @"
+                    -Exactly -Times 1
+            }
+        }
+
+        Context 'Function is executed with CA offline' {
+            Mock `
+                -CommandName New-Object `
+                -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                -MockWith {
+                $retObj = New-Object -TypeName psobject -Property @{
+                    StartInfo      = $null
+                    ExitCode       = -2147024809
+                    StandardOutput = New-Object -TypeName psobject |
+                    Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                        return @"
 Connecting to LabRootCA1\CA2 ...
 Server could not be reached: The parameter is incorrect. 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER) -- (31ms)
 
 CertUtil: -ping command FAILED: 0x80070057 (WIN32: 87 ERROR_INVALID_PARAMETER)
 CertUtil: The parameter is incorrect.
 "@
-                        } -PassThru
-                    }
-
-                    $retObj |
-                        Add-Member -MemberType ScriptMethod -Name Start -Value {} -PassThru |
-                        Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {}
-
-                    return $retObj
+                    } -PassThru
                 }
 
-                It 'Should not throw' {
-                    $script:result = Test-CertificateAuthority `
-                        -CARootName 'LabRootCA1' `
-                        -CAServerFQDN 'CA2' `
-                        -Verbose
-                }
+                $retObj |
+                Add-Member -MemberType ScriptMethod -Name Start -Value { } -PassThru |
+                Add-Member -MemberType ScriptMethod -Name WaitForExit -Value { }
 
-                It 'Should return false' {
-                    $script:result | Should -Be $false
-                }
+                return $retObj
+            }
 
-                It 'Should call expected mocks' {
-                    Assert-MockCalled `
-                        -CommandName New-Object `
-                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
-                        -Exactly -Times 1
+            It 'Should not throw' {
+                $script:result = Test-CertificateAuthority `
+                    -CARootName 'LabRootCA1' `
+                    -CAServerFQDN 'CA2' `
+                    -Verbose
+            }
 
-                    Assert-MockCalled `
-                        -CommandName New-Object `
-                        -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
-                        -Exactly -Times 1
+            It 'Should return false' {
+                $script:result | Should -Be $false
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled `
+                    -CommandName New-Object `
+                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.ProcessStartInfo' } `
+                    -Exactly -Times 1
+
+                Assert-MockCalled `
+                    -CommandName New-Object `
+                    -ParameterFilter { $TypeName -eq 'System.Diagnostics.Process' } `
+                    -Exactly -Times 1
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificateTemplateName' {
+        Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith {
+            @(
+                [PSCustomObject] @{
+                    'Name'                    = 'WebServer'
+                    'DisplayName'             = 'Web Server'
+                    'mspki-cert-template-oid' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16'
                 }
+            )
+        }
+
+        Context 'When a certificate with the extension "Certificate Template Name" is used' {
+            It 'Should return the template name' {
+                Get-CertificateTemplateName -Certificate $testCertificate | Should -Be 'WebServer'
             }
         }
 
-        Describe "$DSCResourceName\Get-CertificateTemplateName" {
-            Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith {
-                @(
-                    [PSCustomObject] @{
-                        'Name'                    = 'WebServer'
-                        'DisplayName'             = 'Web Server'
-                        'mspki-cert-template-oid' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16'
-                    }
-                )
+        Context 'When a certificate with the extension "Certificate Template Information" is used.' {
+            It 'Should return the template name when there is no display name' {
+                Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
             }
 
-            Context 'When a certificate with the extension "Certificate Template Name" is used' {
-                It 'Should return the template name' {
-                    Get-CertificateTemplateName -Certificate $testCertificate | Should -Be 'WebServer'
-                }
-            }
-
-            Context 'When a certificate with the extension "Certificate Template Information" is used.' {
-                It 'Should return the template name when there is no display name' {
-                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
-                }
-
-                Mock -CommandName Get-CertificateTemplateExtensionText -MockWith {
-@'
+            Mock -CommandName Get-CertificateTemplateExtensionText -MockWith {
+                @'
 Template=Web Server(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16)
 Major Version Number=100
 Minor Version Number=5
 '@
-                }
-
-                It 'Should return the template name when there is a display name' {
-                    Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
-                }
             }
 
-            Context 'When a certificate with no template name is used' {
-                It 'Should return null' {
-                    Get-CertificateTemplateName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
-                }
+            It 'Should return the template name when there is a display name' {
+                Get-CertificateTemplateName -Certificate $testCertificateWithAltTemplateInformation | Should -Be 'WebServer'
             }
         }
 
-        Describe "$DSCResourceName\Get-CertificateTemplatesFromActiveDirectory" {
-            $MockSearchResults = @(
-                @{
-                    Properties = @(
-                        @{
-                            Name  = 'name'
-                            Value = 'MockData1'
-                        }
-                        @{
-                            Name  = 'displayName'
-                            Value = 'Mock Data 1'
-                        }
-                    )
-                }
-                @{
-                    Properties = @(
-                        @{
-                            Name  = 'name'
-                            Value = 'MockData2'
-                        }
-                        @{
-                            Name  = 'displayName'
-                            Value = 'Mock Data 2'
-                        }
-                    )
-                }
-                @{
-                    Properties = @(
-                        @{
-                            Name  = 'name'
-                            Value = 'MockData3'
-                        }
-                        @{
-                            Name  = 'displayName'
-                            Value = 'Mock Data 3'
-                        }
-                    )
-                }
-            )
-
-            $newObject_parameterFilter = {
-                $TypeName  -eq 'DirectoryServices.DirectorySearcher'
+        Context 'When a certificate with no template name is used' {
+            It 'Should return null' {
+                Get-CertificateTemplateName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
             }
+        }
+    }
 
-            $newObject_mock = {
-                [PSCustomObject] @{
-                    Filter     = $null
-                    SearchRoot = $null
-                } | Add-Member -MemberType ScriptMethod -Name FindAll -Value {
-                    $MockSearchResults
-                    } -PassThru
+    Describe 'CertificateDsc.Common\Get-CertificateTemplatesFromActiveDirectory' {
+        $MockSearchResults = @(
+            @{
+                Properties = @(
+                    @{
+                        Name  = 'name'
+                        Value = 'MockData1'
+                    }
+                    @{
+                        Name  = 'displayName'
+                        Value = 'Mock Data 1'
+                    }
+                )
             }
-
-            Mock -CommandName New-Object -ParameterFilter $newObject_parameterFilter -MockWith $newObject_mock
-            Mock -CommandName Get-DirectoryEntry
-
-            Context 'When certificate templates are retrieved from Active Directory successfully' {
-                It 'Should get 3 mocked search results' {
-                    $SearchResults = Get-CertificateTemplatesFromActiveDirectory
-
-                    Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly -Times 1
-                    Assert-MockCalled -CommandName New-Object         -Exactly -Times 1
-
-                    $SearchResults.Count | Should -Be 3
-                }
+            @{
+                Properties = @(
+                    @{
+                        Name  = 'name'
+                        Value = 'MockData2'
+                    }
+                    @{
+                        Name  = 'displayName'
+                        Value = 'Mock Data 2'
+                    }
+                )
             }
+            @{
+                Properties = @(
+                    @{
+                        Name  = 'name'
+                        Value = 'MockData3'
+                    }
+                    @{
+                        Name  = 'displayName'
+                        Value = 'Mock Data 3'
+                    }
+                )
+            }
+        )
 
-            Context 'When certificate templates are not retrieved from Active Directory successfully' {
-                Mock -CommandName Get-DirectoryEntry -MockWith {
-                    throw 'Mock Function Failure'
-                }
+        $newObject_parameterFilter = {
+            $TypeName -eq 'DirectoryServices.DirectorySearcher'
+        }
 
-                It 'Should display a warning message' {
-                    $Message = 'Failed to get the certificate templates from Active Directory.'
+        $newObject_mock = {
+            [PSCustomObject] @{
+                Filter     = $null
+                SearchRoot = $null
+            } | Add-Member -MemberType ScriptMethod -Name FindAll -Value {
+                $MockSearchResults
+            } -PassThru
+        }
 
-                    (Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1).Message | Should -Be $Message
-                }
+        Mock -CommandName New-Object -ParameterFilter $newObject_parameterFilter -MockWith $newObject_mock
+        Mock -CommandName Get-DirectoryEntry
 
-                It 'Should display a verbose message' {
-                    $Message = 'Mock Function Failure'
+        Context 'When certificate templates are retrieved from Active Directory successfully' {
+            It 'Should get 3 mocked search results' {
+                $SearchResults = Get-CertificateTemplatesFromActiveDirectory
 
-                    (Get-CertificateTemplatesFromActiveDirectory -Verbose 4>&1).Message | Should -Be $Message
-                }
+                Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly -Times 1
+                Assert-MockCalled -CommandName New-Object         -Exactly -Times 1
+
+                $SearchResults.Count | Should -Be 3
             }
         }
 
-        Describe "$DSCResourceName\Get-CertificateTemplateInformation" {
-            $mockADTemplates = @(
-                @{
-                    'Name'                    = 'DisplayName1'
-                    'DisplayName'             = 'Display Name 1'
-                    'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567'
-                }
-                @{
-                    'Name'                    = 'DisplayName2'
-                    'DisplayName'             = 'Display Name 2'
-                    'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678'
-                }
-            )
+        Context 'When certificate templates are not retrieved from Active Directory successfully' {
+            Mock -CommandName Get-DirectoryEntry -MockWith {
+                throw 'Mock Function Failure'
+            }
 
-            $certificateTemplateExtensionFormattedText1 = @'
+            It 'Should display a warning message' {
+                $Message = 'Failed to get the certificate templates from Active Directory.'
+
+                (Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1).Message | Should -Be $Message
+            }
+
+            It 'Should display a verbose message' {
+                $Message = 'Mock Function Failure'
+
+                (Get-CertificateTemplatesFromActiveDirectory -Verbose 4>&1).Message | Should -Be $Message
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificateTemplateInformation' {
+        $mockADTemplates = @(
+            @{
+                'Name'                    = 'DisplayName1'
+                'DisplayName'             = 'Display Name 1'
+                'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567'
+            }
+            @{
+                'Name'                    = 'DisplayName2'
+                'DisplayName'             = 'Display Name 2'
+                'msPKI-Cert-Template-OID' = '1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678'
+            }
+        )
+
+        $certificateTemplateExtensionFormattedText1 = @'
 Template=Display Name 1(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567)
 Major Version Number=100
 Minor Version Number=5
 '@
 
-            $certificateTemplateExtensionFormattedText1NoDisplayName = @'
+        $certificateTemplateExtensionFormattedText1NoDisplayName = @'
 Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.1234567
 Major Version Number=100
 Minor Version Number=5
 '@
 
-            $certificateTemplateExtensionFormattedText2 = @'
+        $certificateTemplateExtensionFormattedText2 = @'
 Template=Display Name 2(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678)
 Major Version Number=100
 Minor Version Number=5
 '@
 
-            $certificateTemplateExtensionFormattedText2NoDisplayName = @'
+        $certificateTemplateExtensionFormattedText2NoDisplayName = @'
 Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.2345678
 Major Version Number=100
 Minor Version Number=5
 '@
 
-            $certificateTemplateExtensionFormattedText3 = @'
+        $certificateTemplateExtensionFormattedText3 = @'
 Template=Display Name 3(1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.3456789)
 Major Version Number=100
 Minor Version Number=5
 '@
 
-            $certificateTemplateExtensionFormattedText3NoDisplayName = @'
+        $certificateTemplateExtensionFormattedText3NoDisplayName = @'
 Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.3384218.3456789
 Major Version Number=100
 Minor Version Number=5
 '@
 
-            $RegexTemplatePattern = '^\w+=(?<Name>.*)\((?<Oid>[\.\d]+)\)'
+        $RegexTemplatePattern = '^\w+=(?<Name>.*)\((?<Oid>[\.\d]+)\)'
 
-            Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith {$mockADTemplates}
+        Mock -CommandName Get-CertificateTemplatesFromActiveDirectory -MockWith { $mockADTemplates }
 
-            Context 'When FormattedTemplate contains a Template OID with a Template Display Name' {
+        Context 'When FormattedTemplate contains a Template OID with a Template Display Name' {
 
-                It 'Should return the Template Name "DisplayName1"' {
-                    $params =  @{
-                        FormattedTemplate = $certificateTemplateExtensionFormattedText1
-                    }
-
-                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
+            It 'Should return the Template Name "DisplayName1"' {
+                $params = @{
+                    FormattedTemplate = $certificateTemplateExtensionFormattedText1
                 }
-                It 'Should return the Template Name "DisplayName2"' {
-                    $params =  @{
-                        FormattedTemplate = $certificateTemplateExtensionFormattedText2
-                    }
 
-                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
-                }
-                It 'Should write a warning when there is no match in Active Directory' {
-                    $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
-
-                    $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
-
-                    $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
-
-                    $params =  @{
-                        FormattedTemplate = $certificateTemplateExtensionFormattedText3
-                    }
-
-                    (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
-                }
+                (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
             }
-
-            Context 'When FormattedTemplate contains a Template OID without a Template Display Name' {
-                It 'Should return the Template Name "DisplayName1"' {
-                    $params =  @{
-                        FormattedTemplate = $certificateTemplateExtensionFormattedText1NoDisplayName
-                    }
-
-                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
+            It 'Should return the Template Name "DisplayName2"' {
+                $params = @{
+                    FormattedTemplate = $certificateTemplateExtensionFormattedText2
                 }
-                It 'Should return the Template Name "DisplayName2"' {
-                    $params =  @{
-                        FormattedTemplate = $certificateTemplateExtensionFormattedText2NoDisplayName
-                    }
 
-                    (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
-                }
-                It 'Should write a warning when there is no match in Active Directory' {
-                    $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
-
-                    $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
-
-                    $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
-
-                    $params =  @{
-                        FormattedTemplate = $certificateTemplateExtensionFormattedText3
-                    }
-
-                    (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
-                }
+                (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
             }
+            It 'Should write a warning when there is no match in Active Directory' {
+                $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
 
-            Context 'When FormattedTemplate contains a the Template Name' {
-                It 'Should return the FormattedText' {
-                    $templateName  = 'TemplateName'
+                $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
 
-                    (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName
+                $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
+
+                $params = @{
+                    FormattedTemplate = $certificateTemplateExtensionFormattedText3
                 }
-                It 'Should return the FormattedText Without a Trailing Carriage Return' {
-                    $templateName  = 'TemplateName' + [Char]13
 
-                    (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName.TrimEnd([Char]13)
-                }
-            }
-
-            Context 'When FormattedTemplate does not contain a recognised format' {
-                It 'Should write a warning when there is no match in Active Directory' {
-                    $formattedTemplate = 'Unrecognized Format'
-
-                    $warningMessage = $localizedData.TemplateNameNotFound -f $formattedTemplate
-
-                    (Get-CertificateTemplateInformation -FormattedTemplate $formattedTemplate 3>&1)[0].Message | Should -Be $warningMessage
-                }
+                (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
             }
         }
 
-        Describe "$DSCResourceName\Get-CertificateExtension" {
-            Context 'When a certificate contains an extension that matches the Oid parameter and First is not specified' {
-                It 'Should return the extension with Oid ''2.5.29.17''' {
-                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17'
-                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
-                    $extension | Should -HaveCount 1
-                    $extension.Oid.Value | Should -Be '2.5.29.17'
+        Context 'When FormattedTemplate contains a Template OID without a Template Display Name' {
+            It 'Should return the Template Name "DisplayName1"' {
+                $params = @{
+                    FormattedTemplate = $certificateTemplateExtensionFormattedText1NoDisplayName
                 }
-            }
 
-            Context 'When a certificate does not contain an extension that matches the Oid parameter and First is not specified' {
-                It 'Should return no extension' {
-                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.9.9.9'
-                    $extension | Should -BeNullOrEmpty
-                }
+                (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName1'
             }
-
-            Context 'When a certificate does not contain an extension that matches the Oid parameter and First is set to 2' {
-                It 'Should return no extension' {
-                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.9.9.9' -First 2
-                    $extension | Should -BeNullOrEmpty
+            It 'Should return the Template Name "DisplayName2"' {
+                $params = @{
+                    FormattedTemplate = $certificateTemplateExtensionFormattedText2NoDisplayName
                 }
+
+                (Get-CertificateTemplateInformation @params).Name | Should -Be 'DisplayName2'
             }
+            It 'Should write a warning when there is no match in Active Directory' {
+                $templateValues = [Regex]::Match($certificateTemplateExtensionFormattedText3, $RegexTemplatePattern)
 
-            Context 'When a certificate contains an extension that matches only one of the Oid parameter values and First is not specified' {
-                It 'Should return the extension with Oid ''2.5.29.17''' {
-                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.9.9.9'
-                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
-                    $extension | Should -HaveCount 1
-                    $extension.Oid.Value | Should -Be '2.5.29.17'
-                }
-            }
+                $templateText = '{0}({1})' -f $templateValues.Groups['Name'].Value, $templateValues.Groups['Oid'].Value
 
-            Context 'When a certificate contains an extension that matches both of the Oid parameter values and First is not specified' {
-                It 'Should return the extension with Oid ''2.5.29.17''' {
-                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.5.29.31'
-                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
-                    $extension | Should -HaveCount 1
-                    $extension.Oid.Value | Should -Contain '2.5.29.17'
-                }
-            }
+                $warningMessage = $localizedData.TemplateNameResolutionError -f $templateText
 
-            Context 'When a certificate contains an extension that matches both of the Oid parameter values but First is set to 2' {
-                It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
-                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.5.29.31' -First 2
-                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
-                    $extension | Should -HaveCount 2
-                    $extension.Oid.Value | Should -Contain '2.5.29.17'
-                    $extension.Oid.Value | Should -Contain '2.5.29.31'
+                $params = @{
+                    FormattedTemplate = $certificateTemplateExtensionFormattedText3
                 }
-            }
 
-            Context 'When a certificate contains an extension that matches both of the Oid parameter values but First is set to 3' {
-                It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
-                    $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17','2.5.29.31' -First 3
-                    $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
-                    $extension | Should -HaveCount 2
-                    $extension.Oid.Value | Should -Contain '2.5.29.17'
-                    $extension.Oid.Value | Should -Contain '2.5.29.31'
-                }
+                (Get-CertificateTemplateInformation @params 3>&1)[0].Message | Should -Be $warningMessage
             }
         }
 
-        Describe "$DSCResourceName\Get-CertificateTemplateExtensionText" {
-            Context 'When a certificate contains Certificate Template Name extension' {
-                It 'Should return the Name of the Certificate Template' {
-                    $params = @{
-                        Certificate = $testCertificateWithAltTemplateName
-                    }
+        Context 'When FormattedTemplate contains a the Template Name' {
+            It 'Should return the FormattedText' {
+                $templateName = 'TemplateName'
 
-                    # Template Names have a trailing carriage return and linefeed.
-                    Get-CertificateTemplateExtensionText @params | Should -Be ('WebServer' + [Char]13 + [Char]10)
-                }
+                (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName
             }
+            It 'Should return the FormattedText Without a Trailing Carriage Return' {
+                $templateName = 'TemplateName' + [Char]13
 
-            Context 'When a certificate contains Certificate Template Information extension' {
-                It 'Should return the Oid, Major and Minor Version of the Certificate Template' {
-                    $CertificateTemplateInformation = @'
+                (Get-CertificateTemplateInformation -FormattedTemplate $templateName).Name | Should -Be $templateName.TrimEnd([Char]13)
+            }
+        }
+
+        Context 'When FormattedTemplate does not contain a recognised format' {
+            It 'Should write a warning when there is no match in Active Directory' {
+                $formattedTemplate = 'Unrecognized Format'
+
+                $warningMessage = $localizedData.TemplateNameNotFound -f $formattedTemplate
+
+                (Get-CertificateTemplateInformation -FormattedTemplate $formattedTemplate 3>&1)[0].Message | Should -Be $warningMessage
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificateExtension' {
+        Context 'When a certificate contains an extension that matches the Oid parameter and First is not specified' {
+            It 'Should return the extension with Oid ''2.5.29.17''' {
+                $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17'
+                $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                $extension | Should -HaveCount 1
+                $extension.Oid.Value | Should -Be '2.5.29.17'
+            }
+        }
+
+        Context 'When a certificate does not contain an extension that matches the Oid parameter and First is not specified' {
+            It 'Should return no extension' {
+                $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.9.9.9'
+                $extension | Should -BeNullOrEmpty
+            }
+        }
+
+        Context 'When a certificate does not contain an extension that matches the Oid parameter and First is set to 2' {
+            It 'Should return no extension' {
+                $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.9.9.9' -First 2
+                $extension | Should -BeNullOrEmpty
+            }
+        }
+
+        Context 'When a certificate contains an extension that matches only one of the Oid parameter values and First is not specified' {
+            It 'Should return the extension with Oid ''2.5.29.17''' {
+                $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17', '2.9.9.9'
+                $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                $extension | Should -HaveCount 1
+                $extension.Oid.Value | Should -Be '2.5.29.17'
+            }
+        }
+
+        Context 'When a certificate contains an extension that matches both of the Oid parameter values and First is not specified' {
+            It 'Should return the extension with Oid ''2.5.29.17''' {
+                $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17', '2.5.29.31'
+                $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                $extension | Should -HaveCount 1
+                $extension.Oid.Value | Should -Contain '2.5.29.17'
+            }
+        }
+
+        Context 'When a certificate contains an extension that matches both of the Oid parameter values but First is set to 2' {
+            It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
+                $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17', '2.5.29.31' -First 2
+                $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                $extension | Should -HaveCount 2
+                $extension.Oid.Value | Should -Contain '2.5.29.17'
+                $extension.Oid.Value | Should -Contain '2.5.29.31'
+            }
+        }
+
+        Context 'When a certificate contains an extension that matches both of the Oid parameter values but First is set to 3' {
+            It 'Should return the extension with Oid ''2.5.29.17'' and ''2.5.29.31''' {
+                $extension = Get-CertificateExtension -Certificate $testCertificate -Oid '2.5.29.17', '2.5.29.31' -First 3
+                $extension | Should -BeOfType [System.Security.Cryptography.X509Certificates.X509Extension]
+                $extension | Should -HaveCount 2
+                $extension.Oid.Value | Should -Contain '2.5.29.17'
+                $extension.Oid.Value | Should -Contain '2.5.29.31'
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificateTemplateExtensionText' {
+        Context 'When a certificate contains Certificate Template Name extension' {
+            It 'Should return the Name of the Certificate Template' {
+                $params = @{
+                    Certificate = $testCertificateWithAltTemplateName
+                }
+
+                # Template Names have a trailing carriage return and linefeed.
+                Get-CertificateTemplateExtensionText @params | Should -Be ('WebServer' + [Char]13 + [Char]10)
+            }
+        }
+
+        Context 'When a certificate contains Certificate Template Information extension' {
+            It 'Should return the Oid, Major and Minor Version of the Certificate Template' {
+                $CertificateTemplateInformation = @'
 Template=1.3.6.1.4.1.311.21.8.5734392.6195358.14893705.12992936.3444946.62.1.16
 Major Version Number=100
 Minor Version Number=5
 
 '@
 
-                    $params = @{
-                        Certificate = $testCertificateWithAltTemplateInformation
-                    }
-
-                    # Template Names have a trailing carriage return and linefeed.
-                    Get-CertificateTemplateExtensionText @params | Should -Be $CertificateTemplateInformation
+                $params = @{
+                    Certificate = $testCertificateWithAltTemplateInformation
                 }
-            }
 
-            Context 'When a certificate does not contain a Certificate Template extension' {
-                It 'Should not return anything' {
-                    $params = @{
-                        Certificate = $testCertificateWithoutSan
-                    }
-
-                    # Template Names have a trailing carriage return and linefeed.
-                    Get-CertificateTemplateExtensionText @params | Should -Be $null
-                }
+                # Template Names have a trailing carriage return and linefeed.
+                Get-CertificateTemplateExtensionText @params | Should -Be $CertificateTemplateInformation
             }
         }
 
-        Describe "$DSCResourceName\Get-CertificateSubjectAlternativeName" {
-            Context 'When a certificate with a SAN is used' {
-                It 'Should return the SAN' {
-                    Get-CertificateSubjectAlternativeName -Certificate $testCertificate | Should -Be 'firstsan'
-                }
-            }
-
-            Context 'When a certificate without SAN is used' {
-                It 'Should return null' {
-                    Get-CertificateSubjectAlternativeName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
-                }
-            }
-        }
-
-        Describe "$DSCResourceName\Get-CertificateSubjectAlternativeNameList" {
-            Context 'When a certificate with a Subject Alternative Name is used' {
-                It 'Should return the list of Subject Alternative Name entries' {
-                    $global:certificate = $testCertificate
-                    $result = Get-CertificateSubjectAlternativeNameList -Certificate $testCertificate
-                    $result | Should -HaveCount 3
-                    $result | Should -Contain 'DNS Name=firstsan'
-                    $result | Should -Contain 'DNS Name=secondsan'
-                    $result | Should -Contain 'DNS Name=thirdsan'
-                }
-            }
-
-            Context 'When a certificate without Subject Alternative Name is used' {
-                It 'Should return null' {
-                    $result = Get-CertificateSubjectAlternativeNameList -Certificate $testCertificateWithoutSan
-                    $result | Should -BeNullOrEmpty
-                }
-            }
-        }
-
-        Describe 'Test-CommandExists' {
-            $testCommandName = 'TestCommandName'
-
-            Mock -CommandName 'Get-Command' -MockWith { return $Name }
-
-            Context 'When Get-Command returns' {
-                It 'Should not throw' {
-                    { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
+        Context 'When a certificate does not contain a Certificate Template extension' {
+            It 'Should not return anything' {
+                $params = @{
+                    Certificate = $testCertificateWithoutSan
                 }
 
-                It 'Should retrieve the command with the specified name' {
-                    $getCommandParameterFilter = {
-                        return $Name -eq $testCommandName
-                    }
-
-                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
-                }
-
-                It 'Should return true' {
-                    Test-CommandExists -Name $testCommandName | Should -Be $true
-                }
-            }
-
-            Context 'When Get-Command returns null' {
-                Mock -CommandName 'Get-Command' -MockWith { return $null }
-
-                It 'Should not throw' {
-                    { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
-                }
-
-                It 'Should retrieve the command with the specified name' {
-                    $getCommandParameterFilter = {
-                        return $Name -eq $testCommandName
-                    }
-
-                    Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
-                }
-
-                It 'Should return false' {
-                    Test-CommandExists -Name $testCommandName | Should -Be $false
-                }
-            }
-        }
-
-        Describe 'Get-CertificateStorePath' {
-            Context 'When Get-CertificateStorePath called with Store and Location' {
-                It 'Should not throw' {
-                    { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
-                }
-
-                It 'Should return the expected path' {
-                    $script:getCertificateStorePathResult = 'Cert:\TestLocation\TestStore'
-                }
+                # Template Names have a trailing carriage return and linefeed.
+                Get-CertificateTemplateExtensionText @params | Should -Be $null
             }
         }
     }
-}
-finally
-{
-    #region FOOTER
-    #endregion
+
+    Describe 'CertificateDsc.Common\Get-CertificateSubjectAlternativeName' {
+        Context 'When a certificate with a SAN is used' {
+            It 'Should return the SAN' {
+                Get-CertificateSubjectAlternativeName -Certificate $testCertificate | Should -Be 'firstsan'
+            }
+        }
+
+        Context 'When a certificate without SAN is used' {
+            It 'Should return null' {
+                Get-CertificateSubjectAlternativeName -Certificate $testCertificateWithoutSan | Should -BeNullOrEmpty
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificateSubjectAlternativeNameList' {
+        Context 'When a certificate with a Subject Alternative Name is used' {
+            It 'Should return the list of Subject Alternative Name entries' {
+                $global:certificate = $testCertificate
+                $result = Get-CertificateSubjectAlternativeNameList -Certificate $testCertificate
+                $result | Should -HaveCount 3
+                $result | Should -Contain 'DNS Name=firstsan'
+                $result | Should -Contain 'DNS Name=secondsan'
+                $result | Should -Contain 'DNS Name=thirdsan'
+            }
+        }
+
+        Context 'When a certificate without Subject Alternative Name is used' {
+            It 'Should return null' {
+                $result = Get-CertificateSubjectAlternativeNameList -Certificate $testCertificateWithoutSan
+                $result | Should -BeNullOrEmpty
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Test-CommandExists' {
+        $testCommandName = 'TestCommandName'
+
+        Mock -CommandName 'Get-Command' -MockWith { return $Name }
+
+        Context 'When Get-Command returns' {
+            It 'Should not throw' {
+                { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
+            }
+
+            It 'Should retrieve the command with the specified name' {
+                $getCommandParameterFilter = {
+                    return $Name -eq $testCommandName
+                }
+
+                Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
+            }
+
+            It 'Should return true' {
+                Test-CommandExists -Name $testCommandName | Should -Be $true
+            }
+        }
+
+        Context 'When Get-Command returns null' {
+            Mock -CommandName 'Get-Command' -MockWith { return $null }
+
+            It 'Should not throw' {
+                { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
+            }
+
+            It 'Should retrieve the command with the specified name' {
+                $getCommandParameterFilter = {
+                    return $Name -eq $testCommandName
+                }
+
+                Assert-MockCalled -CommandName 'Get-Command' -ParameterFilter $getCommandParameterFilter -Exactly -Times 1 -Scope 'Context'
+            }
+
+            It 'Should return false' {
+                Test-CommandExists -Name $testCommandName | Should -Be $false
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificateStorePath' {
+        Context 'When Get-CertificateStorePath called with Store and Location' {
+            It 'Should not throw' {
+                { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
+            }
+
+            It 'Should return the expected path' {
+                $script:getCertificateStorePathResult = 'Cert:\TestLocation\TestStore'
+            }
+        }
+    }
 }

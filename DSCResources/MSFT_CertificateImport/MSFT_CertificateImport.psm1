@@ -2,20 +2,13 @@
 
 $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'Modules'
 
-# Import the Certificate Common Modules
+# Import the Certificate Resource Common Module.
 Import-Module -Name (Join-Path -Path $modulePath `
         -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
-# Import the Certificate Resource Helper Module
-Import-Module -Name (Join-Path -Path $modulePath `
-        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
-
-# Import Localization Strings
-$localizedData = Get-LocalizedData `
-    -ResourceName 'MSFT_CertificateImport' `
-    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+# Import Localization Strings.
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateImport'
 
 <#
     .SYNOPSIS
@@ -74,13 +67,13 @@ function Get-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
+            $($script:localizedData.GettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
         ) -join '' )
 
     if ((Test-Path $certificateStore) -eq $false)
     {
         New-InvalidArgumentException `
-            -Message ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore) `
+            -Message ($script:localizedData.CertificateStoreNotFoundError -f $certificateStore) `
             -ArgumentName 'Store'
     }
 
@@ -166,7 +159,7 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.TestingCertificateStatusMessage -f $Thumbprint,$CertificateStore)
+            $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint,$CertificateStore)
         ) -join '' )
 
     if ($Ensure -ne $result.Ensure)
@@ -232,18 +225,18 @@ function Set-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.SettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
+            $($script:localizedData.SettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
         ) -join '' )
 
     if ($Ensure -ieq 'Present')
     {
-        if ($PSCmdlet.ShouldProcess(($LocalizedData.ImportingCertificateShould `
+        if ($PSCmdlet.ShouldProcess(($script:localizedData.ImportingCertificateShould `
             -f $Path,$certificateStore)))
         {
             # Import the certificate into the Store
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.ImportingCertficateMessage -f $Path,$certificateStore)
+                    $($script:localizedData.ImportingCertficateMessage -f $Path,$certificateStore)
                 ) -join '' )
 
             $importCertificateParameters = @{
@@ -264,7 +257,7 @@ function Set-TargetResource
         # Remove the certificate from the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.RemovingCertficateMessage -f $Thumbprint,$certificateStore)
+                $($script:localizedData.RemovingCertficateMessage -f $Thumbprint,$certificateStore)
             ) -join '' )
 
         Get-ChildItem -Path $certificateStore |
