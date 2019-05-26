@@ -84,15 +84,6 @@ function Get-TargetResource
             $($script:localizedData.GettingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
-    # Check that the certificate PFX file exists
-    if ($Ensure -eq 'Present' -and `
-        (-not (Test-CertificatePath -Path $Path)))
-    {
-        New-InvalidArgumentException `
-            -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
-            -ArgumentName 'Path'
-    }
-
     $certificate = Get-CertificateFromCertificateStore `
         -Thumbprint $Thumbprint `
         -Location $Location `
@@ -209,12 +200,12 @@ function Test-TargetResource
         $Ensure = 'Present'
     )
 
-    $currentStatus = Get-TargetResource @PSBoundParameters
-
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
             $($script:localizedData.TestingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
+
+    $currentStatus = Get-TargetResource @PSBoundParameters
 
     if ($Ensure -ne $currentStatus.Ensure)
     {
@@ -301,6 +292,14 @@ function Set-TargetResource
                 "$($MyInvocation.MyCommand): "
                 $($script:localizedData.ImportingPfxMessage -f $Path, $Location, $Store)
             ) -join '' )
+
+        # Check that the certificate PFX file exists before trying to import
+        if (-not (Test-Path -Path $Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
+                -ArgumentName 'Path'
+        }
 
         $getCertificateStorePathParameters = @{
             Location = $Location

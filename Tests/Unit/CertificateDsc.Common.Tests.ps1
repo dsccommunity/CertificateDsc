@@ -1295,7 +1295,7 @@ InModuleScope 'CertificateDsc.Common' {
                 -ParameterFilter { $CARootName -eq 'LabRootCA1' -and $CAServerFQDN -eq 'CA1' } `
                 -MockWith { return $true }
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 $script:result = Find-CertificateAuthority -DomainName contoso.com -Verbose
             }
 
@@ -1423,7 +1423,7 @@ CertUtil: -ping command completed successfully.
                 return $retObj
             }
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 $script:result = Test-CertificateAuthority `
                     -CARootName 'LabRootCA1' `
                     -CAServerFQDN 'CA1' `
@@ -1474,7 +1474,7 @@ CertUtil: The parameter is incorrect.
                 return $retObj
             }
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 $script:result = Test-CertificateAuthority `
                     -CARootName 'LabRootCA1' `
                     -CAServerFQDN 'CA2' `
@@ -1911,7 +1911,7 @@ Minor Version Number=5
         Mock -CommandName 'Get-Command' -MockWith { return $Name }
 
         Context 'When Get-Command returns' {
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
             }
 
@@ -1931,7 +1931,7 @@ Minor Version Number=5
         Context 'When Get-Command returns null' {
             Mock -CommandName 'Get-Command' -MockWith { return $null }
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 { $null = Test-CommandExists -Name $testCommandName } | Should -Not -Throw
             }
 
@@ -1953,7 +1953,7 @@ Minor Version Number=5
         Context 'When called with a Store and Location that exists' {
             Mock -CommandName Test-Path -MockWith { $true }
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 {
                     $script:getCertificateStorePathResult = Get-CertificateStorePath `
                         -Location 'LocalMachine' `
@@ -1983,7 +1983,7 @@ Minor Version Number=5
         Context 'When called with Thumbprint, Store and Location' {
             Mock -CommandName Test-Path -MockWith { $true }
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 {
                     $script:getCertificatePathResult = Get-CertificatePath `
                         -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
@@ -2009,7 +2009,7 @@ Minor Version Number=5
                 )
             }
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 {
                     $script:getCertificateFromCertificateStoreResult = Get-CertificateFromCertificateStore `
                         -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
@@ -2034,7 +2034,7 @@ Minor Version Number=5
             Mock -CommandName Test-Path -MockWith { $true }
             Mock -CommandName Get-ChildItem
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 {
                     $script:getCertificateFromCertificateStoreResult = Get-CertificateFromCertificateStore `
                         -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
@@ -2068,7 +2068,7 @@ Minor Version Number=5
             }
             Mock -CommandName Remove-Item
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 {
                     Remove-CertificateFromCertificateStore `
                         -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
@@ -2104,7 +2104,7 @@ Minor Version Number=5
             }
             Mock -CommandName Remove-Item
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 {
                     Remove-CertificateFromCertificateStore `
                         -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
@@ -2131,7 +2131,7 @@ Minor Version Number=5
             Mock -CommandName Get-ChildItem
             Mock -CommandName Remove-Item
 
-            It 'Should not throw' {
+            It 'Should not throw exception' {
                 {
                     Remove-CertificateFromCertificateStore `
                         -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `

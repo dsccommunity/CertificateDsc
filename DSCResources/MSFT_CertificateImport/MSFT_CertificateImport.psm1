@@ -41,7 +41,6 @@ function Get-TargetResource
         $Thumbprint,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
@@ -65,15 +64,6 @@ function Get-TargetResource
             "$($MyInvocation.MyCommand): "
             $($script:localizedData.GettingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
-
-    # Check that the certificate file exists
-    if ($Ensure -eq 'Present' -and `
-        (-not (Test-Path -Path $Path)))
-    {
-        New-InvalidArgumentException `
-            -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
-            -ArgumentName 'Path'
-    }
 
     $certificate = Get-CertificateFromCertificateStore `
         -Thumbprint $Thumbprint `
@@ -129,7 +119,6 @@ function Test-TargetResource
         $Thumbprint,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
@@ -149,12 +138,12 @@ function Test-TargetResource
         $Ensure = 'Present'
     )
 
-    $currentState = Get-TargetResource @PSBoundParameters
-
     Write-Verbose -Message ( @(
-            "$($MyInvocation.MyCommand): "
-            $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
-        ) -join '' )
+        "$($MyInvocation.MyCommand): "
+        $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
+    ) -join '' )
+
+    $currentState = Get-TargetResource @PSBoundParameters
 
     if ($Ensure -ne $currentState.Ensure)
     {
@@ -194,7 +183,6 @@ function Set-TargetResource
         $Thumbprint,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
@@ -226,6 +214,14 @@ function Set-TargetResource
                 "$($MyInvocation.MyCommand): "
                 $($script:localizedData.ImportingCertficateMessage -f $Path, $Location, $Store)
             ) -join '' )
+
+        # Check that the certificate file exists before trying to import
+        if (-not (Test-Path -Path $Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
+                -ArgumentName 'Path'
+        }
 
         $getCertificateStorePathParameters = @{
             Location = $Location
