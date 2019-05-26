@@ -174,7 +174,7 @@ function Test-TargetResource
 #>
 function Set-TargetResource
 {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]

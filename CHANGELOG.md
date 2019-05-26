@@ -20,6 +20,7 @@
   - Removed file existence check from `Path` parameter to enable the resource
     to remove a certificate from the store without the need to have the
     access to the certificate file.
+  - Removed ShouldProcess because it is not required by DSC Resources.
 - CertificatePfx:
   - Refactor to use common functions and share more code with
     `CertificateImport` resource.
