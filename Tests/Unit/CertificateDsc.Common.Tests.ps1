@@ -1,12 +1,12 @@
-$script:ModuleName = 'CertificateDsc.Common'
-
 #region HEADER
-# Unit Test Template Version: 1.1.0
-[System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$script:moduleName = 'CertificateDsc.Common'
+
+# Unit Test Template Version: 1.2.4
+$script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
 }
 
 Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -103,7 +103,7 @@ InModuleScope 'CertificateDsc.Common' {
 
             It 'Should return true when only a specified value matches, but other non-listed values do not' {
                 $mockCurrentValues = @{ Example = 'test'; SecondExample = 'true' }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false'  }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false' }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -116,7 +116,7 @@ InModuleScope 'CertificateDsc.Common' {
 
             It 'Should return false when only specified values do not match, but other non-listed values do ' {
                 $mockCurrentValues = @{ Example = 'test'; SecondExample = 'true' }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false'  }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false' }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -129,7 +129,7 @@ InModuleScope 'CertificateDsc.Common' {
 
             It 'Should return false when an empty hash table is used in the current values' {
                 $mockCurrentValues = @{ }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false'  }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false' }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -140,17 +140,17 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return true when evaluating a table against a CimInstance' {
-                $mockCurrentValues = @{ Handle = '0'; ProcessId = '1000'  }
+                $mockCurrentValues = @{ Handle = '0'; ProcessId = '1000' }
 
                 $mockWin32ProcessProperties = @{
-                    Handle = 0
+                    Handle    = 0
                     ProcessId = 1000
                 }
 
                 $mockNewCimInstanceParameters = @{
-                    ClassName = 'Win32_Process'
-                    Property = $mockWin32ProcessProperties
-                    Key = 'Handle'
+                    ClassName  = 'Win32_Process'
+                    Property   = $mockWin32ProcessProperties
+                    Key        = 'Handle'
                     ClientOnly = $true
                 }
 
@@ -159,24 +159,24 @@ InModuleScope 'CertificateDsc.Common' {
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
                     DesiredValues = $mockDesiredValues
-                    ValuesToCheck = @('Handle','ProcessId')
+                    ValuesToCheck = @('Handle', 'ProcessId')
                 }
 
                 Test-DscParameterState @testParameters | Should -Be $true
             }
 
             It 'Should return false when evaluating a table against a CimInstance and a value is wrong' {
-                $mockCurrentValues = @{ Handle = '1'; ProcessId = '1000'  }
+                $mockCurrentValues = @{ Handle = '1'; ProcessId = '1000' }
 
                 $mockWin32ProcessProperties = @{
-                    Handle = 0
+                    Handle    = 0
                     ProcessId = 1000
                 }
 
                 $mockNewCimInstanceParameters = @{
-                    ClassName = 'Win32_Process'
-                    Property = $mockWin32ProcessProperties
-                    Key = 'Handle'
+                    ClassName  = 'Win32_Process'
+                    Property   = $mockWin32ProcessProperties
+                    Key        = 'Handle'
                     ClientOnly = $true
                 }
 
@@ -185,15 +185,15 @@ InModuleScope 'CertificateDsc.Common' {
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
                     DesiredValues = $mockDesiredValues
-                    ValuesToCheck = @('Handle','ProcessId')
+                    ValuesToCheck = @('Handle', 'ProcessId')
                 }
 
                 Test-DscParameterState @testParameters | Should -Be $false
             }
 
             It 'Should return true when evaluating a hash table containing an array' {
-                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('1','2') }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('1', '2') }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -204,8 +204,8 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when evaluating a hash table containing an array with wrong values' {
-                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('A','B') }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('A', 'B') }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -217,7 +217,7 @@ InModuleScope 'CertificateDsc.Common' {
 
             It 'Should return false when evaluating a hash table containing an array, but the CurrentValues are missing an array' {
                 $mockCurrentValues = @{ Example = 'test' }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -229,7 +229,7 @@ InModuleScope 'CertificateDsc.Common' {
 
             It 'Should return false when evaluating a hash table containing an array, but the property i CurrentValues is $null' {
                 $mockCurrentValues = @{ Example = 'test'; SecondExample = $null }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1','2')  }
+                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -292,14 +292,14 @@ InModuleScope 'CertificateDsc.Common' {
                 $mockCurrentValues = @{ Example = 'something' }
 
                 $mockWin32ProcessProperties = @{
-                    Handle = 0
+                    Handle    = 0
                     ProcessId = 1000
                 }
 
                 $mockNewCimInstanceParameters = @{
-                    ClassName = 'Win32_Process'
-                    Property = $mockWin32ProcessProperties
-                    Key = 'Handle'
+                    ClassName  = 'Win32_Process'
+                    Property   = $mockWin32ProcessProperties
+                    Key        = 'Handle'
                     ClientOnly = $true
                 }
 
@@ -1950,13 +1950,203 @@ Minor Version Number=5
     }
 
     Describe 'CertificateDsc.Common\Get-CertificateStorePath' {
-        Context 'When Get-CertificateStorePath called with Store and Location' {
+        Context 'When called with a Store and Location that exists' {
+            Mock -CommandName Test-Path -MockWith { $true }
+
             It 'Should not throw' {
-                { $script:getCertificateStorePathResult = Get-CertificateStorePath -Location 'LocalMachine' -Store 'TestStore' } | Should -Not -Throw
+                {
+                    $script:getCertificateStorePathResult = Get-CertificateStorePath `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore'
+                } | Should -Not -Throw
             }
 
             It 'Should return the expected path' {
-                $script:getCertificateStorePathResult = 'Cert:\TestLocation\TestStore'
+                $script:getCertificateStorePathResult = 'Cert:\LocalMachine\TestStore'
+            }
+        }
+
+        Context 'When called with a Store and Location that does not exist' {
+            Mock -CommandName Test-Path -MockWith { $false }
+
+            It 'Should throw expected exception' {
+                {
+                    Get-CertificateStorePath `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore'
+                } | Should -Throw ($script:localizedData.CertificateStoreNotFoundError -f 'Cert:\LocalMachine\TestStore')
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificatePath' {
+        Context 'When called with Thumbprint, Store and Location' {
+            Mock -CommandName Test-Path -MockWith { $true }
+
+            It 'Should not throw' {
+                {
+                    $script:getCertificatePathResult = Get-CertificatePath `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore'
+                } | Should -Not -Throw
+            }
+
+            It 'Should return the expected path' {
+                $script:getCertificateStorePathResult = 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a2057'
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-CertificateFromCertificateStore' {
+        Context 'When the certificate exists in the store' {
+            Mock -CommandName Test-Path -MockWith { $true }
+            Mock -CommandName Get-ChildItem -MockWith {
+                @(
+                    [PSCustomObject] @{
+                        PSPath = 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                    }
+                )
+            }
+
+            It 'Should not throw' {
+                {
+                    $script:getCertificateFromCertificateStoreResult = Get-CertificateFromCertificateStore `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore' `
+                        -Verbose
+                } | Should -Not -Throw
+            }
+
+            It 'Should return the expected certificate' {
+                $script:getCertificateFromCertificateStoreResult.PSPath | Should -Be 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
+                    $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                } -Exactly -Times 1
+            }
+        }
+
+        Context 'When the certificate does not exist in the store' {
+            Mock -CommandName Test-Path -MockWith { $true }
+            Mock -CommandName Get-ChildItem
+
+            It 'Should not throw' {
+                {
+                    $script:getCertificateFromCertificateStoreResult = Get-CertificateFromCertificateStore `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore' `
+                        -Verbose
+                } | Should -Not -Throw
+            }
+
+            It 'Should not return any certificates' {
+                $script:getCertificateFromCertificateStoreResult.PSPath | Should -BeNullOrEmpty
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
+                    $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                } -Exactly -Times 1
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Remove-CertificateFromCertificateStore' {
+        Context 'When the certificate exists in the store' {
+            Mock -CommandName Test-Path -MockWith { $true }
+            Mock -CommandName Get-ChildItem -MockWith {
+                @(
+                    [PSCustomObject] @{
+                        PSPath = 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                    }
+                )
+            }
+            Mock -CommandName Remove-Item
+
+            It 'Should not throw' {
+                {
+                    Remove-CertificateFromCertificateStore `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore' `
+                        -Verbose
+                } | Should -Not -Throw
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
+                    $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                } -Exactly -Times 1
+
+                Assert-MockCalled -CommandName Remove-Item -ParameterFilter {
+                    $Path -eq 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578' `
+                    -and $Force -eq $true
+                } -Exactly -Times 1
+            }
+        }
+
+        Context 'When the certificate exists in the store twice' {
+            Mock -CommandName Test-Path -MockWith { $true }
+            Mock -CommandName Get-ChildItem -MockWith {
+                @(
+                    [PSCustomObject] @{
+                        PSPath = 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                    },
+                    [PSCustomObject] @{
+                        PSPath = 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                    }
+                )
+            }
+            Mock -CommandName Remove-Item
+
+            It 'Should not throw' {
+                {
+                    Remove-CertificateFromCertificateStore `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore' `
+                        -Verbose
+                } | Should -Not -Throw
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
+                    $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                } -Exactly -Times 1
+
+                Assert-MockCalled -CommandName Remove-Item -ParameterFilter {
+                    $Path -eq 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578' `
+                    -and $Force -eq $true
+                } -Exactly -Times 2
+            }
+        }
+
+        Context 'When the certificate does not exist in the store' {
+            Mock -CommandName Test-Path -MockWith { $true }
+            Mock -CommandName Get-ChildItem
+            Mock -CommandName Remove-Item
+
+            It 'Should not throw' {
+                {
+                    Remove-CertificateFromCertificateStore `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore' `
+                        -Verbose
+                } | Should -Not -Throw
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
+                    $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                } -Exactly -Times 1
+
+                Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
             }
         }
     }

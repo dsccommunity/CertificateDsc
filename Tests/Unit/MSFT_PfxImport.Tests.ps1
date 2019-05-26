@@ -1,34 +1,32 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
 
-$script:DSCModuleName      = 'CertificateDsc'
-$script:DSCResourceName    = 'MSFT_PfxImport'
-
-# Load the common test helper
-Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global
-
 #region HEADER
-# Integration Test Template Version: 1.1.0
-[System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$script:dscModuleName = 'CertificateDsc'
+$script:dscResourceName = 'MSFT_PfxImport'
+
+# Unit Test Template Version: 1.2.4
+$script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
 }
 
-Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
+
 $TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:DSCModuleName `
-    -DSCResourceName $script:DSCResourceName `
+    -DSCModuleName $script:dscModuleName `
+    -DSCResourceName $script:dscResourceName `
+    -ResourceType 'Mof' `
     -TestType Unit
-#endregion
+#endregion HEADER
 
 # Begin Testing
 try
 {
-    InModuleScope $script:DSCResourceName {
-        $DSCResourceName = 'MSFT_PfxImport'
-        $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes}).GetTypes()
+    InModuleScope $script:dscResourceName {
+        $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes }).GetTypes()
         $validThumbprint = (
             $definedRuntimeTypes | Where-Object -FilterScript {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
@@ -70,9 +68,9 @@ try
 
         $importPfxCertificate_parameterfilter = {
             $CertStoreLocation -eq $validCertPath -and `
-            $FilePath -eq $validPath -and `
-            $Exportable -eq $True -and `
-            $Password -eq $testCredential.Password
+                $FilePath -eq $validPath -and `
+                $Exportable -eq $True -and `
+                $Password -eq $testCredential.Password
         }
 
         $presentParams = @{
@@ -94,20 +92,20 @@ try
             Verbose    = $True
         }
 
-        Describe "$DSCResourceName\Get-TargetResource" {
+        Describe 'MSFT_PfxImport\Get-TargetResource' -Tag 'Get' {
             Context 'When the PFX file exists and the certificate exists with a private key' {
                 Mock `
                     -CommandName Test-CertificatePath `
                     -MockWith {
-                        $true
-                    } `
+                    $true
+                } `
                     -ParameterFilter $testCertificatePath_parameterfilter
 
                 Mock `
                     -CommandName Get-ChildItem `
                     -MockWith {
-                        $validCertificateWithPrivateKey
-                    } `
+                    $validCertificateWithPrivateKey
+                } `
                     -ParameterFilter $testGetChildItem_parameterfilter
 
                 $result = Get-TargetResource @presentParams
@@ -139,15 +137,15 @@ try
                 Mock `
                     -CommandName Test-CertificatePath `
                     -MockWith {
-                        $true
-                    } `
+                    $true
+                } `
                     -ParameterFilter $testCertificatePath_parameterfilter
 
                 Mock `
                     -CommandName Get-ChildItem `
                     -MockWith {
-                        $validCertificateWithoutPrivateKey
-                    } `
+                    $validCertificateWithoutPrivateKey
+                } `
                     -ParameterFilter $testGetChildItem_parameterfilter
 
                 $result = Get-TargetResource @presentParams
@@ -179,8 +177,8 @@ try
                 Mock `
                     -CommandName Test-CertificatePath `
                     -MockWith {
-                        $true
-                    } `
+                    $true
+                } `
                     -ParameterFilter $testCertificatePath_parameterfilter
 
                 Mock `
@@ -205,7 +203,7 @@ try
                         -ParameterFilter $testCertificatePath_parameterfilter `
                         -Exactly -Times 1
 
-                     Assert-MockCalled `
+                    Assert-MockCalled `
                         -CommandName Get-ChildItem `
                         -ParameterFilter $testGetChildItem_parameterfilter `
                         -Exactly -Times 1
@@ -216,15 +214,15 @@ try
                 Mock `
                     -CommandName Test-CertificatePath `
                     -MockWith {
-                        $false
-                    } `
+                    $false
+                } `
                     -ParameterFilter $testCertificatePath_parameterfilter
 
                 Mock `
                     -CommandName Get-ChildItem `
                     -MockWith {
-                        $validCertificateWithoutPrivateKey
-                    } `
+                    $validCertificateWithoutPrivateKey
+                } `
                     -ParameterFilter $testGetChildItem_parameterfilter
 
                 $result = Get-TargetResource @absentParams
@@ -255,8 +253,8 @@ try
                 Mock `
                     -CommandName Test-CertificatePath `
                     -MockWith {
-                        $false
-                    } `
+                    $false
+                } `
                     -ParameterFilter $testCertificatePath_parameterfilter
 
                 It 'Should throw expected exception' {
@@ -278,7 +276,7 @@ try
             }
         }
 
-        Describe "$DSCResourceName\Test-TargetResource" {
+        Describe 'MSFT_PfxImport\Test-TargetResource' -Tag 'Test' {
             It 'Should return a bool' {
                 Mock -CommandName Get-TargetResource {
                     return @{
@@ -348,7 +346,7 @@ try
             }
         }
 
-        Describe "$DSCResourceName\Set-TargetResource" {
+        Describe 'MSFT_PfxImport\Set-TargetResource' -Tag 'Set' {
             Context 'When PFX file exists and thumbprint and Ensure is Present' {
                 Mock `
                     -CommandName Import-PfxCertificate `

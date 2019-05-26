@@ -1494,9 +1494,144 @@ function Get-CertificateStorePath
         $Store
     )
 
-    return 'Cert:' |
+    $certificateStore =  'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
+
+    if (-not (Test-Path -Path $certificateStore))
+    {
+        New-InvalidArgumentException `
+            -Message ($script:localizedData.CertificateStoreNotFoundError -f $certificateStore) `
+            -ArgumentName 'Store'
+    }
+
+    return $certificateStore
+}
+
+<#
+    .SYNOPSIS
+    This function returns the full path to a certificate in the Windows
+    Certificate Store.
+
+    .PARAMETER Thumbprint
+    The Thumbprint of the certificate.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+#>
+function Get-CertificatePath
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store
+    )
+
+    return Get-CertificateStorePath -Location $Location -Store $Store |
+        Join-Path -ChildPath $Thumbprint
+}
+
+<#
+    .SYNOPSIS
+    This function generates the path to a Windows Certificate Store.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+#>
+function Get-CertificateFromCertificateStore
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store
+    )
+
+    $certificatePath = Get-CertificatePath @PSBoundParameters
+    $certificates = Get-ChildItem -Path $certificatePath -ErrorAction SilentlyContinue
+
+    return $certificates
+}
+
+<#
+    .SYNOPSIS
+    This function deletes all certificates from the specified Windows Certificate
+    Store that match the thumbprint.
+
+    .PARAMETER Thumbprint
+    The Thumbprint of the certificates to remove.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+#>
+function Remove-CertificateFromCertificateStore
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store
+    )
+
+    $certificates = Get-CertificateFromCertificateStore @PSBoundParameters
+
+    foreach ($certificate in $certificates)
+    {
+        Write-Verbose -Message ( @(
+            "$($MyInvocation.MyCommand): "
+            $($script:localizedData.RemovingCertificateFromStoreMessage -f $Thumbprint, $Location, $Store)
+        ) -join '' )
+
+        Remove-Item -Path $certificate.PSPath -Force
+    }
 }
 
 $script:localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.Common' -ScriptRoot $PSScriptRoot
@@ -1526,5 +1661,8 @@ Export-ModuleMember -Function @(
     'Test-CommandExists',
     'Import-CertificateEx',
     'Import-PfxCertificateEx',
-    'Get-CertificateStorePath'
+    'Get-CertificateStorePath',
+    'Get-CertificatePath',
+    'Get-CertificateFromCertificateStore',
+    'Remove-CertificateFromCertificateStore'
 )
