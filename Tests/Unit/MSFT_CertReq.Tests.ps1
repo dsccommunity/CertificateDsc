@@ -38,28 +38,6 @@ try
                 }
             }
         ) -join ''
-<<<<<<< HEAD
-        $invalidThumbprint            = $validThumbprint + 1
-        $caServerFQDN                 = 'rootca.contoso.com'
-        $caRootName                   = 'contoso-CA'
-        $validSubject                 = 'Test Subject'
-        $invalidSubject               = 'Invalid Test Subject'
-        $validIssuer                  = "CN=$caRootName, DC=contoso, DC=com"
-        $invalidIssuer                = 'CN=InvalidTest, DC=invalid, DC=com'
-        $keyLength                    = '2048'
-        $exportable                   = $true
-        $providerName                 = 'Microsoft RSA SChannel Cryptographic Provider'
-        $providerNameWithQuotes       = ('"{0}"' -f $providerName)
-        $oid                          = '1.3.6.1.5.5.7.3.1'
-        $keyUsage                     = '0xa0'
-        $certificateTemplate          = 'WebServer'
-        $certificateDCTemplate        = 'DomainControllerAuthentication'
-        $invalidCertificateTemplate   = 'Invalid Template'
-        $subjectAltUrl                = 'contoso.com'
-        $subjectAltName               = "dns=$subjectAltUrl"
-        $friendlyName                 = "Test Certificate"
-        $invalidFriendlyName          = 'Invalid Certificate'
-=======
         $invalidThumbprint = $validThumbprint + 1
         $caServerFQDN = 'rootca.contoso.com'
         $caRootName = 'contoso-CA'
@@ -79,7 +57,6 @@ try
         $subjectAltName = "dns=$subjectAltUrl"
         $friendlyName = "Test Certificate"
         $invalidFriendlyName = 'Invalid Certificate'
->>>>>>> Refactoring of tests
 
         $validCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $validThumbprint

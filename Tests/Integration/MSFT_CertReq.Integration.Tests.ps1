@@ -48,19 +48,6 @@ try
             . $configFile
 
             # This will fail if the machine does not have a CA Configured.
-<<<<<<< HEAD
-            $certUtilResult       = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
-            $caServerFQDN         = ([regex]::matches($certUtilResult,'Server:[ \t]+`([A-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
-            $caRootName           = ([regex]::matches($certUtilResult,'Name:[ \t]+`([\sA-Za-z0-9._-]+)''','IgnoreCase')).Groups[1].Value
-            $exportable           = $true
-            $providerName         = 'Microsoft RSA SChannel Cryptographic Provider'
-            $oid                  = '1.3.6.1.5.5.7.3.1'
-            $keyUsage             = '0xa0'
-            $dns1                 = 'contoso.com'
-            $dns2                 = 'fabrikam.com'
-            $subjectAltName       = "dns=$dns1&dns=$dns2"
-            $friendlyName         = "$($script:DSCResourceName) Integration Test"
-=======
             $certUtilResult = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
             $caServerFQDN = ([regex]::matches($certUtilResult, 'Server:[ \t]+`([A-Za-z0-9._-]+)''', 'IgnoreCase')).Groups[1].Value
             $caRootName = ([regex]::matches($certUtilResult, 'Name:[ \t]+`([\sA-Za-z0-9._-]+)''', 'IgnoreCase')).Groups[1].Value
@@ -72,7 +59,6 @@ try
             $dns2 = 'fabrikam.com'
             $subjectAltName = "dns=$dns1&dns=$dns2"
             $friendlyName = "$($script:DSCResourceName) Integration Test"
->>>>>>> Refactoring of tests
 
             $paramsRsaCmcRequest = @{
                 keyLength           = '2048'
@@ -83,21 +69,12 @@ try
             }
 
             $paramsEcdhPkcs10Request = @{
-<<<<<<< HEAD
                 keyLength            = '521'
                 subject              = "$($script:DSCResourceName)_Test2"
                 providerName         = 'Microsoft Software Key Storage Provider'
                 certificateTemplate  = 'WebServer'
                 keyType              = 'ECDH'
                 RequestType          = 'PKCS10'
-=======
-                keyLength           = '521'
-                subject             = "$($script:DSCResourceName)_Test2"
-                providerName        = '"Microsoft Software Key Storage Provider"'
-                certificateTemplate = 'WebServer'
-                keyType             = 'ECDH'
-                RequestType         = 'PKCS10'
->>>>>>> Refactoring of tests
             }
 
             <#
@@ -107,10 +84,6 @@ try
             $credential = Get-Credential
         }
 
-<<<<<<< HEAD
-            # This is to allow the testing of certreq with domain credentials
-            $configDataRsaCmcRequest = @{
-=======
         AfterAll {
             # Cleanup
             $CertificateNew = Get-Childitem -Path Cert:\LocalMachine\My |
@@ -137,7 +110,6 @@ try
 
         Context 'When WebServer certificate does not exist, Testing with RSA KeyType and CMC RequestType' {
             $configData = @{
->>>>>>> Refactoring of tests
                 AllNodes = @(
                     @{
                         NodeName                    = 'localhost'
@@ -161,9 +133,6 @@ try
                 )
             }
 
-<<<<<<< HEAD
-            $configDataRsaCmcRequestEcdhPkcs10Request = @{
-=======
             It 'Should compile the MOF without throwing an exception' {
                 {
                     & "$($script:DSCResourceName)_Config" `
@@ -207,7 +176,6 @@ try
 
         Context 'When WebServer certificate does not exist, Testing with ECDH KeyType and PKCS10 RequestType' {
             $configData = @{
->>>>>>> Refactoring of tests
                 AllNodes = @(
                     @{
                         NodeName                    = 'localhost'
@@ -235,25 +203,12 @@ try
                 {
                     & "$($script:DSCResourceName)_Config" `
                         -OutputPath $TestDrive `
-<<<<<<< HEAD
-                        -ConfigurationData $configDataRsaCmcRequest
-
-                    Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-=======
                         -ConfigurationData $configData
->>>>>>> Refactoring of tests
                 } | Should -Not -Throw
             }
 
             It 'Should apply the MOF without throwing an exception' {
                 {
-<<<<<<< HEAD
-                    & "$($script:DSCResourceName)_Config" `
-                        -OutputPath $TestDrive `
-                        -ConfigurationData $configDataRsaCmcRequestEcdhPkcs10Request
-
-                    Start-DscConfiguration -Path $TestDrive -ComputerName localhost -Wait -Verbose -Force
-=======
                     Start-DscConfiguration `
                         -Path $TestDrive `
                         -ComputerName localhost `
@@ -261,7 +216,6 @@ try
                         -Verbose `
                         -Force `
                         -ErrorAction Stop
->>>>>>> Refactoring of tests
                 } | Should -Not -Throw
             }
 
