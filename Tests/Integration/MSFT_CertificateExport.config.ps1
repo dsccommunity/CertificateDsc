@@ -1,5 +1,6 @@
 Configuration MSFT_CertificateExport_Config {
     Import-DscResource -ModuleName CertificateDsc
+
     node localhost {
         if ($Node.Type -in @('Cert','P7B','SST'))
         {

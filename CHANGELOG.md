@@ -10,6 +10,22 @@
 - CertReq:
   - Fix error when ProviderName parameter is not encapsulated in
     double quotes - fixes [Issue #185](https://github.com/PowerShell/CertificateDsc/issues/185).
+- Refactor integration tests to update to latest standards.
+- Refactor unit tests to update to latest standards.
+- CertificateImport:
+  - Refactor to use common functions and share more code with `PfxImport`
+    resource.
+  - Resource will now only throw an exception if the PFX file does not exist
+    and it needs to be imported.
+  - Removed file existence check from `Path` parameter to enable the resource
+    to remove a certificate from the store without the need to have the
+    access to the certificate file.
+  - Removed ShouldProcess because it is not required by DSC Resources.
+- CertificatePfx:
+  - Refactor to use common functions and share more code with
+    `CertificateImport` resource.
+  - Resource will now only throw an exception if the certificate file does
+    not exist and it needs to be imported.
 
 ## 4.6.0.0
 

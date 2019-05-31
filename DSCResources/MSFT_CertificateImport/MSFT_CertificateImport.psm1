@@ -41,7 +41,6 @@ function Get-TargetResource
         $Thumbprint,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
@@ -61,28 +60,17 @@ function Get-TargetResource
         $Ensure = 'Present'
     )
 
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
-
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.GettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
+            $($script:localizedData.GettingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
-    if ((Test-Path $certificateStore) -eq $false)
-    {
-        New-InvalidArgumentException `
-            -Message ($script:localizedData.CertificateStoreNotFoundError -f $certificateStore) `
-            -ArgumentName 'Store'
-    }
+    $certificate = Get-CertificateFromCertificateStore `
+        -Thumbprint $Thumbprint `
+        -Location $Location `
+        -Store $Store
 
-    $checkEnsure = [Bool] (
-        $certificateStore |
-        Get-ChildItem |
-        Where-Object -FilterScript { $_.Thumbprint -ieq $Thumbprint }
-    )
-    if ($checkEnsure)
+    if ($certificate)
     {
         $Ensure = 'Present'
     }
@@ -91,7 +79,7 @@ function Get-TargetResource
         $Ensure = 'Absent'
     }
 
-    @{
+    return @{
         Thumbprint = $Thumbprint
         Path       = $Path
         Location   = $Location
@@ -131,7 +119,6 @@ function Test-TargetResource
         $Thumbprint,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
@@ -151,21 +138,18 @@ function Test-TargetResource
         $Ensure = 'Present'
     )
 
-    $result = @(Get-TargetResource @PSBoundParameters)
-
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
-
     Write-Verbose -Message ( @(
-            "$($MyInvocation.MyCommand): "
-            $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint,$CertificateStore)
-        ) -join '' )
+        "$($MyInvocation.MyCommand): "
+        $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
+    ) -join '' )
 
-    if ($Ensure -ne $result.Ensure)
+    $currentState = Get-TargetResource @PSBoundParameters
+
+    if ($Ensure -ne $currentState.Ensure)
     {
         return $false
     }
+
     return $true
 } # end function Test-TargetResource
 
@@ -190,7 +174,7 @@ function Test-TargetResource
 #>
 function Set-TargetResource
 {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -199,7 +183,6 @@ function Set-TargetResource
         $Thumbprint,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript( { $_ | Test-CertificatePath } )]
         [System.String]
         $Path,
 
@@ -219,50 +202,56 @@ function Set-TargetResource
         $Ensure = 'Present'
     )
 
-    $certificateStore = 'Cert:' |
-        Join-Path -ChildPath $Location |
-        Join-Path -ChildPath $Store
-
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.SettingCertificateStatusMessage -f $Thumbprint,$certificateStore)
+            $($script:localizedData.SettingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
     if ($Ensure -ieq 'Present')
     {
-        if ($PSCmdlet.ShouldProcess(($script:localizedData.ImportingCertificateShould `
-            -f $Path,$certificateStore)))
-        {
-            # Import the certificate into the Store
-            Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($script:localizedData.ImportingCertficateMessage -f $Path,$certificateStore)
-                ) -join '' )
-
-            $importCertificateParameters = @{
-                CertStoreLocation = $certificateStore
-                FilePath          = $Path
-                Verbose           = $VerbosePreference
-            }
-
-            <#
-                Using Import-CertificateEx instead of Import-Certificate due to the following issue:
-                https://github.com/PowerShell/CertificateDsc/issues/161
-            #>
-            Import-CertificateEx @importCertificateParameters
-        }
-    }
-    elseif ($Ensure -ieq 'Absent')
-    {
-        # Remove the certificate from the Store
+        # Import the certificate into the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.RemovingCertficateMessage -f $Thumbprint,$certificateStore)
+                $($script:localizedData.ImportingCertficateMessage -f $Path, $Location, $Store)
             ) -join '' )
 
-        Get-ChildItem -Path $certificateStore |
-            Where-Object { $_.Thumbprint -ieq $Thumbprint } |
-            Remove-Item -Force
+        # Check that the certificate file exists before trying to import
+        if (-not (Test-Path -Path $Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
+                -ArgumentName 'Path'
+        }
+
+        $getCertificateStorePathParameters = @{
+            Location = $Location
+            Store = $Store
+        }
+        $certificateStore = Get-CertificateStorePath @getCertificateStorePathParameters
+
+        $importCertificateParameters = @{
+            CertStoreLocation = $certificateStore
+            FilePath          = $Path
+            Verbose           = $VerbosePreference
+        }
+
+        <#
+            Using Import-CertificateEx instead of Import-Certificate due to the following issue:
+            https://github.com/PowerShell/CertificateDsc/issues/161
+        #>
+        Import-CertificateEx @importCertificateParameters
+    }
+    else
+    {
+        Write-Verbose -Message ( @(
+                "$($MyInvocation.MyCommand): "
+                $($script:localizedData.RemovingCertficateMessage -f $Thumbprint, $Location, $Store)
+            ) -join '' )
+
+        Remove-CertificateFromCertificateStore `
+            -Thumbprint $Thumbprint `
+            -Location $Location `
+            -Store $Store
     }
 }  # end function Test-TargetResource
 

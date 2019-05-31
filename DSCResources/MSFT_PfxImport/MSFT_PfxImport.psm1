@@ -79,32 +79,15 @@ function Get-TargetResource
         $Ensure = 'Present'
     )
 
-    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
-
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.GettingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.GettingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
-    if ((Test-Path -Path $certificateStore) -eq $false)
-    {
-        New-InvalidArgumentException `
-            -Message ($script:localizedData.CertificateStoreNotFoundError -f $certificateStore) `
-            -ArgumentName 'Store'
-    }
-
-    # Check that the certificate PFX file exists
-    if ($Ensure -eq 'Present' -and `
-        (-not (Test-CertificatePath -Path $Path)))
-    {
-        New-InvalidArgumentException `
-            -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
-            -ArgumentName 'Path'
-    }
-
-    # Look up the certificate
-    $certificatePath = Join-Path -Path $certificateStore -ChildPath $Thumbprint
-    $certificate = Get-ChildItem -Path $certificatePath -ErrorAction SilentlyContinue
+    $certificate = Get-CertificateFromCertificateStore `
+        -Thumbprint $Thumbprint `
+        -Location $Location `
+        -Store $Store
 
     if ($certificate)
     {
@@ -113,7 +96,7 @@ function Get-TargetResource
             # If the certificate is found and has a private key then consider it Present
             Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.CertificateInstalledMessage -f $Thumbprint, $certificateStore)
+                $($script:localizedData.CertificateInstalledMessage -f $Thumbprint, $Location, $Store)
             ) -join '' )
 
             $Ensure = 'Present'
@@ -123,7 +106,7 @@ function Get-TargetResource
             # The certificate is found but the private key is missing so it is Absent
             Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.CertificateInstalledNoPrivateKeyMessage -f $Thumbprint, $certificateStore)
+                $($script:localizedData.CertificateInstalledNoPrivateKeyMessage -f $Thumbprint, $Location, $Store)
             ) -join '' )
 
             $Ensure = 'Absent'
@@ -134,7 +117,7 @@ function Get-TargetResource
         # The certificate is not found
         Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.CertificateNotInstalledMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.CertificateNotInstalledMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
         $Ensure = 'Absent'
@@ -217,16 +200,14 @@ function Test-TargetResource
         $Ensure = 'Present'
     )
 
-    $result = Get-TargetResource @PSBoundParameters
-
-    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
-
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.TestingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.TestingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
-    if ($Ensure -ne $result.Ensure)
+    $currentStatus = Get-TargetResource @PSBoundParameters
+
+    if ($Ensure -ne $currentStatus.Ensure)
     {
         return $false
     }
@@ -299,11 +280,9 @@ function Set-TargetResource
         $Ensure = 'Present'
     )
 
-    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
-
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.SettingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.SettingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
     if ($Ensure -ieq 'Present')
@@ -311,13 +290,28 @@ function Set-TargetResource
         # Import the certificate into the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.ImportingPfxMessage -f $Path, $certificateStore)
+                $($script:localizedData.ImportingPfxMessage -f $Path, $Location, $Store)
             ) -join '' )
+
+        # Check that the certificate PFX file exists before trying to import
+        if (-not (Test-Path -Path $Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
+                -ArgumentName 'Path'
+        }
+
+        $getCertificateStorePathParameters = @{
+            Location = $Location
+            Store = $Store
+        }
+        $certificateStore = Get-CertificateStorePath @getCertificateStorePathParameters
 
         $importPfxCertificateParameters = @{
             Exportable        = $Exportable
             CertStoreLocation = $certificateStore
             FilePath          = $Path
+            Verbose           = $VerbosePreference
         }
 
         if ($Credential)
@@ -335,19 +329,17 @@ function Set-TargetResource
             Import-PfxCertificateEx @importPfxCertificateParameters
         }
     }
-    elseif ($Ensure -ieq 'Absent')
+    else
     {
-        # Remove the certificate from the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.RemovingPfxMessage -f $Thumbprint, $certificateStore)
+                $($script:localizedData.RemovingCertficateMessage -f $Thumbprint, $Location, $Store)
             ) -join '' )
 
-        $null = Get-ChildItem -Path $certificateStore |
-            Where-Object -FilterScript {
-                $_.Thumbprint -ieq $thumbprint
-            } |
-            Remove-Item -Force
+        Remove-CertificateFromCertificateStore `
+            -Thumbprint $Thumbprint `
+            -Location $Location `
+            -Store $Store
     }
 } # end function Set-TargetResource
 
