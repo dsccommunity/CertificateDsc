@@ -3,11 +3,12 @@ Configuration MSFT_CertificateImport_Config {
 
     node localhost {
         CertificateImport Integration_Test {
-            Thumbprint = $Node.Thumbprint
-            Path       = $Node.Path
-            Location   = $Node.Location
-            Store      = $Node.Store
-            Ensure     = $Node.Ensure
+            Thumbprint   = $Node.Thumbprint
+            Path         = $Node.Path
+            Location     = $Node.Location
+            Store        = $Node.Store
+            Ensure       = $Node.Ensure
+            FriendlyName = $Node.FriendlyName
         }
     }
 }

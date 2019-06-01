@@ -184,18 +184,6 @@ try
         }
 
         Describe 'MSFT_PfxImport\Test-TargetResource' -Tag 'Test' {
-            It 'Should return a bool' {
-                Mock -CommandName Get-TargetResource {
-                    return @{
-                        Thumbprint = $validThumbprint
-                        Path       = $validPath
-                        Ensure     = 'Absent'
-                    }
-                }
-
-                Test-TargetResource @presentParams | Should -BeOfType Boolean
-            }
-
             Context 'When certificate is not in store but should be' {
                 It 'Should return false' {
                     Mock -CommandName Get-TargetResource {

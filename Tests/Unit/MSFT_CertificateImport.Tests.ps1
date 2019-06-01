@@ -36,12 +36,23 @@ try
         ) -join ''
 
         $testFile = 'test.cer'
+        $certificateFriendlyName = 'Test Certificate Friendly Name'
 
         $validPath = "TestDrive:\$testFile"
         $validCertPath = "Cert:\LocalMachine\My"
 
-        $validCertificate = @{
-            Thumbprint = $validThumbprint
+        $validCertificate_mock = {
+            @{
+                Thumbprint   = $validThumbprint
+                FriendlyName = $certificateFriendlyName
+            }
+        }
+
+        $validCertificateWithDifferentFriendlyName_mock = {
+            @{
+                Thumbprint   = $validThumbprint
+                FriendlyName = 'Different Friendly Name'
+            }
         }
 
         $testPath_parameterfilter = {
@@ -50,28 +61,45 @@ try
 
         $getCertificateFromCertificateStore_parameterfilter = {
             $Thumbprint -eq $validThumbprint -and `
-            $Location -eq 'LocalMachine' -and `
-            $Store -eq 'My'
+                $Location -eq 'LocalMachine' -and `
+                $Store -eq 'My'
         }
 
         $importCertificateEx_parameterfilter = {
             $CertStoreLocation -eq $validCertPath -and `
-            $FilePath -eq $validPath
+                $FilePath -eq $validPath
+        }
+
+        $setCertificateFriendlyNameInCertificateStore_parameterfilter = {
+            $Thumbprint -eq $validThumbprint -and `
+                $Location -eq 'LocalMachine' -and `
+                $Store -eq 'My' -and `
+                $FriendlyName -eq $certificateFriendlyName
         }
 
         $removeCertificateFromCertificateStore_parameterfilter = {
             $Location -eq 'LocalMachine' -and `
-            $Store -eq 'My' -and `
-            $Thumbprint -eq $validThumbprint
+                $Store -eq 'My' -and `
+                $Thumbprint -eq $validThumbprint
         }
 
         $presentParams = @{
-            Thumbprint = $validThumbprint
-            Path       = $validPath
-            Ensure     = 'Present'
-            Location   = 'LocalMachine'
-            Store      = 'My'
-            Verbose    = $true
+            Thumbprint   = $validThumbprint
+            Path         = $validPath
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Verbose      = $true
+        }
+
+        $presentParamsWithFriendlyName = @{
+            Thumbprint   = $validThumbprint
+            Path         = $validPath
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Verbose      = $true
+            FriendlyName = $certificateFriendlyName
         }
 
         $absentParams = @{
@@ -85,11 +113,8 @@ try
 
         Describe 'MSFT_CertificateImport\Get-TargetResource' -Tag 'Get' {
             Context 'When the certificate exists' {
-                Mock `
-                    -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith {
-                        $validCertificate
-                    }
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificate_mock
 
                 $result = Get-TargetResource @presentParams
 
@@ -101,6 +126,7 @@ try
                     $result.Thumbprint | Should -BeExactly $validThumbprint
                     $result.Path | Should -BeExactly $validPath
                     $result.Ensure | Should -BeExactly 'Present'
+                    $result.FriendlyName | Should -BeExactly $certificateFriendlyName
                 }
 
                 It 'Should call the expected mocks' {
@@ -112,8 +138,7 @@ try
             }
 
             Context 'When the certificate does not exist' {
-                Mock `
-                    -CommandName Get-CertificateFromCertificateStore
+                Mock -CommandName Get-CertificateFromCertificateStore
 
                 $result = Get-TargetResource @presentParams
 
@@ -125,6 +150,7 @@ try
                     $result.Thumbprint | Should -BeExactly $validThumbprint
                     $result.Path | Should -BeExactly $validPath
                     $result.Ensure | Should -BeExactly 'Absent'
+                    $result.FriendlyName | Should -BeNullOrEmpty
                 }
 
                 It 'Should call the expected mocks' {
@@ -137,70 +163,54 @@ try
         }
 
         Describe 'MSFT_CertificateImport\Test-TargetResource' -Tag 'Test' {
-            It 'Should return a bool' {
-                Mock -CommandName Get-TargetResource {
-                    return @{
-                        Thumbprint = $validThumbprint
-                        Path       = $validPath
-                        Ensure     = 'Absent'
-                    }
-                }
-
-                Test-TargetResource @presentParams | Should -BeOfType Boolean
-            }
-
             Context 'When certificate is not in store but should be' {
-                It 'Should return false' {
-                    Mock -CommandName Get-TargetResource {
-                        return @{
-                            Thumbprint = $validThumbprint
-                            Path       = $validPath
-                            Ensure     = 'Absent'
-                        }
-                    }
+                Mock -CommandName Get-CertificateFromCertificateStore
 
+                It 'Should return false' {
                     Test-TargetResource @presentParams | Should -Be $false
                 }
             }
 
             Context 'When certificate is not in store and should not be' {
-                It 'Should return true' {
-                    Mock -CommandName Get-TargetResource {
-                        return @{
-                            Thumbprint = $validThumbprint
-                            Path       = $validPath
-                            Ensure     = 'Absent'
-                        }
-                    }
+                Mock -CommandName Get-CertificateFromCertificateStore
 
+                It 'Should return true' {
                     Test-TargetResource @absentParams | Should -Be $true
                 }
             }
 
             Context 'When certificate is in store and should be' {
-                It 'Should return true' {
-                    Mock -CommandName Get-TargetResource {
-                        return @{
-                            Thumbprint = $validThumbprint
-                            Path       = $validPath
-                            Ensure     = 'Present'
-                        }
-                    }
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificate_mock
 
+                It 'Should return true' {
                     Test-TargetResource @presentParams | Should -Be $true
                 }
             }
 
-            Context 'When certificate is in store but should not be' {
-                It 'Should return false' {
-                    Mock -CommandName Get-TargetResource {
-                        return @{
-                            Thumbprint = $validThumbprint
-                            Path       = $validPath
-                            Ensure     = 'Present'
-                        }
-                    }
+            Context 'When certificate is in store and should be and the FriendlyName is correct' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificate_mock
 
+                It 'Should return true' {
+                    Test-TargetResource @presentParamsWithFriendlyName | Should -Be $true
+                }
+            }
+
+            Context 'When certificate is in store and should be but the Friendlyname is different' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificateWithDifferentFriendlyName_mock
+
+                It 'Should return false' {
+                    Test-TargetResource @presentParamsWithFriendlyName | Should -Be $false
+                }
+            }
+
+            Context 'When certificate is in store but should not be' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificate_mock
+
+                It 'Should return false' {
                     Test-TargetResource @absentParams | Should -Be $false
                 }
             }
@@ -211,9 +221,12 @@ try
                 Mock -CommandName Test-Path -MockWith { $true }
                 Mock -CommandName Import-CertificateEx
                 Mock -CommandName Remove-CertificateFromCertificateStore
+                Mock -CommandName Set-CertificateFriendlyNameInCertificateStore
             }
 
-            Context 'When certificate file exists and certificate should be in the store' {
+            Context 'When certificate file exists and certificate should be in the store but is not' {
+                Mock -CommandName Get-CertificateFromCertificateStore
+
                 Set-TargetResource @presentParams
 
                 It 'Should call Test-Path with the parameters supplied' {
@@ -230,12 +243,91 @@ try
                         -Exactly -Times 1
                 }
 
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
                 It 'Should not call Remove-CertificateFromCertificateStore' {
                     Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
                 }
             }
 
-            Context 'When certificate file exists and certificate should not be in the store' {
+            Context 'When certificate file exists and certificate should be in the store and is' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificate_mock
+
+                Set-TargetResource @presentParams
+
+                It 'Should call Test-Path with the parameters supplied' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should call Import-Certificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
+
+            Context 'When certificate file exists and certificate should be in the store and is and the friendly name is different' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificateWithDifferentFriendlyName_mock
+
+                Set-TargetResource @presentParamsWithFriendlyName
+
+                It 'Should call Test-Path with the parameters supplied' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should call Import-Certificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
+                }
+
+                It 'Should call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled `
+                        -CommandName Set-CertificateFriendlyNameInCertificateStore `
+                        -ParameterFilter $setCertificateFriendlyNameInCertificateStore_parameterfilter `
+                        -Exactly -Times 1
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
+
+            Context 'When certificate file exists and certificate should be in the store and is and the friendly name is the same' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificate_mock
+
+                Set-TargetResource @presentParamsWithFriendlyName
+
+                It 'Should call Test-Path with the parameters supplied' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should call Import-Certificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
+                }
+
+                It 'Should call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
+
+            Context 'When certificate file exists and certificate should not be in the store but is' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificate_mock
+
                 Set-TargetResource @absentParams
 
                 It 'Should call Test-Path with the parameters supplied' {
@@ -243,6 +335,27 @@ try
                         -CommandName Test-Path `
                         -ParameterFilter $testPath_parameterfilter `
                         -Exactly -Times 0
+                }
+
+                It 'Should not call Import-CertificateEx' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled `
+                        -CommandName Remove-CertificateFromCertificateStore `
+                        -ParameterFilter $removeCertificateFromCertificateStore_parameterfilter `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'When certificate file exists and certificate should not be in the store and is not' {
+                Mock -CommandName Get-CertificateFromCertificateStore
+
+                Set-TargetResource @absentParams
+
+                It 'Should call Test-Path with the parameters supplied' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-CertificateEx' {
@@ -278,10 +391,7 @@ try
                 }
 
                 It 'Should not call Remove-CertificateFromCertificateStore' {
-                    Assert-MockCalled `
-                        -CommandName Remove-CertificateFromCertificateStore `
-                        -ParameterFilter $removeCertificateFromCertificateStore_parameterfilter `
-                        -Exactly -Times 0
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
                 }
             }
         }
