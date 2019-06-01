@@ -229,14 +229,14 @@ try
 
                 Set-TargetResource @presentParams
 
-                It 'Should call Test-Path with the parameters supplied' {
+                It 'Should call Test-Path with expected parameters' {
                     Assert-MockCalled `
                         -CommandName Test-Path `
                         -ParameterFilter $testPath_parameterfilter `
                         -Exactly -Times 1
                 }
 
-                It 'Should call Import-Certificate with the parameters supplied' {
+                It 'Should call Import-Certificate with expected parameters' {
                     Assert-MockCalled `
                         -CommandName Import-CertificateEx `
                         -ParameterFilter $importCertificateEx_parameterfilter `
@@ -258,11 +258,11 @@ try
 
                 Set-TargetResource @presentParams
 
-                It 'Should call Test-Path with the parameters supplied' {
+                It 'Should not call Test-Path' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should call Import-Certificate with the parameters supplied' {
+                It 'Should not call Import-Certificate' {
                     Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
@@ -281,15 +281,15 @@ try
 
                 Set-TargetResource @presentParamsWithFriendlyName
 
-                It 'Should call Test-Path with the parameters supplied' {
+                It 'Should not call Test-Path with the parameters supplied' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should call Import-Certificate with the parameters supplied' {
+                It 'Should not call Import-Certificate with the parameters supplied' {
                     Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
-                It 'Should call Set-CertificateFriendlyNameInCertificateStore' {
+                It 'Should call Set-CertificateFriendlyNameInCertificateStore with expected parameters' {
                     Assert-MockCalled `
                         -CommandName Set-CertificateFriendlyNameInCertificateStore `
                         -ParameterFilter $setCertificateFriendlyNameInCertificateStore_parameterfilter `
@@ -307,15 +307,15 @@ try
 
                 Set-TargetResource @presentParamsWithFriendlyName
 
-                It 'Should call Test-Path with the parameters supplied' {
+                It 'Should not call Test-Path with the parameters supplied' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should call Import-Certificate with the parameters supplied' {
+                It 'Should not call Import-Certificate with the parameters supplied' {
                     Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
-                It 'Should call Set-CertificateFriendlyNameInCertificateStore' {
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
                     Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
                 }
 
@@ -330,18 +330,19 @@ try
 
                 Set-TargetResource @absentParams
 
-                It 'Should call Test-Path with the parameters supplied' {
-                    Assert-MockCalled `
-                        -CommandName Test-Path `
-                        -ParameterFilter $testPath_parameterfilter `
-                        -Exactly -Times 0
+                It 'Should not call Test-Path' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-CertificateEx' {
                     Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
-                It 'Should not call Remove-CertificateFromCertificateStore' {
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should call Remove-CertificateFromCertificateStore with expected parameters' {
                     Assert-MockCalled `
                         -CommandName Remove-CertificateFromCertificateStore `
                         -ParameterFilter $removeCertificateFromCertificateStore_parameterfilter `
@@ -354,12 +355,16 @@ try
 
                 Set-TargetResource @absentParams
 
-                It 'Should call Test-Path with the parameters supplied' {
+                It 'Should not call Test-Path' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-CertificateEx' {
                     Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
                 }
 
                 It 'Should not call Remove-CertificateFromCertificateStore' {
@@ -370,7 +375,7 @@ try
                 }
             }
 
-            Context 'When certificate file does not exists and certificate should be in the store' {
+            Context 'When certificate file does not exist and certificate should be in the store' {
                 Mock -CommandName Test-Path -MockWith { $false }
 
                 It 'Should throw exception' {
@@ -388,6 +393,10 @@ try
 
                 It 'Should not call Import-CertificateEx' {
                     Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
                 }
 
                 It 'Should not call Remove-CertificateFromCertificateStore' {

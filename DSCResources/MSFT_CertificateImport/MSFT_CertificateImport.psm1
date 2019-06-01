@@ -19,6 +19,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateImport'
 
     .PARAMETER Path
     The path to the CER file you want to import.
+    This parameter is ignored.
 
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
@@ -28,9 +29,11 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateImport'
 
     .PARAMETER Ensure
     Specifies whether the certificate should be present or absent.
+    This parameter is ignored.
 
     .PARAMETER FriendlyName
     The friendly name of the certificate to set in the Windows Certificate Store.
+    This parameter is ignored.
 #>
 function Get-TargetResource
 {
@@ -156,9 +159,9 @@ function Test-TargetResource
     )
 
     Write-Verbose -Message ( @(
-        "$($MyInvocation.MyCommand): "
-        $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
-    ) -join '' )
+            "$($MyInvocation.MyCommand): "
+            $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
+        ) -join '' )
 
     $currentState = Get-TargetResource @PSBoundParameters
 
@@ -168,8 +171,8 @@ function Test-TargetResource
     }
 
     if ($PSBoundParameters.ContainsKey('FriendlyName') `
-        -and $Ensure -eq 'Present' `
-        -and $currentState.FriendlyName -ne $FriendlyName)
+            -and $Ensure -eq 'Present' `
+            -and $currentState.FriendlyName -ne $FriendlyName)
     {
         # The friendly name of the certificate does not match
         return $false
@@ -262,7 +265,7 @@ function Set-TargetResource
 
             $getCertificateStorePathParameters = @{
                 Location = $Location
-                Store = $Store
+                Store    = $Store
             }
             $certificateStore = Get-CertificateStorePath @getCertificateStorePathParameters
 
@@ -280,16 +283,19 @@ function Set-TargetResource
         }
 
         if ($PSBoundParameters.ContainsKey('FriendlyName') `
-            -and $currentState.FriendlyName -ne $FriendlyName)
+                -and $currentState.FriendlyName -ne $FriendlyName)
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
                     $($script:localizedData.SettingCertficateFriendlyNameMessage -f $Path, $Location, $Store, $FriendlyName)
                 ) -join '' )
 
-            $setCertificateFriendlyNameInCertificateStoreParameters = @{} + $PSBoundParameters
-            $null = $setCertificateFriendlyNameInCertificateStoreParameters.Remove('Path')
-            $null = $setCertificateFriendlyNameInCertificateStoreParameters.Remove('Ensure')
+            $setCertificateFriendlyNameInCertificateStoreParameters = @{
+                Thumbprint   = $Thumbprint
+                Location     = $Location
+                Store        = $Store
+                FriendlyName = $FriendlyName
+            }
 
             Set-CertificateFriendlyNameInCertificateStore @setCertificateFriendlyNameInCertificateStoreParameters
         }

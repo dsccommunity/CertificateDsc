@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 1.0.0
-.GUID f35aa0ac-1b22-4309-89aa-05618419e7b9
+.GUID e6ffca90-8b17-416e-a5ee-c78d4622329f
 .AUTHOR Microsoft Corporation
 .COMPANYNAME Microsoft Corporation
 .COPYRIGHT
@@ -19,22 +19,31 @@
 
 <#
     .DESCRIPTION
-        Import public key certificate into Trusted Root store and
-        set the Fiendly Name to 'Contoso Root CA'.
+        Import a PFX into the 'My' Local Machine certificate store and
+        set the Fiendly Name to 'Web Site Certificate'.
 #>
-Configuration CertificateImport_FriendlyName_Config
+Configuration PfxImport_FriendlyName_Config
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.PSCredential]
+        $Credential
+    )
+
     Import-DscResource -ModuleName CertificateDsc
 
     Node localhost
     {
-        CertificateImport MyTrustedRoot
+        PfxImport CompanyCert
         {
             Thumbprint   = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
+            Path         = '\\Server\Share\Certificates\CompanyCert.pfx'
             Location     = 'LocalMachine'
-            Store        = 'Root'
-            Path         = '\\Server\Share\Certificates\MyTrustedRoot.cer'
-            FriendlyName = 'Contoso Root CA'
+            Store        = 'My'
+            Credential   = $Credential
+            FriendlyName = 'Web Site Certificate'
         }
     }
 }

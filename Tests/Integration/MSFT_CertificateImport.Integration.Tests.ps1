@@ -103,9 +103,9 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
-                $certificateNew.Thumbprint | Should -Be $certificate.Thumbprint
-                $certificateNew.Subject | Should -Be $certificate.Subject
-                $certificateNew.FriendlyName | Should -Be $certificateFriendlyName
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
             }
         }
 

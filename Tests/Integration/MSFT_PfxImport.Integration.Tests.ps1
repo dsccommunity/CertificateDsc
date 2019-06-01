@@ -64,6 +64,8 @@ try
                 -Path $certificate.PSPath `
                 -Force
 
+            $certificateFriendlyName = 'Test Certificate Friendly Name'
+
             $configDataForAdd = @{
                 AllNodes = @(
                     @{
@@ -74,6 +76,7 @@ try
                         Ensure                      = 'Present'
                         Path                        = $pfxPath
                         Credential                  = $testCredential
+                        FriendlyName                = $certificateFriendlyName
                         PSDscAllowPlainTextPassword = $true
                     }
                 )
@@ -134,10 +137,11 @@ try
                 # Get the Certificate details
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
-                $certificateNew               | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
                 $certificateNew.HasPrivateKey | Should -Be $true
-                $certificateNew.Thumbprint    | Should -Be $certificate.Thumbprint
-                $certificateNew.Subject       | Should -Be $certificate.Subject
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
             }
         }
 
@@ -176,10 +180,11 @@ try
                 # Get the Certificate details
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
-                $certificateNew               | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
                 $certificateNew.HasPrivateKey | Should -BeTrue
-                $certificateNew.Thumbprint    | Should -Be $certificate.Thumbprint
-                $certificateNew.Subject       | Should -Be $certificate.Subject
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
             }
         }
 
@@ -212,10 +217,11 @@ try
                 # Get the Certificate details
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
-                $certificateNew                             | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
-                $certificateNew.HasPrivateKey               | Should -BeTrue
-                $certificateNew.Thumbprint                  | Should -Be $certificate.Thumbprint
-                $certificateNew.Subject                     | Should -Be $certificate.Subject
+                $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.HasPrivateKey | Should -BeTrue
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
             }
         }
 

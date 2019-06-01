@@ -9,6 +9,7 @@ Configuration MSFT_PfxImport_Add_Config {
             Store        = $Node.Store
             Ensure       = $Node.Ensure
             Credential   = $Node.Credential
+            FriendlyName = $Node.FriendlyName
         }
     }
 }
