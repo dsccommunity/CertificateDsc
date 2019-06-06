@@ -142,17 +142,21 @@ try
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithPrivateKey_mock
 
-                $result = Get-TargetResource @presentParams
+                It 'Should not throw exception' {
+                    {
+                        $script:result = Get-TargetResource @presentParams
+                    } | Should -Not -Throw
+                }
 
                 It 'Should return a hashtable' {
-                    $result | Should -BeOfType System.Collections.Hashtable
+                    $script:result | Should -BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values' {
-                    $result.Thumbprint | Should -BeExactly $validThumbprint
-                    $result.Path | Should -BeExactly $validPath
-                    $result.Ensure | Should -BeExactly 'Present'
-                    $result.FriendlyName | Should -BeExactly $certificateFriendlyName
+                    $script:result.Thumbprint | Should -BeExactly $validThumbprint
+                    $script:result.Path | Should -BeExactly $validPath
+                    $script:result.Ensure | Should -BeExactly 'Present'
+                    $script:result.FriendlyName | Should -BeExactly $certificateFriendlyName
                 }
 
                 It 'Should call the expected mocks' {
@@ -167,17 +171,21 @@ try
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithoutPrivateKey_mock
 
-                $result = Get-TargetResource @presentParams
+                It 'Should not throw exception' {
+                    {
+                        $script:result = Get-TargetResource @presentParams
+                    } | Should -Not -Throw
+                }
 
                 It 'Should return a hashtable' {
-                    $result | Should -BeOfType System.Collections.Hashtable
+                    $script:result | Should -BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values' {
-                    $result.Thumbprint | Should -BeExactly $validThumbprint
-                    $result.Path | Should -BeExactly $validPath
-                    $result.Ensure | Should -BeExactly 'Absent'
-                    $result.FriendlyName | Should -BeExactly $certificateFriendlyName
+                    $script:result.Thumbprint | Should -BeExactly $validThumbprint
+                    $script:result.Path | Should -BeExactly $validPath
+                    $script:result.Ensure | Should -BeExactly 'Absent'
+                    $script:result.FriendlyName | Should -BeExactly $certificateFriendlyName
                 }
 
                 It 'Should call the expected mocks' {
@@ -191,17 +199,21 @@ try
             Context 'When the certificate does not exist' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
-                $result = Get-TargetResource @presentParams
+                It 'Should not throw exception' {
+                    {
+                        $script:result = Get-TargetResource @presentParams
+                    } | Should -Not -Throw
+                }
 
                 It 'Should return a hashtable' {
-                    $result | Should -BeOfType System.Collections.Hashtable
+                    $script:result | Should -BeOfType System.Collections.Hashtable
                 }
 
                 It 'Should contain the input values' {
-                    $result.Thumbprint | Should -BeExactly $validThumbprint
-                    $result.Path | Should -BeExactly $validPath
-                    $result.Ensure | Should -BeExactly 'Absent'
-                    $result.FriendlyName | Should -BeNullOrEmpty
+                    $script:result.Thumbprint | Should -BeExactly $validThumbprint
+                    $script:result.Path | Should -BeExactly $validPath
+                    $script:result.Ensure | Should -BeExactly 'Absent'
+                    $script:result.FriendlyName | Should -BeNullOrEmpty
                 }
 
                 It 'Should call the expected mocks' {
@@ -278,7 +290,11 @@ try
             Context 'When PFX file exists and certificate should be in the store but is not' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
-                Set-TargetResource @presentParams
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParams
+                    } | Should -Not -Throw
+                }
 
                 It 'Should call Test-Path with expected parameters' {
                     Assert-MockCalled `
@@ -307,7 +323,11 @@ try
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithPrivateKey_mock
 
-                Set-TargetResource @presentParams
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParams
+                    } | Should -Not -Throw
+                }
 
                 It 'Should not call Test-Path with expected parameters' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
@@ -330,7 +350,11 @@ try
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithDifferentFriendlyName_mock
 
-                Set-TargetResource @presentParamsWithFriendlyName
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParamsWithFriendlyName
+                    } | Should -Not -Throw
+                }
 
                 It 'Should not call Test-Path with the parameters supplied' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
@@ -356,7 +380,11 @@ try
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithPrivateKey_mock
 
-                Set-TargetResource @presentParamsWithFriendlyName
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParamsWithFriendlyName
+                    } | Should -Not -Throw
+                }
 
                 It 'Should not call Test-Path with the parameters supplied' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
@@ -380,7 +408,11 @@ try
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithPrivateKey_mock
 
-                Set-TargetResource @absentParams
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @absentParams
+                    } | Should -Not -Throw
+                }
 
                 It 'Should not call Test-Path' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
@@ -405,7 +437,11 @@ try
             Context 'When PFX file exists and certificate should not be in the store and is not' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
-                Set-TargetResource @absentParams
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @absentParams
+                    } | Should -Not -Throw
+                }
 
                 It 'Should not call Test-Path' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
@@ -419,7 +455,7 @@ try
                     Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
                 }
 
-                It 'Should not call Remove-CertificateFromCertificateStore' {
+                It 'Should call Remove-CertificateFromCertificateStore' {
                     Assert-MockCalled `
                         -CommandName Remove-CertificateFromCertificateStore `
                         -ParameterFilter $removeCertificateFromCertificateStore_parameterfilter `

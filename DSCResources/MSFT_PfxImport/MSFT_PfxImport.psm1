@@ -235,8 +235,12 @@ function Test-TargetResource
             -and $Ensure -eq 'Present' `
             -and $currentState.FriendlyName -ne $FriendlyName)
     {
-        Write-Verbose -Message 'OH NOW' -Verbose
         # The friendly name of the certificate does not match
+        Write-Verbose -Message ( @(
+            "$($MyInvocation.MyCommand): "
+            $($script:localizedData.CertificateFriendlyNameMismatchMessage -f $Thumbprint, $Location, $Store, $CurrentState.FriendlyName, $FriendlyName)
+        ) -join '' )
+
         return $false
     }
 
