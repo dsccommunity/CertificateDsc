@@ -26,6 +26,12 @@
     `CertificateImport` resource.
   - Resource will now only throw an exception if the certificate file does
     not exist and it needs to be imported.
+- CertificateImport:
+  - Added `FriendlyName` parameter to allow setting the certificate friendly
+    name of the imported certificate - fixes [Issue #194](https://github.com/PowerShell/CertificateDsc/issues/194).
+- CertificatePfx:
+  - Added `FriendlyName` parameter to allow setting the certificate friendly
+    name of the imported certificate - fixes [Issue #194](https://github.com/PowerShell/CertificateDsc/issues/194).
 
 ## 4.6.0.0
 

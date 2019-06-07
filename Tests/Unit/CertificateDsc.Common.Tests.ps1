@@ -2150,4 +2150,57 @@ Minor Version Number=5
             }
         }
     }
+
+    Describe 'CertificateDsc.Common\Set-CertificateFriendlyNameInCertificateStore' {
+        Context 'When the certificate exists in the store' {
+            Mock -CommandName Test-Path -MockWith { $true }
+            Mock -CommandName Get-ChildItem -MockWith {
+                @(
+                    [PSCustomObject] @{
+                        PSPath = 'Microsoft.PowerShell.Security\Certificate::LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                        FriendlyName = 'Nothing'
+                    }
+                )
+            }
+
+            It 'Should not throw exception' {
+                {
+                    Set-CertificateFriendlyNameInCertificateStore `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore' `
+                        -FriendlyName 'New Name' `
+                        -Verbose
+                } | Should -Not -Throw
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
+                    $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                } -Exactly -Times 1
+            }
+        }
+
+        Context 'When the certificate does not exist in the store' {
+            Mock -CommandName Test-Path -MockWith { $true }
+            Mock -CommandName Get-ChildItem
+
+            It 'Should not throw exception' {
+                {
+                    Set-CertificateFriendlyNameInCertificateStore `
+                        -Thumbprint '627b268587e95099e72aab831a81f887d7a20578' `
+                        -Location 'LocalMachine' `
+                        -Store 'TestStore' `
+                        -FriendlyName 'New Name' `
+                        -Verbose
+                } | Should -Not -Throw
+            }
+
+            It 'Should call expected mocks' {
+                Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
+                    $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
+                } -Exactly -Times 1
+            }
+        }
+    }
 }

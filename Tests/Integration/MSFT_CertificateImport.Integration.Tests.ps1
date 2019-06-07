@@ -44,6 +44,7 @@ try
             $null = Remove-Item `
                 -Path $certificate.PSPath `
                 -Force
+            $certificateFriendlyName = 'Test Certificate Friendly Name'
         }
 
         AfterAll {
@@ -62,12 +63,13 @@ try
             $configData = @{
                 AllNodes = @(
                     @{
-                        NodeName   = 'localhost'
-                        Thumbprint = $certificate.Thumbprint
-                        Location   = 'LocalMachine'
-                        Store      = 'My'
-                        Ensure     = 'Present'
-                        Path       = $certificatePath
+                        NodeName     = 'localhost'
+                        Thumbprint   = $certificate.Thumbprint
+                        Location     = 'LocalMachine'
+                        Store        = 'My'
+                        Ensure       = 'Present'
+                        Path         = $certificatePath
+                        FriendlyName = $certificateFriendlyName
                     }
                 )
             }
@@ -101,8 +103,9 @@ try
                 $certificateNew = Get-Item `
                     -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
                 $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
-                $certificateNew.Thumbprint | Should -Be $certificate.Thumbprint
-                $certificateNew.Subject | Should -Be $certificate.Subject
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
             }
         }
 
@@ -110,12 +113,13 @@ try
             $configData = @{
                 AllNodes = @(
                     @{
-                        NodeName   = 'localhost'
-                        Thumbprint = $certificate.Thumbprint
-                        Location   = 'LocalMachine'
-                        Store      = 'My'
-                        Ensure     = 'Absent'
-                        Path       = $certificatePath
+                        NodeName     = 'localhost'
+                        Thumbprint   = $certificate.Thumbprint
+                        Location     = 'LocalMachine'
+                        Store        = 'My'
+                        Ensure       = 'Absent'
+                        Path         = $certificatePath
+                        FriendlyName = $certificateFriendlyName
                     }
                 )
             }

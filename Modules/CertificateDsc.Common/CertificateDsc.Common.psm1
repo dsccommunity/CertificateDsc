@@ -1634,6 +1634,59 @@ function Remove-CertificateFromCertificateStore
     }
 }
 
+<#
+    .SYNOPSIS
+    This function sets the friendly name of a certificate in the
+    Windows Certificate Store.
+
+    .PARAMETER Thumbprint
+    The Thumbprint of the certificates to set the friendly name of.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+
+    .PARAMETER FriendlyName
+    The Friendly Name to set for the certificate.
+#>
+function Set-CertificateFriendlyNameInCertificateStore
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
+    )
+
+    $null = $PSBoundParameters.Remove('FriendlyName')
+
+    $certificate = Get-CertificateFromCertificateStore @PSBoundParameters
+
+    if ($null -ne $certificate)
+    {
+        $certificate.FriendlyName = $FriendlyName
+    }
+}
+
 $script:localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.Common' -ScriptRoot $PSScriptRoot
 
 Export-ModuleMember -Function @(
@@ -1664,5 +1717,6 @@ Export-ModuleMember -Function @(
     'Get-CertificateStorePath',
     'Get-CertificatePath',
     'Get-CertificateFromCertificateStore',
-    'Remove-CertificateFromCertificateStore'
+    'Remove-CertificateFromCertificateStore',
+    'Set-CertificateFriendlyNameInCertificateStore'
 )

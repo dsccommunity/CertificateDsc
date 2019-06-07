@@ -19,6 +19,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateImport'
 
     .PARAMETER Path
     The path to the CER file you want to import.
+    This parameter is ignored.
 
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
@@ -28,6 +29,11 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateImport'
 
     .PARAMETER Ensure
     Specifies whether the certificate should be present or absent.
+    This parameter is ignored.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to set in the Windows Certificate Store.
+    This parameter is ignored.
 #>
 function Get-TargetResource
 {
@@ -57,7 +63,12 @@ function Get-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
     )
 
     Write-Verbose -Message ( @(
@@ -80,11 +91,12 @@ function Get-TargetResource
     }
 
     return @{
-        Thumbprint = $Thumbprint
-        Path       = $Path
-        Location   = $Location
-        Store      = $Store
-        Ensure     = $Ensure
+        Thumbprint   = $Thumbprint
+        Path         = $Path
+        Location     = $Location
+        Store        = $Store
+        Ensure       = $Ensure
+        FriendlyName = $certificate.FriendlyName
     }
 } # end function Get-TargetResource
 
@@ -106,6 +118,9 @@ function Get-TargetResource
 
     .PARAMETER Ensure
     Specifies whether the certificate should be present or absent.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Test-TargetResource
 {
@@ -135,18 +150,36 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
     )
 
     Write-Verbose -Message ( @(
-        "$($MyInvocation.MyCommand): "
-        $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
-    ) -join '' )
+            "$($MyInvocation.MyCommand): "
+            $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
+        ) -join '' )
 
     $currentState = Get-TargetResource @PSBoundParameters
 
     if ($Ensure -ne $currentState.Ensure)
     {
+        return $false
+    }
+
+    if ($PSBoundParameters.ContainsKey('FriendlyName') `
+            -and $Ensure -eq 'Present' `
+            -and $currentState.FriendlyName -ne $FriendlyName)
+    {
+        # The friendly name of the certificate does not match
+        Write-Verbose -Message ( @(
+            "$($MyInvocation.MyCommand): "
+            $($script:localizedData.CertificateFriendlyNameMismatchMessage -f $Thumbprint, $Location, $Store, $CurrentState.FriendlyName, $FriendlyName)
+        ) -join '' )
+
         return $false
     }
 
@@ -171,6 +204,9 @@ function Test-TargetResource
 
     .PARAMETER Ensure
     Specifies whether the certificate should be present or absent.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Set-TargetResource
 {
@@ -199,7 +235,12 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
     )
 
     Write-Verbose -Message ( @(
@@ -209,37 +250,60 @@ function Set-TargetResource
 
     if ($Ensure -ieq 'Present')
     {
-        # Import the certificate into the Store
-        Write-Verbose -Message ( @(
-                "$($MyInvocation.MyCommand): "
-                $($script:localizedData.ImportingCertficateMessage -f $Path, $Location, $Store)
-            ) -join '' )
+        $currentState = Get-TargetResource @PSBoundParameters
 
-        # Check that the certificate file exists before trying to import
-        if (-not (Test-Path -Path $Path))
+        if ($currentState.Ensure -eq 'Absent')
         {
-            New-InvalidArgumentException `
-                -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
-                -ArgumentName 'Path'
+            # Import the certificate into the Store
+            Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.ImportingCertficateMessage -f $Path, $Location, $Store)
+                ) -join '' )
+
+            # Check that the certificate file exists before trying to import
+            if (-not (Test-Path -Path $Path))
+            {
+                New-InvalidArgumentException `
+                    -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
+                    -ArgumentName 'Path'
+            }
+
+            $getCertificateStorePathParameters = @{
+                Location = $Location
+                Store    = $Store
+            }
+            $certificateStore = Get-CertificateStorePath @getCertificateStorePathParameters
+
+            $importCertificateParameters = @{
+                CertStoreLocation = $certificateStore
+                FilePath          = $Path
+                Verbose           = $VerbosePreference
+            }
+
+            <#
+                Using Import-CertificateEx instead of Import-Certificate due to the following issue:
+                https://github.com/PowerShell/CertificateDsc/issues/161
+            #>
+            Import-CertificateEx @importCertificateParameters
         }
 
-        $getCertificateStorePathParameters = @{
-            Location = $Location
-            Store = $Store
-        }
-        $certificateStore = Get-CertificateStorePath @getCertificateStorePathParameters
+        if ($PSBoundParameters.ContainsKey('FriendlyName') `
+                -and $currentState.FriendlyName -ne $FriendlyName)
+        {
+            Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.SettingCertficateFriendlyNameMessage -f $Path, $Location, $Store, $FriendlyName)
+                ) -join '' )
 
-        $importCertificateParameters = @{
-            CertStoreLocation = $certificateStore
-            FilePath          = $Path
-            Verbose           = $VerbosePreference
-        }
+            $setCertificateFriendlyNameInCertificateStoreParameters = @{
+                Thumbprint   = $Thumbprint
+                Location     = $Location
+                Store        = $Store
+                FriendlyName = $FriendlyName
+            }
 
-        <#
-            Using Import-CertificateEx instead of Import-Certificate due to the following issue:
-            https://github.com/PowerShell/CertificateDsc/issues/161
-        #>
-        Import-CertificateEx @importCertificateParameters
+            Set-CertificateFriendlyNameInCertificateStore @setCertificateFriendlyNameInCertificateStoreParameters
+        }
     }
     else
     {
