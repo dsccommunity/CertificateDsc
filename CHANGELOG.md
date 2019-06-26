@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.7.0.0
+
 - Opted into Common Tests 'Common Tests - Validate Localization' -
   fixes [Issue #195](https://github.com/PowerShell/CertificateDsc/issues/195).
 - Combined all `CertificateDsc.ResourceHelper` module functions into

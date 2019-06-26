@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    moduleVersion = '4.6.0.0'
+    moduleVersion = '4.7.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '1b8d785e-79ae-4d95-ae58-b2460aec1031'
@@ -53,21 +53,36 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-        ReleaseNotes = '- CertReq:
-  - Added `Compare-CertificateIssuer` function to checks if the
-    Certificate Issuer matches the CA Root Name.
-  - Changed `Compare-CertificateSubject` function to return false
-    if `ReferenceSubject` is null.
-  - Fixed exception when Certificate with empty Subject exists in
-    Certificate Store - fixes [Issue 190](https://github.com/PowerShell/CertificateDsc/issues/190).
-  - Fixed bug matching existing certificate when Subject Alternate
-    Name is specified and machine language is not en-US - fixes
-    [Issue 193](https://github.com/PowerShell/CertificateDsc/issues/193).
-  - Fixed bug matching existing certificate when Template Name
-    is specified and machine language is not en-US - fixes
-    [Issue 193](https://github.com/PowerShell/CertificateDsc/issues/193).
-  - Changed `Import-CertificateEx` function to use `X509Certificate2Collection`
-    instead of `X509Certificate2` to support importing certificate chains
+        ReleaseNotes = '- Opted into Common Tests "Common Tests - Validate Localization" -
+  fixes [Issue 195](https://github.com/PowerShell/CertificateDsc/issues/195).
+- Combined all `CertificateDsc.ResourceHelper` module functions into
+  `CertificateDsc.Common` module and renamed to `CertificateDsc.CommonHelper`
+  module.
+- CertReq:
+  - Fix error when ProviderName parameter is not encapsulated in
+    double quotes - fixes [Issue 185](https://github.com/PowerShell/CertificateDsc/issues/185).
+- Refactor integration tests to update to latest standards.
+- Refactor unit tests to update to latest standards.
+- CertificateImport:
+  - Refactor to use common functions and share more code with `PfxImport`
+    resource.
+  - Resource will now only throw an exception if the PFX file does not exist
+    and it needs to be imported.
+  - Removed file existence check from `Path` parameter to enable the resource
+    to remove a certificate from the store without the need to have the
+    access to the certificate file.
+  - Removed ShouldProcess because it is not required by DSC Resources.
+- CertificatePfx:
+  - Refactor to use common functions and share more code with
+    `CertificateImport` resource.
+  - Resource will now only throw an exception if the certificate file does
+    not exist and it needs to be imported.
+- CertificateImport:
+  - Added `FriendlyName` parameter to allow setting the certificate friendly
+    name of the imported certificate - fixes [Issue 194](https://github.com/PowerShell/CertificateDsc/issues/194).
+- CertificatePfx:
+  - Added `FriendlyName` parameter to allow setting the certificate friendly
+    name of the imported certificate - fixes [Issue 194](https://github.com/PowerShell/CertificateDsc/issues/194).
 
 '
 
@@ -76,6 +91,7 @@
     } # End of PrivateData hashtable
 
 }
+
 
 
 
