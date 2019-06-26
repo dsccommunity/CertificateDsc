@@ -1,33 +1,33 @@
-$script:DSCModuleName      = 'CertificateDsc'
-$script:DSCResourceName    = 'MSFT_CertificateExport'
-
 #region HEADER
-# Integration Test Template Version: 1.1.0
-[System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$script:dscModuleName = 'CertificateDsc'
+$script:dscResourceName = 'MSFT_CertificateExport'
+
+# Unit Test Template Version: 1.2.4
+$script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
 }
 
-Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
+
 $TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:DSCModuleName `
-    -DSCResourceName $script:DSCResourceName `
+    -DSCModuleName $script:dscModuleName `
+    -DSCResourceName $script:dscResourceName `
+    -ResourceType 'Mof' `
     -TestType Unit
-#endregion
+#endregion HEADER
 
 # Begin Testing
 try
 {
-    InModuleScope $script:DSCResourceName {
-        $DSCResourceName = 'MSFT_CertificateExport'
-
+    InModuleScope $script:dscResourceName {
         $certificatePath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.cer'
         $pfxPath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.pfx'
         $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
-        $certificateKeyUsage = @('DigitalSignature','DataEncipherment')
-        $certificateEKU = @('Server Authentication','Client authentication')
+        $certificateKeyUsage = @('DigitalSignature', 'DataEncipherment')
+        $certificateEKU = @('Server Authentication', 'Client authentication')
         $certificateSubject = 'CN=contoso, DC=com'
         $certificateFriendlyName = 'Contoso Test Cert'
         $certificateThumbprint = '1111111111111111111111111111111111111111'
@@ -35,23 +35,23 @@ try
         $certificateStore = 'My'
 
         $validCertificate = New-Object -TypeName PSObject -Property @{
-            Thumbprint   = $certificateThumbprint
-            Subject      = "CN=$certificateSubject"
-            Issuer       = "CN=$certificateSubject"
-            FriendlyName = $certificateFriendlyName
-            DnsNameList  = @(
+            Thumbprint        = $certificateThumbprint
+            Subject           = "CN=$certificateSubject"
+            Issuer            = "CN=$certificateSubject"
+            FriendlyName      = $certificateFriendlyName
+            DnsNameList       = @(
                 @{ Unicode = $certificateDNSNames[0] }
                 @{ Unicode = $certificateDNSNames[1] }
             )
-            Extensions   = @(
+            Extensions        = @(
                 @{ EnhancedKeyUsages = ($certificateKeyUsage -join ', ') }
             )
             EnhancedKeyUsages = @(
                 @{ FriendlyName = $certificateEKU[0] }
                 @{ FriendlyName = $certificateEKU[1] }
             )
-            NotBefore    = (Get-Date).AddDays(-30) # Issued on
-            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            NotBefore         = (Get-Date).AddDays(-30) # Issued on
+            NotAfter          = (Get-Date).AddDays(31) # Expires after
         }
 
         $validCertificateParameters = @{
@@ -69,16 +69,16 @@ try
             Type             = 'Cert'
         }
 
-        $validCertificateNotFoundParameters = @{} + $validCertificateParameters
+        $validCertificateNotFoundParameters = @{ } + $validCertificateParameters
         $validCertificateNotFoundParameters.Thumbprint = $certificateNotFoundThumbprint
 
-        $validCertificateMatchSourceParameters = @{} + $validCertificateParameters
+        $validCertificateMatchSourceParameters = @{ } + $validCertificateParameters
         $validCertificateMatchSourceParameters.MatchSource = $true
 
         $pfxPlainTextPassword = 'P@ssword!1'
         $pfxPassword = ConvertTo-SecureString -String $pfxPlainTextPassword -AsPlainText -Force
         $pfxCredential = New-Object -TypeName System.Management.Automation.PSCredential `
-            -ArgumentList ('Dummy',$pfxPassword)
+            -ArgumentList ('Dummy', $pfxPassword)
 
         $validPfxParameters = @{
             Path             = $PfxPath
@@ -97,7 +97,7 @@ try
             Type             = 'PFX'
         }
 
-        $validPfxMatchSourceParameters = @{} + $validPfxParameters
+        $validPfxMatchSourceParameters = @{ } + $validPfxParameters
         $validPfxMatchSourceParameters.MatchSource = $true
 
         # This is so we can mock the Import method in Set-TargetResource
@@ -110,7 +110,7 @@ try
             Import($Path)
             {
             }
-            Import($Path,$Password,$Flags)
+            Import($Path, $Password, $Flags)
             {
             }
         }
@@ -124,7 +124,7 @@ try
             Import($Path)
             {
             }
-            Import($Path,$Password,$Flags)
+            Import($Path, $Password, $Flags)
             {
             }
         }
@@ -136,7 +136,7 @@ try
         $mockExportCertificate = {
             if ($FilePath -ne $certificatePath)
             {
-                throw 'Expected mock to be called with {0}, but was {1}' -f $certificatePath,$FilePath
+                throw 'Expected mock to be called with {0}, but was {1}' -f $certificatePath, $FilePath
             }
         }
 
@@ -144,7 +144,7 @@ try
         $mockExportPfxCertificate = {
             if ($FilePath -ne $pfxPath)
             {
-                throw 'Expected mock to be called with {0}, but was {1}' -f $pfxPath,$FilePath
+                throw 'Expected mock to be called with {0}, but was {1}' -f $pfxPath, $FilePath
             }
         }
 
@@ -156,7 +156,7 @@ try
             }
         }
 
-        Describe "$DSCResourceName\Get-TargetResource" {
+        Describe 'MSFT_CertificateExport\Get-TargetResource' -Tag 'Get' {
             Context 'Certificate has been exported' {
                 Mock `
                     -CommandName Test-Path `
@@ -190,7 +190,7 @@ try
             }
         }
 
-        Describe "$DSCResourceName\Set-TargetResource" {
+        Describe 'MSFT_CertificateExport\Set-TargetResource' -Tag 'Set' {
             BeforeEach {
                 Mock `
                     -CommandName Find-Certificate `
@@ -283,7 +283,7 @@ try
             }
         }
 
-        Describe "$DSCResourceName\Test-TargetResource" {
+        Describe 'MSFT_CertificateExport\Test-TargetResource' -Tag 'Test' {
             BeforeEach {
                 Mock `
                     -CommandName Find-Certificate `

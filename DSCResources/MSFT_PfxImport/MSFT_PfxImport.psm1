@@ -2,20 +2,13 @@
 
 $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'Modules'
 
-# Import the Certificate Common Modules
+# Import the Certificate Resource Common Module.
 Import-Module -Name (Join-Path -Path $modulePath `
         -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
-# Import the Certificate Resource Helper Module
-Import-Module -Name (Join-Path -Path $modulePath `
-        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
-
-# Import Localization Strings
-$localizedData = Get-LocalizedData `
-    -ResourceName 'MSFT_PfxImport' `
-    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+# Import Localization Strings.
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_PfxImport'
 
 <#
     .SYNOPSIS
@@ -26,6 +19,7 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER Path
     The path to the PFX file you want to import.
+    This parameter is ignored.
 
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
@@ -45,6 +39,10 @@ $localizedData = Get-LocalizedData `
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
+    This parameter is ignored.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to set in the Windows Certificate Store.
     This parameter is ignored.
 #>
 function Get-TargetResource
@@ -83,35 +81,23 @@ function Get-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
-    )
+        $Ensure = 'Present',
 
-    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
+    )
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.GettingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
-    if ((Test-Path -Path $certificateStore) -eq $false)
-    {
-        New-InvalidArgumentException `
-            -Message ($LocalizedData.CertificateStoreNotFoundError -f $certificateStore) `
-            -ArgumentName 'Store'
-    }
-
-    # Check that the certificate PFX file exists
-    if ($Ensure -eq 'Present' -and `
-        (-not (Test-CertificatePath -Path $Path)))
-    {
-        New-InvalidArgumentException `
-            -Message ($LocalizedData.CertificatePfxFileNotFoundError -f $Path) `
-            -ArgumentName 'Path'
-    }
-
-    # Look up the certificate
-    $certificatePath = Join-Path -Path $certificateStore -ChildPath $Thumbprint
-    $certificate = Get-ChildItem -Path $certificatePath -ErrorAction SilentlyContinue
+    $certificate = Get-CertificateFromCertificateStore `
+        -Thumbprint $Thumbprint `
+        -Location $Location `
+        -Store $Store
 
     if ($certificate)
     {
@@ -119,9 +105,9 @@ function Get-TargetResource
         {
             # If the certificate is found and has a private key then consider it Present
             Write-Verbose -Message ( @(
-                "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateInstalledMessage -f $Thumbprint, $certificateStore)
-            ) -join '' )
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.CertificateInstalledMessage -f $Thumbprint, $Location, $Store)
+                ) -join '' )
 
             $Ensure = 'Present'
         }
@@ -129,9 +115,9 @@ function Get-TargetResource
         {
             # The certificate is found but the private key is missing so it is Absent
             Write-Verbose -Message ( @(
-                "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateInstalledNoPrivateKeyMessage -f $Thumbprint, $certificateStore)
-            ) -join '' )
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.CertificateInstalledNoPrivateKeyMessage -f $Thumbprint, $Location, $Store)
+                ) -join '' )
 
             $Ensure = 'Absent'
         }
@@ -140,21 +126,22 @@ function Get-TargetResource
     {
         # The certificate is not found
         Write-Verbose -Message ( @(
-            "$($MyInvocation.MyCommand): "
-            $($LocalizedData.CertificateNotInstalledMessage -f $Thumbprint, $certificateStore)
-        ) -join '' )
+                "$($MyInvocation.MyCommand): "
+                $($script:localizedData.CertificateNotInstalledMessage -f $Thumbprint, $Location, $Store)
+            ) -join '' )
 
         $Ensure = 'Absent'
     }
 
     return @{
-        Thumbprint = $Thumbprint
-        Path       = $Path
-        Location   = $Location
-        Store      = $Store
-        Exportable = $Exportable
-        Credential = $Credential
-        Ensure     = $Ensure
+        Thumbprint   = $Thumbprint
+        Path         = $Path
+        Location     = $Location
+        Store        = $Store
+        Exportable   = $Exportable
+        Credential   = $Credential
+        Ensure       = $Ensure
+        FriendlyName = $certificate.FriendlyName
     }
 } # end function Get-TargetResource
 
@@ -184,6 +171,9 @@ function Get-TargetResource
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Test-TargetResource
 {
@@ -221,20 +211,36 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
     )
-
-    $result = Get-TargetResource @PSBoundParameters
-
-    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.TestingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.TestingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
-    if ($Ensure -ne $result.Ensure)
+    $currentState = Get-TargetResource @PSBoundParameters
+
+    if ($Ensure -ne $currentState.Ensure)
     {
+        return $false
+    }
+
+    if ($PSBoundParameters.ContainsKey('FriendlyName') `
+            -and $Ensure -eq 'Present' `
+            -and $currentState.FriendlyName -ne $FriendlyName)
+    {
+        # The friendly name of the certificate does not match
+        Write-Verbose -Message ( @(
+            "$($MyInvocation.MyCommand): "
+            $($script:localizedData.CertificateFriendlyNameMismatchMessage -f $Thumbprint, $Location, $Store, $CurrentState.FriendlyName, $FriendlyName)
+        ) -join '' )
+
         return $false
     }
 
@@ -267,6 +273,9 @@ function Test-TargetResource
 
     .PARAMETER Ensure
     Specifies whether the PFX file should be present or absent.
+
+    .PARAMETER FriendlyName
+    The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Set-TargetResource
 {
@@ -303,58 +312,97 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
-    )
+        $Ensure = 'Present',
 
-    $certificateStore = Get-CertificateStorePath -Location $Location -Store $Store
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
+    )
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.SettingPfxStatusMessage -f $Thumbprint, $certificateStore)
+            $($script:localizedData.SettingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
     if ($Ensure -ieq 'Present')
     {
-        # Import the certificate into the Store
-        Write-Verbose -Message ( @(
-                "$($MyInvocation.MyCommand): "
-                $($LocalizedData.ImportingPfxMessage -f $Path, $certificateStore)
-            ) -join '' )
+        $currentState = Get-TargetResource @PSBoundParameters
 
-        $importPfxCertificateParameters = @{
-            Exportable        = $Exportable
-            CertStoreLocation = $certificateStore
-            FilePath          = $Path
+        if ($currentState.Ensure -eq 'Absent')
+        {
+            # Import the certificate into the Store
+            Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.ImportingPfxMessage -f $Path, $Location, $Store)
+                ) -join '' )
+
+            # Check that the certificate PFX file exists before trying to import
+            if (-not (Test-Path -Path $Path))
+            {
+                New-InvalidArgumentException `
+                    -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
+                    -ArgumentName 'Path'
+            }
+
+            $getCertificateStorePathParameters = @{
+                Location = $Location
+                Store    = $Store
+            }
+            $certificateStore = Get-CertificateStorePath @getCertificateStorePathParameters
+
+            $importPfxCertificateParameters = @{
+                Exportable        = $Exportable
+                CertStoreLocation = $certificateStore
+                FilePath          = $Path
+                Verbose           = $VerbosePreference
+            }
+
+            if ($Credential)
+            {
+                $importPfxCertificateParameters['Password'] = $Credential.Password
+            }
+
+            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
+            if (Test-CommandExists -Name 'Import-PfxCertificate')
+            {
+                Import-PfxCertificate @importPfxCertificateParameters
+            }
+            else
+            {
+                Import-PfxCertificateEx @importPfxCertificateParameters
+            }
         }
 
-        if ($Credential)
+        if ($PSBoundParameters.ContainsKey('FriendlyName') `
+                -and $currentState.FriendlyName -ne $FriendlyName)
         {
-            $importPfxCertificateParameters['Password'] = $Credential.Password
-        }
+            Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.SettingCertficateFriendlyNameMessage -f $Path, $Location, $Store, $FriendlyName)
+                ) -join '' )
 
-        # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
-        if (Test-CommandExists -Name 'Import-PfxCertificate')
-        {
-            Import-PfxCertificate @importPfxCertificateParameters
-        }
-        else
-        {
-            Import-PfxCertificateEx @importPfxCertificateParameters
+            $setCertificateFriendlyNameInCertificateStoreParameters = @{
+                Thumbprint   = $Thumbprint
+                Location     = $Location
+                Store        = $Store
+                FriendlyName = $FriendlyName
+            }
+
+            Set-CertificateFriendlyNameInCertificateStore @setCertificateFriendlyNameInCertificateStoreParameters
         }
     }
-    elseif ($Ensure -ieq 'Absent')
+    else
     {
-        # Remove the certificate from the Store
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.RemovingPfxMessage -f $Thumbprint, $certificateStore)
+                $($script:localizedData.RemovingCertficateMessage -f $Thumbprint, $Location, $Store)
             ) -join '' )
 
-        $null = Get-ChildItem -Path $certificateStore |
-            Where-Object -FilterScript {
-                $_.Thumbprint -ieq $thumbprint
-            } |
-            Remove-Item -Force
+        Remove-CertificateFromCertificateStore `
+            -Thumbprint $Thumbprint `
+            -Location $Location `
+            -Store $Store
     }
 } # end function Set-TargetResource
 

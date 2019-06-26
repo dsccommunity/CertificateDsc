@@ -2,25 +2,18 @@
 
 $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'Modules'
 
-# Import the Certificate Common Modules
-Import-Module -Name (Join-Path -Path $modulePath `
-        -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
-            -ChildPath 'CertificateDsc.Common.psm1'))
-
-# Import the Certificate Resource Helper Module
-Import-Module -Name (Join-Path -Path $modulePath `
-        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
-
 # Import the Certificate PDT Helper Module
 Import-Module -Name (Join-Path -Path $modulePath `
         -ChildPath (Join-Path -Path 'CertificateDsc.PDT' `
             -ChildPath 'CertificateDsc.PDT.psm1'))
 
-# Import Localization Strings
-$localizedData = Get-LocalizedData `
-    -ResourceName 'MSFT_CertReq' `
-    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+# Import the Certificate Resource Common Module.
+Import-Module -Name (Join-Path -Path $modulePath `
+        -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
+            -ChildPath 'CertificateDsc.Common.psm1'))
+
+# Import Localization Strings.
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertReq'
 
 <#
     .SYNOPSIS
@@ -114,7 +107,7 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+        $ProviderName = 'Microsoft RSA SChannel Cryptographic Provider',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -193,7 +186,7 @@ function Get-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.GettingCertReqStatusMessage -f $Subject, $CA)
+            $($script:localizedData.GettingCertReqStatusMessage -f $Subject, $CA)
         ) -join '' )
 
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
@@ -211,7 +204,7 @@ function Get-TargetResource
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
+                $($script:localizedData.CertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
             ) -join '' )
 
         $returnValue = @{
@@ -327,7 +320,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+        $ProviderName = 'Microsoft RSA SChannel Cryptographic Provider',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -406,7 +399,7 @@ function Set-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.StartingCertReqMessage -f $Subject, $ca)
+            $($script:localizedData.StartingCertReqMessage -f $Subject, $ca)
         ) -join '' )
 
     # If the Subject does not contain a full X500 path, construct just the CN
@@ -437,7 +430,8 @@ function Set-TargetResource
         Information that will be used in the INF file to generate the certificate request
         In future versions, select variables from the list below could be moved to parameters!
     #>
-    $Subject = "`"$Subject`""
+    $Subject = ConvertTo-StringEnclosedInDoubleQuotes -Value $Subject
+    $ProviderName = ConvertTo-StringEnclosedInDoubleQuotes -Value $ProviderName
     $keySpec = '1'
     $machineKeySet = 'TRUE'
     $smime = 'FALSE'
@@ -525,7 +519,7 @@ CertificateTemplate = "$CertificateTemplate"
     # NEW: Create a new request as directed by PolicyFileIn
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.CreateRequestCertificateMessage -f $infPath, $reqPath)
+            $($script:localizedData.CreateRequestCertificateMessage -f $infPath, $reqPath)
         ) -join '' )
 
     <#
@@ -552,7 +546,7 @@ CertificateTemplate = "$CertificateTemplate"
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.CreateRequestResultCertificateMessage -f ($createRequest | Out-String))
+            $($script:localizedData.CreateRequestResultCertificateMessage -f ($createRequest | Out-String))
         ) -join '' )
 
     <#
@@ -565,7 +559,7 @@ CertificateTemplate = "$CertificateTemplate"
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.SubmittingRequestCertificateMessage -f $reqPath, $cerPath, $ca)
+                $($script:localizedData.SubmittingRequestCertificateMessage -f $reqPath, $cerPath, $ca)
             ) -join '' )
 
         if ($Credential)
@@ -621,7 +615,7 @@ CertificateTemplate = "$CertificateTemplate"
 
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.SubmittingRequestProcessCertificateMessage)
+                        $($script:localizedData.SubmittingRequestProcessCertificateMessage)
                     ) -join '' )
 
                 $null = Wait-Win32ProcessStop `
@@ -637,7 +631,7 @@ CertificateTemplate = "$CertificateTemplate"
                 else
                 {
                     New-InvalidOperationException `
-                        -Message ($LocalizedData.CertReqOutNotFoundError -f $certReqOutPath)
+                        -Message ($script:localizedData.CertReqOutNotFoundError -f $certReqOutPath)
                 } # if
             } # if
         }
@@ -648,13 +642,13 @@ CertificateTemplate = "$CertificateTemplate"
 
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.SubmittingRequestResultCertificateMessage -f ($submitRequest | Out-String))
+                $($script:localizedData.SubmittingRequestResultCertificateMessage -f ($submitRequest | Out-String))
             ) -join '' )
     }
     else
     {
         New-InvalidOperationException `
-            -Message ($LocalizedData.CertificateReqNotFoundError -f $reqPath)
+            -Message ($script:localizedData.CertificateReqNotFoundError -f $reqPath)
     } # if
 
     # ACCEPT: Accept the request
@@ -662,25 +656,25 @@ CertificateTemplate = "$CertificateTemplate"
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.AcceptingRequestCertificateMessage -f $cerPath, $ca)
+                $($script:localizedData.AcceptingRequestCertificateMessage -f $cerPath, $ca)
             ) -join '' )
 
         $acceptRequest = & certreq.exe @('-accept', '-machine', '-q', $cerPath)
 
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.AcceptingRequestResultCertificateMessage -f ($acceptRequest | Out-String))
+                $($script:localizedData.AcceptingRequestResultCertificateMessage -f ($acceptRequest | Out-String))
             ) -join '' )
     }
     else
     {
         New-InvalidOperationException `
-            -Message ($LocalizedData.CertificateCerNotFoundError -f $cerPath)
+            -Message ($script:localizedData.CertificateCerNotFoundError -f $cerPath)
     } # if
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.CleaningUpRequestFilesMessage -f "$($workingPath).*")
+            $($script:localizedData.CleaningUpRequestFilesMessage -f "$($workingPath).*")
         ) -join '' )
     Remove-Item -Path "$($workingPath).*" -Force
 } # end function Set-TargetResource
@@ -777,7 +771,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ProviderName = '"Microsoft RSA SChannel Cryptographic Provider"',
+        $ProviderName = 'Microsoft RSA SChannel Cryptographic Provider',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -862,7 +856,7 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.TestingCertReqStatusMessage -f $Subject, $ca)
+            $($script:localizedData.TestingCertReqStatusMessage -f $Subject, $ca)
         ) -join '' )
 
     $certificate = Get-Childitem -Path Cert:\LocalMachine\My |
@@ -890,7 +884,7 @@ function Test-TargetResource
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.CertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
+                $($script:localizedData.CertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
             ) -join '' )
 
         if ($AutoRenew)
@@ -900,7 +894,7 @@ function Test-TargetResource
                 # The certificate was found but it is expiring within 30 days or has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.ExpiringCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
+                        $($script:localizedData.ExpiringCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
@@ -912,7 +906,7 @@ function Test-TargetResource
                 # The certificate has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($LocalizedData.ExpiredCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
+                        $($script:localizedData.ExpiredCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
@@ -967,7 +961,7 @@ function Test-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.CertTemplateMismatch -f $Subject, $ca, $certificate.Thumbprint, $currentCertificateTemplateName)
+                    $($script:localizedData.CertTemplateMismatch -f $Subject, $ca, $certificate.Thumbprint, $currentCertificateTemplateName)
                 ) -join '' )
             return $false
         } # if
@@ -977,7 +971,7 @@ function Test-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($LocalizedData.CertFriendlyNameMismatch -f $Subject, $ca, $certificate.Thumbprint, $certificate.FriendlyName)
+                    $($script:localizedData.CertFriendlyNameMismatch -f $Subject, $ca, $certificate.Thumbprint, $certificate.FriendlyName)
                 ) -join '' )
             return $false
         } # if
@@ -985,7 +979,7 @@ function Test-TargetResource
         # The certificate was found and is OK - so no change required.
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($LocalizedData.ValidCertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
+                $($script:localizedData.ValidCertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
             ) -join '' )
         return $true
     } # if
@@ -993,7 +987,7 @@ function Test-TargetResource
     # A valid certificate was not found
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($LocalizedData.NoValidCertificateMessage -f $Subject, $ca)
+            $($script:localizedData.NoValidCertificateMessage -f $Subject, $ca)
         ) -join '' )
     return $false
 } # end function Test-TargetResource
@@ -1027,7 +1021,7 @@ function Assert-ResourceProperty
     if ((($KeyType -eq 'RSA') -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
     (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
     {
-        New-InvalidArgumentException -Message (($LocalizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
+        New-InvalidArgumentException -Message (($script:localizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
     }
 }# end function Assert-ResourceProperty
 
@@ -1084,7 +1078,6 @@ function Compare-CertificateSubject
     .PARAMETER CARootName
     The CA Root Name to compare with the Certificate Issuer.
 #>
-
 function Compare-CertificateIssuer
 {
     [CmdletBinding()]
@@ -1103,4 +1096,34 @@ function Compare-CertificateIssuer
     )
 
     return ($Issuer.split(',')[0] -eq "CN=$CARootName")
+}
+
+<#
+    .SYNOPSIS
+    Ensures a string is enclosed in dobule quotes.
+
+    .PARAMETER Value
+    The string to ensure is enclosed in double quotes.
+#>
+function ConvertTo-StringEnclosedInDoubleQuotes
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $Value
+    )
+
+    if ($Value[0] -ne '"')
+    {
+        $Value = '"{0}' -f $Value
+    }
+    if ($Value[$Value.Length-1] -ne '"')
+    {
+        $Value = '{0}"' -f $Value
+    }
+
+    return $Value
 }

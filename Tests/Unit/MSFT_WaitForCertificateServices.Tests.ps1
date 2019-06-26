@@ -1,27 +1,28 @@
-$script:DSCModuleName = 'CertificateDsc'
-$script:DSCResourceName = 'MSFT_WaitForCertificateServices'
-
 #region HEADER
-# Integration Test Template Version: 1.1.0
-[System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$script:dscModuleName = 'CertificateDsc'
+$script:dscResourceName = 'MSFT_WaitForCertificateServices'
+
+# Unit Test Template Version: 1.2.4
+$script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
 }
 
-Import-Module (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
+
 $TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:DSCModuleName `
-    -DSCResourceName $script:DSCResourceName `
+    -DSCModuleName $script:dscModuleName `
+    -DSCResourceName $script:dscResourceName `
+    -ResourceType 'Mof' `
     -TestType Unit
-#endregion
+#endregion HEADER
 
 # Begin Testing
 try
 {
-    InModuleScope $script:DSCResourceName {
-        $dscResourceName = $script:DSCResourceName
+    InModuleScope $script:dscResourceName {
         $caServerFQDN = 'rootca.contoso.com'
         $caRootName = 'contoso-CA'
         $retryIntervalSec = 1
@@ -36,7 +37,7 @@ try
 
         $ca = "$caServerFQDN\$caRootName"
 
-        Describe "$dscResourceName\Get-TargetResource" {
+        Describe 'MSFT_WaitForCertificateServices\Get-TargetResource' -Tag 'Get' {
             Context 'Online CA parameters passed' {
                 $result = Get-TargetResource @paramsCAOnline -Verbose
 
@@ -52,10 +53,8 @@ try
                 }
             }
         }
-        #endregion
 
-        #region Set-TargetResource
-        Describe "$dscResourceName\Set-TargetResource" {
+        Describe 'MSFT_WaitForCertificateServices\Set-TargetResource' -Tag 'Set' {
             Context 'CA is online' {
                 Mock `
                     -CommandName Test-CertificateAuthority `
@@ -104,9 +103,8 @@ try
                 }
             }
         }
-        #endregion
 
-        Describe "$dscResourceName\Test-TargetResource" {
+        Describe 'MSFT_WaitForCertificateServices\Test-TargetResource' -Tag 'Test' {
             Context 'CA is online' {
                 Mock `
                     -CommandName Test-CertificateAuthority `

@@ -4,25 +4,18 @@
 
 $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'Modules'
 
-# Import the Certificate Common Modules
-Import-Module -Name (Join-Path -Path $modulePath `
-        -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
-            -ChildPath 'CertificateDsc.Common.psm1'))
-
-# Import the Certificate Resource Helper Module
-Import-Module -Name (Join-Path -Path $modulePath `
-        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
-
 # Import the Certificate PDT Helper Module
 Import-Module -Name (Join-Path -Path $modulePath `
         -ChildPath (Join-Path -Path 'CertificateDsc.PDT' `
             -ChildPath 'CertificateDsc.PDT.psm1'))
 
-# Import Localization Strings
-$localizedData = Get-LocalizedData `
-    -ResourceName 'MSFT_WaitForCertificateServices' `
-    -ResourcePath (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+# Import the Certificate Resource Common Module.
+Import-Module -Name (Join-Path -Path $modulePath `
+        -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
+            -ChildPath 'CertificateDsc.Common.psm1'))
+
+# Import Localization Strings.
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_WaitForCertificateServices'
 
 <#
     .SYNOPSIS
@@ -72,7 +65,7 @@ function Get-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.GettingWaitForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
+            $($script:localizedData.GettingWaitForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
     $returnValue = @{
@@ -131,7 +124,7 @@ function Set-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
+            $($script:localizedData.CheckingForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
     $certificateAuthorityFound = $false
@@ -144,7 +137,7 @@ function Set-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
+                    $($script:localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
                 ) -join '' )
 
             $certificateAuthorityFound = $true
@@ -154,7 +147,7 @@ function Set-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($localizedData.CertificateAuthorityNotFoundRetryingMessage -f $certificateAuthorityFullName, $RetryIntervalSeconds)
+                    $($script:localizedData.CertificateAuthorityNotFoundRetryingMessage -f $certificateAuthorityFullName, $RetryIntervalSeconds)
                 ) -join '' )
 
             Start-Sleep -Seconds $RetryIntervalSeconds
@@ -164,7 +157,7 @@ function Set-TargetResource
     if (-not $certificateAuthorityFound)
     {
         New-InvalidOperationException `
-            -Message $($localizedData.CertificateAuthorityNotFoundAfterError -f $certificateAuthorityFullName, $RetryCount)
+            -Message $($script:localizedData.CertificateAuthorityNotFoundAfterError -f $certificateAuthorityFullName, $RetryCount)
     } # if
 } # function Set-TargetResource
 
@@ -216,7 +209,7 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CheckingForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
+            $($script:localizedData.CheckingForCertificateAuthorityStatusMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
     if (Test-CertificateAuthority `
@@ -225,7 +218,7 @@ function Test-TargetResource
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
+                $($script:localizedData.CertificateAuthorityFoundMessage -f $certificateAuthorityFullName)
             ) -join '' )
 
         return $true
@@ -233,7 +226,7 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($localizedData.CertificateAuthorityNotFoundMessage -f $certificateAuthorityFullName)
+            $($script:localizedData.CertificateAuthorityNotFoundMessage -f $certificateAuthorityFullName)
         ) -join '' )
 
     return $false

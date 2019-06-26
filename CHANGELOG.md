@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+## 4.7.0.0
+
+- Opted into Common Tests 'Common Tests - Validate Localization' -
+  fixes [Issue #195](https://github.com/PowerShell/CertificateDsc/issues/195).
+- Combined all `CertificateDsc.ResourceHelper` module functions into
+  `CertificateDsc.Common` module and renamed to `CertificateDsc.CommonHelper`
+  module.
+- CertReq:
+  - Fix error when ProviderName parameter is not encapsulated in
+    double quotes - fixes [Issue #185](https://github.com/PowerShell/CertificateDsc/issues/185).
+- Refactor integration tests to update to latest standards.
+- Refactor unit tests to update to latest standards.
+- CertificateImport:
+  - Refactor to use common functions and share more code with `PfxImport`
+    resource.
+  - Resource will now only throw an exception if the PFX file does not exist
+    and it needs to be imported.
+  - Removed file existence check from `Path` parameter to enable the resource
+    to remove a certificate from the store without the need to have the
+    access to the certificate file.
+  - Removed ShouldProcess because it is not required by DSC Resources.
+- CertificatePfx:
+  - Refactor to use common functions and share more code with
+    `CertificateImport` resource.
+  - Resource will now only throw an exception if the certificate file does
+    not exist and it needs to be imported.
+- CertificateImport:
+  - Added `FriendlyName` parameter to allow setting the certificate friendly
+    name of the imported certificate - fixes [Issue #194](https://github.com/PowerShell/CertificateDsc/issues/194).
+- CertificatePfx:
+  - Added `FriendlyName` parameter to allow setting the certificate friendly
+    name of the imported certificate - fixes [Issue #194](https://github.com/PowerShell/CertificateDsc/issues/194).
+
 ## 4.6.0.0
 
 - CertReq:

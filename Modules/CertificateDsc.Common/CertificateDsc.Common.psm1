@@ -1,12 +1,484 @@
-# Import the Networking Resource Helper Module
-Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) `
-        -ChildPath (Join-Path -Path 'CertificateDsc.ResourceHelper' `
-            -ChildPath 'CertificateDsc.ResourceHelper.psm1'))
+$script:modulesFolderPath = Split-Path -Path $PSScriptRoot -Parent
 
-# Import Localization Strings
-$localizedData = Get-LocalizedData `
-    -ResourceName 'CertificateDsc.Common' `
-    -ResourcePath $PSScriptRoot
+<#
+    .SYNOPSIS
+        This method is used to compare current and desired values for any DSC resource.
+
+    .PARAMETER CurrentValues
+        This is hash table of the current values that are applied to the resource.
+
+    .PARAMETER DesiredValues
+        This is a PSBoundParametersDictionary of the desired values for the resource.
+
+    .PARAMETER ValuesToCheck
+        This is a list of which properties in the desired values list should be checked.
+        If this is empty then all values in DesiredValues are checked.
+#>
+function Test-DscParameterState
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Collections.Hashtable]
+        $CurrentValues,
+
+        [Parameter(Mandatory = $true)]
+        [System.Object]
+        $DesiredValues,
+
+        [Parameter()]
+        [System.Array]
+        $ValuesToCheck
+    )
+
+    $returnValue = $true
+
+    if (($DesiredValues.GetType().Name -ne 'HashTable') `
+        -and ($DesiredValues.GetType().Name -ne 'CimInstance') `
+        -and ($DesiredValues.GetType().Name -ne 'PSBoundParametersDictionary'))
+    {
+        $errorMessage = $script:localizedData.PropertyTypeInvalidForDesiredValues -f $($DesiredValues.GetType().Name)
+        New-InvalidArgumentException -ArgumentName 'DesiredValues' -Message $errorMessage
+    }
+
+    if (($DesiredValues.GetType().Name -eq 'CimInstance') -and ($null -eq $ValuesToCheck))
+    {
+        $errorMessage = $script:localizedData.PropertyTypeInvalidForValuesToCheck
+        New-InvalidArgumentException -ArgumentName 'ValuesToCheck' -Message $errorMessage
+    }
+
+    if (($null -eq $ValuesToCheck) -or ($ValuesToCheck.Count -lt 1))
+    {
+        $keyList = $DesiredValues.Keys
+    }
+    else
+    {
+        $keyList = $ValuesToCheck
+    }
+
+    $keyList | ForEach-Object -Process {
+        if (($_ -ne 'Verbose'))
+        {
+            if (($CurrentValues.ContainsKey($_) -eq $false) `
+            -or ($CurrentValues.$_ -ne $DesiredValues.$_) `
+            -or (($DesiredValues.GetType().Name -ne 'CimInstance' -and $DesiredValues.ContainsKey($_) -eq $true) -and ($null -ne $DesiredValues.$_ -and $DesiredValues.$_.GetType().IsArray)))
+            {
+                if ($DesiredValues.GetType().Name -eq 'HashTable' -or `
+                    $DesiredValues.GetType().Name -eq 'PSBoundParametersDictionary')
+                {
+                    $checkDesiredValue = $DesiredValues.ContainsKey($_)
+                }
+                else
+                {
+                    # If DesiredValue is a CimInstance.
+                    $checkDesiredValue = $false
+                    if (([System.Boolean]($DesiredValues.PSObject.Properties.Name -contains $_)) -eq $true)
+                    {
+                        if ($null -ne $DesiredValues.$_)
+                        {
+                            $checkDesiredValue = $true
+                        }
+                    }
+                }
+
+                if ($checkDesiredValue)
+                {
+                    $desiredType = $DesiredValues.$_.GetType()
+                    $fieldName = $_
+                    if ($desiredType.IsArray -eq $true)
+                    {
+                        if (($CurrentValues.ContainsKey($fieldName) -eq $false) `
+                        -or ($null -eq $CurrentValues.$fieldName))
+                        {
+                            Write-Verbose -Message ($script:localizedData.PropertyValidationError -f $fieldName) -Verbose
+
+                            $returnValue = $false
+                        }
+                        else
+                        {
+                            $arrayCompare = Compare-Object -ReferenceObject $CurrentValues.$fieldName `
+                                                           -DifferenceObject $DesiredValues.$fieldName
+                            if ($null -ne $arrayCompare)
+                            {
+                                Write-Verbose -Message ($script:localizedData.PropertiesDoesNotMatch -f $fieldName) -Verbose
+
+                                $arrayCompare | ForEach-Object -Process {
+                                    Write-Verbose -Message ($script:localizedData.PropertyThatDoesNotMatch -f $_.InputObject, $_.SideIndicator) -Verbose
+                                }
+
+                                $returnValue = $false
+                            }
+                        }
+                    }
+                    else
+                    {
+                        switch ($desiredType.Name)
+                        {
+                            'String'
+                            {
+                                if (-not [System.String]::IsNullOrEmpty($CurrentValues.$fieldName) -or `
+                                    -not [System.String]::IsNullOrEmpty($DesiredValues.$fieldName))
+                                {
+                                    Write-Verbose -Message ($script:localizedData.ValueOfTypeDoesNotMatch `
+                                        -f $desiredType.Name, $fieldName, $($CurrentValues.$fieldName), $($DesiredValues.$fieldName)) -Verbose
+
+                                    $returnValue = $false
+                                }
+                            }
+
+                            'Int32'
+                            {
+                                if (-not ($DesiredValues.$fieldName -eq 0) -or `
+                                    -not ($null -eq $CurrentValues.$fieldName))
+                                {
+                                    Write-Verbose -Message ($script:localizedData.ValueOfTypeDoesNotMatch `
+                                        -f $desiredType.Name, $fieldName, $($CurrentValues.$fieldName), $($DesiredValues.$fieldName)) -Verbose
+
+                                    $returnValue = $false
+                                }
+                            }
+
+                            { $_ -eq 'Int16' -or $_ -eq 'UInt16' -or $_ -eq 'Single' }
+                            {
+                                if (-not ($DesiredValues.$fieldName -eq 0) -or `
+                                    -not ($null -eq $CurrentValues.$fieldName))
+                                {
+                                    Write-Verbose -Message ($script:localizedData.ValueOfTypeDoesNotMatch `
+                                        -f $desiredType.Name, $fieldName, $($CurrentValues.$fieldName), $($DesiredValues.$fieldName)) -Verbose
+
+                                    $returnValue = $false
+                                }
+                            }
+
+                            'Boolean'
+                            {
+                                if ($CurrentValues.$fieldName -ne $DesiredValues.$fieldName)
+                                {
+                                    Write-Verbose -Message ($script:localizedData.ValueOfTypeDoesNotMatch `
+                                        -f $desiredType.Name, $fieldName, $($CurrentValues.$fieldName), $($DesiredValues.$fieldName)) -Verbose
+
+                                    $returnValue = $false
+                                }
+                            }
+
+                            default
+                            {
+                                Write-Warning -Message ($script:localizedData.UnableToCompareProperty `
+                                    -f $fieldName, $desiredType.Name)
+
+                                $returnValue = $false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $returnValue
+}
+
+<#
+    .SYNOPSIS
+        Retrieves the localized string data based on the machine's culture.
+        Falls back to en-US strings if the machine's culture is not supported.
+
+    .PARAMETER ResourceName
+        The name of the resource as it appears before '.strings.psd1' of the localized string file.
+        For example:
+            For WindowsOptionalFeature: MSFT_WindowsOptionalFeature
+            For Service: MSFT_ServiceResource
+            For Registry: MSFT_RegistryResource
+            For Helper: SqlServerDscHelper
+
+    .PARAMETER ScriptRoot
+        Optional. The root path where to expect to find the culture folder. This is only needed
+        for localization in helper modules. This should not normally be used for resources.
+
+    .NOTES
+        To be able to use localization in the helper function, this function must
+        be first in the file, before Get-LocalizedData is used by itself to load
+        localized data for this helper module (see directly after this function).
+#>
+function Get-LocalizedData
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ResourceName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ScriptRoot
+    )
+
+    if (-not $ScriptRoot)
+    {
+        $dscResourcesFolder = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'DSCResources'
+        $resourceDirectory = Join-Path -Path $dscResourcesFolder -ChildPath $ResourceName
+    }
+    else
+    {
+        $resourceDirectory = $ScriptRoot
+    }
+
+    $localizedStringFileLocation = Join-Path -Path $resourceDirectory -ChildPath $PSUICulture
+
+    if (-not (Test-Path -Path $localizedStringFileLocation))
+    {
+        # Fallback to en-US
+        $localizedStringFileLocation = Join-Path -Path $resourceDirectory -ChildPath 'en-US'
+    }
+
+    Import-LocalizedData `
+        -BindingVariable 'localizedData' `
+        -FileName "$ResourceName.strings.psd1" `
+        -BaseDirectory $localizedStringFileLocation
+
+    return $localizedData
+}
+
+<#
+    .SYNOPSIS
+        Creates and throws an invalid argument exception.
+
+    .PARAMETER Message
+        The message explaining why this error is being thrown.
+
+    .PARAMETER ArgumentName
+        The name of the invalid argument that is causing this error to be thrown.
+#>
+function New-InvalidArgumentException
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Message,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ArgumentName
+    )
+
+    $argumentException = New-Object -TypeName 'ArgumentException' `
+        -ArgumentList @($Message, $ArgumentName)
+
+    $newObjectParameters = @{
+        TypeName     = 'System.Management.Automation.ErrorRecord'
+        ArgumentList = @($argumentException, $ArgumentName, 'InvalidArgument', $null)
+    }
+
+    $errorRecord = New-Object @newObjectParameters
+
+    throw $errorRecord
+}
+
+<#
+    .SYNOPSIS
+        Creates and throws an invalid operation exception.
+
+    .PARAMETER Message
+        The message explaining why this error is being thrown.
+
+    .PARAMETER ErrorRecord
+        The error record containing the exception that is causing this terminating error.
+#>
+function New-InvalidOperationException
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Message,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.ErrorRecord]
+        $ErrorRecord
+    )
+
+    if ($null -eq $ErrorRecord)
+    {
+        $invalidOperationException = New-Object -TypeName 'InvalidOperationException' `
+            -ArgumentList @($Message)
+    }
+    else
+    {
+        $invalidOperationException = New-Object -TypeName 'InvalidOperationException' `
+            -ArgumentList @($Message, $ErrorRecord.Exception)
+    }
+
+    $newObjectParameters = @{
+        TypeName     = 'System.Management.Automation.ErrorRecord'
+        ArgumentList = @(
+            $invalidOperationException.ToString(),
+            'MachineStateIncorrect',
+            'InvalidOperation',
+            $null
+        )
+    }
+
+    $errorRecordToThrow = New-Object @newObjectParameters
+
+    throw $errorRecordToThrow
+}
+
+<#
+    .SYNOPSIS
+        Creates and throws an object not found exception.
+
+    .PARAMETER Message
+        The message explaining why this error is being thrown.
+
+    .PARAMETER ErrorRecord
+        The error record containing the exception that is causing this terminating error.
+#>
+function New-ObjectNotFoundException
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Message,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.ErrorRecord]
+        $ErrorRecord
+    )
+
+    if ($null -eq $ErrorRecord)
+    {
+        $exception = New-Object -TypeName 'System.Exception' `
+            -ArgumentList @($Message)
+    }
+    else
+    {
+        $exception = New-Object -TypeName 'System.Exception' `
+            -ArgumentList @($Message, $ErrorRecord.Exception)
+    }
+
+    $newObjectParameters = @{
+        TypeName     = 'System.Management.Automation.ErrorRecord'
+        ArgumentList = @(
+            $exception.ToString(),
+            'MachineStateIncorrect',
+            'ObjectNotFound',
+            $null
+        )
+    }
+
+    $errorRecordToThrow = New-Object @newObjectParameters
+
+    throw $errorRecordToThrow
+}
+
+<#
+    .SYNOPSIS
+        Creates and throws an invalid result exception.
+
+    .PARAMETER Message
+        The message explaining why this error is being thrown.
+
+    .PARAMETER ErrorRecord
+        The error record containing the exception that is causing this terminating error.
+#>
+function New-InvalidResultException
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Message,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.ErrorRecord]
+        $ErrorRecord
+    )
+
+    if ($null -eq $ErrorRecord)
+    {
+        $exception = New-Object -TypeName 'System.Exception' `
+            -ArgumentList @($Message)
+    }
+    else
+    {
+        $exception = New-Object -TypeName 'System.Exception' `
+            -ArgumentList @($Message, $ErrorRecord.Exception)
+    }
+
+    $newObjectParameters = @{
+        TypeName     = 'System.Management.Automation.ErrorRecord'
+        ArgumentList = @(
+            $exception.ToString(),
+            'MachineStateIncorrect',
+            'InvalidResult',
+            $null
+        )
+    }
+
+    $errorRecordToThrow = New-Object @newObjectParameters
+
+    throw $errorRecordToThrow
+}
+
+function New-NotImplementedException
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Message,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.ErrorRecord]
+        $ErrorRecord
+    )
+
+    if ($null -eq $ErrorRecord)
+    {
+        $invalidOperationException = New-Object -TypeName 'NotImplementedException' `
+            -ArgumentList @($Message)
+    }
+    else
+    {
+        $invalidOperationException = New-Object -TypeName 'NotImplementedException' `
+            -ArgumentList @($Message, $ErrorRecord.Exception)
+    }
+
+    $newObjectParameters = @{
+        TypeName     = 'System.Management.Automation.ErrorRecord'
+        ArgumentList = @(
+            $invalidOperationException.ToString(),
+            'MachineStateIncorrect',
+            'NotImplemented',
+            $null
+        )
+    }
+
+    $errorRecordToThrow = New-Object @newObjectParameters
+
+    throw $errorRecordToThrow
+}
 
 <#
     .SYNOPSIS
@@ -62,7 +534,7 @@ function Test-CertificatePath
             else
             {
                 New-InvalidArgumentException `
-                    -Message ($LocalizedData.FileNotFoundError -f $pathNode) `
+                    -Message ($script:localizedData.FileNotFoundError -f $pathNode) `
                     -ArgumentName 'Path'
             }
         }
@@ -177,7 +649,7 @@ function Test-Thumbprint
             else
             {
                 New-InvalidOperationException `
-                    -Message ($LocalizedData.InvalidHashError -f $hash)
+                    -Message ($script:localizedData.InvalidHashError -f $hash)
             }
         }
     }
@@ -268,7 +740,7 @@ function Find-Certificate
     {
         # The Certificte Path is not valid
         New-InvalidArgumentException `
-            -Message ($LocalizedData.CertificatePathError -f $certPath) `
+            -Message ($script:localizedData.CertificatePathError -f $certPath) `
             -ArgumnentName 'Store'
     } # if
 
@@ -319,7 +791,7 @@ function Find-Certificate
     $certFilterScript = '(' + ($certFilters -join ' -and ') + ')'
 
     Write-Verbose `
-        -Message ($LocalizedData.SearchingForCertificateUsingFilters -f $store, $certFilterScript) `
+        -Message ($script:localizedData.SearchingForCertificateUsingFilters -f $store, $certFilterScript) `
         -Verbose
 
     $certs = Get-ChildItem -Path $certPath |
@@ -364,7 +836,7 @@ function Get-CdpContainer
         {
             # The computer is not domain joined
             New-InvalidOperationException `
-                -Message ($LocalizedData.DomainNotJoinedError)
+                -Message ($script:localizedData.DomainNotJoinedError)
         }
     }
     else
@@ -374,7 +846,7 @@ function Get-CdpContainer
     }
 
     Write-Verbose `
-        -Message ($LocalizedData.ConfigurationNamingContext -f $configContext.toString()) `
+        -Message ($script:localizedData.ConfigurationNamingContext -f $configContext.toString()) `
         -Verbose
 
     $cdpContainer = [ADSI]('LDAP://CN=CDP,CN=Public Key Services,CN=Services,{0}' -f $configContext.toString())
@@ -407,7 +879,7 @@ function Find-CertificateAuthority
     )
 
     Write-Verbose `
-        -Message ($LocalizedData.StartLocateCAMessage) `
+        -Message ($script:localizedData.StartLocateCAMessage) `
         -Verbose
 
     $cdpContainer = Get-CdpContainer @PSBoundParameters -ErrorAction Stop
@@ -439,7 +911,7 @@ function Find-CertificateAuthority
     if ($caFound)
     {
         Write-Verbose `
-            -Message ($LocalizedData.CaFoundMessage -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName) `
+            -Message ($script:localizedData.CaFoundMessage -f $certificateAuthority.CAServerFQDN, $certificateAuthority.CARootName) `
             -Verbose
 
         return $certificateAuthority
@@ -447,7 +919,7 @@ function Find-CertificateAuthority
     else
     {
         New-InvalidOperationException `
-            -Message ($LocalizedData.NoCaFoundError)
+            -Message ($script:localizedData.NoCaFoundError)
     }
 } # end function Find-CertificateAuthority
 
@@ -489,7 +961,7 @@ function Test-CertificateAuthority
     )
 
     Write-Verbose `
-        -Message ($LocalizedData.StartPingCAMessage) `
+        -Message ($script:localizedData.StartPingCAMessage) `
         -Verbose
 
     $locatorInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
@@ -510,13 +982,13 @@ function Test-CertificateAuthority
     $null = $locatorProcess.WaitForExit()
 
     Write-Verbose `
-        -Message ($LocalizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut) `
+        -Message ($script:localizedData.CaPingMessage -f $locatorProcess.ExitCode, $locatorOut) `
         -Verbose
 
     if ($locatorProcess.ExitCode -eq 0)
     {
         Write-Verbose `
-            -Message ($LocalizedData.CaOnlineMessage -f $CAServerFQDN, $CARootName) `
+            -Message ($script:localizedData.CaOnlineMessage -f $CAServerFQDN, $CARootName) `
             -Verbose
 
         return $true
@@ -524,7 +996,7 @@ function Test-CertificateAuthority
     else
     {
         Write-Verbose `
-            -Message ($LocalizedData.CaOfflineMessage -f $CAServerFQDN, $CARootName) `
+            -Message ($script:localizedData.CaOfflineMessage -f $CAServerFQDN, $CARootName) `
             -Verbose
 
         return $false
@@ -566,7 +1038,7 @@ function Get-CertificateTemplatesFromActiveDirectory
     catch
     {
         Write-Verbose -Message $_.Exception.Message
-        Write-Warning -Message $LocalizedData.ActiveDirectoryTemplateSearch
+        Write-Warning -Message $script:localizedData.ActiveDirectoryTemplateSearch
     }
 
     $adTemplates = @()
@@ -655,7 +1127,7 @@ function Get-CertificateTemplateInformation
 
             if ($template.Count -eq 0)
             {
-                Write-Warning -Message ($LocalizedData.TemplateNameResolutionError -f ('{0}({1})' -f $Matches.DisplayName, $Matches.Oid))
+                Write-Warning -Message ($script:localizedData.TemplateNameResolutionError -f ('{0}({1})' -f $Matches.DisplayName, $Matches.Oid))
             }
 
             $templateInformation['Name']         = $Matches.Name
@@ -674,7 +1146,7 @@ function Get-CertificateTemplateInformation
 
         default
         {
-            Write-Warning -Message ($LocalizedData.TemplateNameNotFound -f $FormattedTemplate)
+            Write-Warning -Message ($script:localizedData.TemplateNameNotFound -f $FormattedTemplate)
         }
     }
 
@@ -1022,7 +1494,229 @@ function Get-CertificateStorePath
         $Store
     )
 
-    return 'Cert:' |
+    $certificateStore =  'Cert:' |
         Join-Path -ChildPath $Location |
         Join-Path -ChildPath $Store
+
+    if (-not (Test-Path -Path $certificateStore))
+    {
+        New-InvalidArgumentException `
+            -Message ($script:localizedData.CertificateStoreNotFoundError -f $certificateStore) `
+            -ArgumentName 'Store'
+    }
+
+    return $certificateStore
 }
+
+<#
+    .SYNOPSIS
+    This function returns the full path to a certificate in the Windows
+    Certificate Store.
+
+    .PARAMETER Thumbprint
+    The Thumbprint of the certificate.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+#>
+function Get-CertificatePath
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store
+    )
+
+    return Get-CertificateStorePath -Location $Location -Store $Store |
+        Join-Path -ChildPath $Thumbprint
+}
+
+<#
+    .SYNOPSIS
+    This function generates the path to a Windows Certificate Store.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+#>
+function Get-CertificateFromCertificateStore
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store
+    )
+
+    $certificatePath = Get-CertificatePath @PSBoundParameters
+    $certificates = Get-ChildItem -Path $certificatePath -ErrorAction SilentlyContinue
+
+    return $certificates
+}
+
+<#
+    .SYNOPSIS
+    This function deletes all certificates from the specified Windows Certificate
+    Store that match the thumbprint.
+
+    .PARAMETER Thumbprint
+    The Thumbprint of the certificates to remove.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+#>
+function Remove-CertificateFromCertificateStore
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store
+    )
+
+    $certificates = Get-CertificateFromCertificateStore @PSBoundParameters
+
+    foreach ($certificate in $certificates)
+    {
+        Write-Verbose -Message ( @(
+            "$($MyInvocation.MyCommand): "
+            $($script:localizedData.RemovingCertificateFromStoreMessage -f $Thumbprint, $Location, $Store)
+        ) -join '' )
+
+        Remove-Item -Path $certificate.PSPath -Force
+    }
+}
+
+<#
+    .SYNOPSIS
+    This function sets the friendly name of a certificate in the
+    Windows Certificate Store.
+
+    .PARAMETER Thumbprint
+    The Thumbprint of the certificates to set the friendly name of.
+
+    .PARAMETER Location
+    The Windows Certificate Store Location.
+
+    .PARAMETER Store
+    The Windows Certificate Store Name.
+
+    .PARAMETER FriendlyName
+    The Friendly Name to set for the certificate.
+#>
+function Set-CertificateFriendlyNameInCertificateStore
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [System.String]
+        $Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Store,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $FriendlyName
+    )
+
+    $null = $PSBoundParameters.Remove('FriendlyName')
+
+    $certificate = Get-CertificateFromCertificateStore @PSBoundParameters
+
+    if ($null -ne $certificate)
+    {
+        $certificate.FriendlyName = $FriendlyName
+    }
+}
+
+$script:localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.Common' -ScriptRoot $PSScriptRoot
+
+Export-ModuleMember -Function @(
+    'Test-DscParameterState',
+    'New-InvalidArgumentException',
+    'New-InvalidOperationException',
+    'New-ObjectNotFoundException',
+    'New-InvalidResultException',
+    'New-NotImplementedException',
+    'Get-LocalizedData',
+    'Test-CertificatePath',
+    'Test-Thumbprint',
+    'Find-Certificate',
+    'Get-CdpContainer',
+    'Find-CertificateAuthority',
+    'Get-DirectoryEntry',
+    'Test-CertificateAuthority',
+    'Get-CertificateTemplatesFromActiveDirectory',
+    'Get-CertificateTemplateInformation',
+    'Get-CertificateExtension',
+    'Get-CertificateTemplateExtensionText',
+    'Get-CertificateTemplateName',
+    'Get-CertificateSubjectAlternativeName',
+    'Get-CertificateSubjectAlternativeNameList',
+    'Test-CommandExists',
+    'Import-CertificateEx',
+    'Import-PfxCertificateEx',
+    'Get-CertificateStorePath',
+    'Get-CertificatePath',
+    'Get-CertificateFromCertificateStore',
+    'Remove-CertificateFromCertificateStore',
+    'Set-CertificateFriendlyNameInCertificateStore'
+)
