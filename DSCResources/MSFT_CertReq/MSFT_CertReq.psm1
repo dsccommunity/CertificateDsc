@@ -862,7 +862,8 @@ function Test-TargetResource
     $certificate = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
             (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
-            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
+            ($PSItem.FriendlyName -eq $FriendlyName)
     }
 
     # Exception for standard template DomainControllerAuthentication
