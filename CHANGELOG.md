@@ -10,6 +10,9 @@
 - CertReq:
   - Fix error when ProviderName parameter is not encapsulated in
     double quotes - fixes [Issue #185](https://github.com/PowerShell/CertificateDsc/issues/185).
+  - Fix for multiple certificates being issued when having a third party CA which
+    doesn't format the Issuer CN in the same order as a MS CA - fixes
+    [Issue #207](https://github.com/PowerShell/CertificateDsc/issues/207).
 - Refactor integration tests to update to latest standards.
 - Refactor unit tests to update to latest standards.
 - CertificateImport:

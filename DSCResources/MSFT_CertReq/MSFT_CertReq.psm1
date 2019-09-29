@@ -208,9 +208,9 @@ function Get-TargetResource
             ) -join '' )
 
         $returnValue = @{
-            Subject             = $Cert.Subject.split(',')[0].replace('CN=', '')
+            Subject             = ($Cert.Subject.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}).replace('CN=', '')
             CAServerFQDN        = $caObject.CAServerFQDN
-            CARootName          = $Cert.Issuer.split(',')[0].replace('CN=', '')
+            CARootName          = ($Cert.Issuer.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}).replace('CN=', '')
             KeyLength           = $Cert.Publickey.Key.KeySize
             Exportable          = $Cert.PrivateKey.CspKeyContainerInfo.Exportable
             ProviderName        = $Cert.PrivateKey.CspKeyContainerInfo.ProviderName
@@ -1095,7 +1095,7 @@ function Compare-CertificateIssuer
         $CARootName
     )
 
-    return (($Issuer.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object{$_ -match 'CN='}) -eq "CN=$CARootName")
+    return (($Issuer.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}) -eq "CN=$CARootName")
 }
 
 <#
