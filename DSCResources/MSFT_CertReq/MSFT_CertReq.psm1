@@ -1095,7 +1095,7 @@ function Compare-CertificateIssuer
         $CARootName
     )
 
-    return (($Issuer.split(',') | %{$_.trimstart(' ')} | ?{$_ -match 'CN='}) -eq "CN=$CARootName")
+    return (($Issuer.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object{$_ -match 'CN='}) -eq "CN=$CARootName")
 }
 
 <#
