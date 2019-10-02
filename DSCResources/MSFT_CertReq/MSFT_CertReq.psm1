@@ -208,9 +208,9 @@ function Get-TargetResource
             ) -join '' )
 
         $returnValue = @{
-            Subject             = ($Cert.Subject.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}).replace('CN=', '')
+            Subject             = Get-CertificateCommonName -DistinguishedName $Cert.Subject
             CAServerFQDN        = $caObject.CAServerFQDN
-            CARootName          = ($Cert.Issuer.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}).replace('CN=', '')
+            CARootName          = Get-CertificateCommonName -DistinguishedName $Cert.Issuer
             KeyLength           = $Cert.Publickey.Key.KeySize
             Exportable          = $Cert.PrivateKey.CspKeyContainerInfo.Exportable
             ProviderName        = $Cert.PrivateKey.CspKeyContainerInfo.ProviderName
@@ -1095,7 +1095,7 @@ function Compare-CertificateIssuer
         $CARootName
     )
 
-    return (($Issuer.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}) -eq "CN=$CARootName")
+    return ((Get-CertificateCommonName -DistinguishedName $Issuer) -eq "$CARootName")
 }
 
 <#
@@ -1126,4 +1126,26 @@ function ConvertTo-StringEnclosedInDoubleQuotes
     }
 
     return $Value
+}
+
+<#
+    .SYNOPSIS
+    Finds the Common Name in a X500 Distinguished Name.
+
+    .PARAMETER DistinguishedName
+    The X500 Distinguished Name.
+#>
+function Get-CertificateCommonName
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $DistinguishedName
+    )
+
+    return ($DistinguishedName.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}).replace('CN=', '')
 }
