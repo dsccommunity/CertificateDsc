@@ -189,9 +189,15 @@ function Get-TargetResource
             $($script:localizedData.GettingCertReqStatusMessage -f $Subject, $CA)
         ) -join '' )
 
+    # If the Subject does not contain a full X500 path, construct just the CN
+    if (($Subject.split('=').Count) -eq 1)
+    {
+        $Subject = "CN=$Subject"
+    } # if
+
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-            $_.Subject -eq "CN=$Subject" -and `
+            $_.Subject -eq $Subject -and `
             (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
     }
 
