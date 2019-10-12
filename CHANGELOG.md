@@ -10,12 +10,13 @@
 - CertReq:
   - Fix error when ProviderName parameter is not encapsulated in
     double quotes - fixes [Issue #185](https://github.com/PowerShell/CertificateDsc/issues/185).
-  - Added `Get-CertificateCommonName` function as a fix for multiple certificates
-    being issued when having a third party CA which doesn't format the Issuer CN
-    in the same order as a MS CA - fixes [Issue #207](https://github.com/PowerShell/CertificateDsc/issues/207).
-  - Updated `Compare-CertificateIssuer` to use the new `Get-CertificateCommonName` function.
-  - Added check for X500 subject name in Get-TargetResource, which already exists in Test- and
-    Set-TargetResource - fixes [Issue #210](https://github.com/PowerShell/CertificateDsc/issues/210).
+  - Added `Get-CertificateCommonName` function as a fix for multiple
+    certificates being issued when having a third party CA which doesn't
+    format the Issuer CN in the same order as a MS CA - fixes [Issue #207](https://github.com/PowerShell/CertificateDsc/issues/207).
+  - Updated `Compare-CertificateIssuer` to use the new
+    `Get-CertificateCommonName` function.
+  - Added check for X500 subject name in Get-TargetResource, which already
+    exists in Test- and Set-TargetResource - fixes [Issue #210](https://github.com/PowerShell/CertificateDsc/issues/210).
 - Refactor integration tests to update to latest standards.
 - Refactor unit tests to update to latest standards.
 - CertificateImport:
