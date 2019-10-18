@@ -1101,7 +1101,7 @@ function Compare-CertificateIssuer
         $CARootName
     )
 
-    return ((Get-CertificateCommonName -DistinguishedName $Issuer) -eq "$CARootName")
+    return ((Get-CertificateCommonName -DistinguishedName $Issuer) -eq $CARootName)
 }
 
 <#
@@ -1153,5 +1153,7 @@ function Get-CertificateCommonName
         $DistinguishedName
     )
 
-    return ($DistinguishedName.split(',') | ForEach-Object {$_.TrimStart(' ')} | Where-Object {$_ -match 'CN='}).replace('CN=', '')
+    return ($DistinguishedName.split(',') |
+        ForEach-Object -Process { $_.TrimStart(' ') } |
+        Where-Object -FilterScript { $_ -match 'CN=' }).replace('CN=', '')
 }
