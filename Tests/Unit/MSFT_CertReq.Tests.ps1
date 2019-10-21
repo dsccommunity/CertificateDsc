@@ -1820,7 +1820,7 @@ OID = $oid
             }
 
             Context 'When called with certificate issuer with multiple X500 paths not matching the CA root name' {
-                It 'Should return a true' {
+                It 'Should return a false' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=abc.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
                         -CARootName 'xyz.contoso.com' | Should -Be $false
