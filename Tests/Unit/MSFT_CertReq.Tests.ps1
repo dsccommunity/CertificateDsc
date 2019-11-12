@@ -1864,6 +1864,13 @@ OID = $oid
                         -DistinguishedName 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeExactly "xyz.contoso.com"
                 }
             }
+
+            Context 'When called with certificate distinguished name with multiple X500 paths and CN at the end' {
+                It 'Should return a string value containing only exactly the Common Name' {
+                    Get-CertificateCommonName `
+                        -DistinguishedName 'E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country, CN=xyz.contoso.com' | Should -BeExactly "xyz.contoso.com"
+                }
+            }
         }
     }
 }
