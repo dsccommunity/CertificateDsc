@@ -741,7 +741,7 @@ function Find-Certificate
         # The Certificte Path is not valid
         New-InvalidArgumentException `
             -Message ($script:localizedData.CertificatePathError -f $certPath) `
-            -ArgumnentName 'Store'
+            -ArgumentName 'Store'
     } # if
 
     # Assemble the filter to use to select the certificate
