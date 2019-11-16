@@ -448,7 +448,7 @@ function Set-TargetResource
 
     # A unique identifier for temporary files that will be used when interacting with the command line utility
     $guid = [system.guid]::NewGuid().guid
-    $workingPath = Join-Path -Path $env:Temp -ChildPath "xCertReq-$guid"
+    $workingPath = Join-Path -Path $env:Temp -ChildPath "CertReq-$guid"
     $infPath = [System.IO.Path]::ChangeExtension($workingPath, '.inf')
     $reqPath = [System.IO.Path]::ChangeExtension($workingPath, '.req')
     $cerPath = [System.IO.Path]::ChangeExtension($workingPath, '.cer')
