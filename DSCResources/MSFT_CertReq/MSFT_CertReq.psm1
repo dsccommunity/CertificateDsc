@@ -189,9 +189,15 @@ function Get-TargetResource
             $($script:localizedData.GettingCertReqStatusMessage -f $Subject, $CA)
         ) -join '' )
 
+    # If the Subject does not contain a full X500 path, construct just the CN
+    if (($Subject.split('=').Count) -eq 1)
+    {
+        $Subject = "CN=$Subject"
+    } # if
+
     $cert = Get-Childitem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-            $_.Subject -eq "CN=$Subject" -and `
+            $_.Subject -eq $Subject -and `
             (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
     }
 
@@ -208,9 +214,9 @@ function Get-TargetResource
             ) -join '' )
 
         $returnValue = @{
-            Subject             = $Cert.Subject.split(',')[0].replace('CN=', '')
+            Subject             = Get-CertificateCommonName -DistinguishedName $Cert.Subject
             CAServerFQDN        = $caObject.CAServerFQDN
-            CARootName          = $Cert.Issuer.split(',')[0].replace('CN=', '')
+            CARootName          = Get-CertificateCommonName -DistinguishedName $Cert.Issuer
             KeyLength           = $Cert.Publickey.Key.KeySize
             Exportable          = $Cert.PrivateKey.CspKeyContainerInfo.Exportable
             ProviderName        = $Cert.PrivateKey.CspKeyContainerInfo.ProviderName
@@ -1095,7 +1101,7 @@ function Compare-CertificateIssuer
         $CARootName
     )
 
-    return ($Issuer.split(',')[0] -eq "CN=$CARootName")
+    return ((Get-CertificateCommonName -DistinguishedName $Issuer) -eq $CARootName)
 }
 
 <#
@@ -1126,4 +1132,28 @@ function ConvertTo-StringEnclosedInDoubleQuotes
     }
 
     return $Value
+}
+
+<#
+    .SYNOPSIS
+    Finds the Common Name in a X500 Distinguished Name.
+
+    .PARAMETER DistinguishedName
+    The X500 Distinguished Name.
+#>
+function Get-CertificateCommonName
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $DistinguishedName
+    )
+
+    return ($DistinguishedName.split(',') |
+        ForEach-Object -Process { $_.TrimStart(' ') } |
+        Where-Object -FilterScript { $_ -match 'CN=' }).replace('CN=', '')
 }
