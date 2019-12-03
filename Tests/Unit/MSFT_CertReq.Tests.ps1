@@ -115,7 +115,10 @@ try
             return $true
         }
 
-        $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{FriendlyName = 'Subject Alternative Name' }
+        $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{
+            FriendlyName = 'Subject Alternative Name'
+        }
+
         $sanExt = [PSCustomObject] @{
             Oid      = $sanOid
             Critical = $false
@@ -1831,10 +1834,18 @@ OID = $oid
         Describe 'MSFT_CertReq\ConvertTo-StringEnclosedInDoubleQuotes' {
             Context 'When called with test values' {
                 $testValues = @(
-                    @{ Value = 'test' },
-                    @{ Value = '"test' },
-                    @{ Value = 'test"' },
-                    @{ Value = '"test"' }
+                    @{
+                        Value = 'test'
+                    },
+                    @{
+                        Value = '"test'
+                    },
+                    @{
+                        Value = 'test"'
+                    },
+                    @{
+                        Value = '"test"'
+                    }
                 )
 
                 It 'Should return ''"test"'' when called with ''<Value>''' -TestCases $testValues {

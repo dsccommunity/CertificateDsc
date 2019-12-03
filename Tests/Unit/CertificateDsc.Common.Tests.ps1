@@ -19,7 +19,9 @@ InModuleScope 'CertificateDsc.Common' {
     Describe 'CertificateDsc.Common\Test-DscParameterState' -Tag TestDscParameterState {
         Context -Name 'When passing values' -Fixture {
             It 'Should return true for two identical tables' {
-                $mockDesiredValues = @{ Example = 'test' }
+                $mockDesiredValues = @{
+                    Example = 'test'
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockDesiredValues
@@ -30,8 +32,12 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when a value is different for [System.String]' {
-                $mockCurrentValues = @{ Example = [System.String] 'something' }
-                $mockDesiredValues = @{ Example = [System.String] 'test' }
+                $mockCurrentValues = @{
+                    Example = [System.String] 'something'
+                }
+                $mockDesiredValues = @{
+                    Example = [System.String] 'test'
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -42,8 +48,12 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when a value is different for [System.Int32]' {
-                $mockCurrentValues = @{ Example = [System.Int32] 1 }
-                $mockDesiredValues = @{ Example = [System.Int32] 2 }
+                $mockCurrentValues = @{
+                    Example = [System.Int32] 1
+                }
+                $mockDesiredValues = @{
+                    Example = [System.Int32] 2
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -54,8 +64,12 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when a value is different for [Int16]' {
-                $mockCurrentValues = @{ Example = [System.Int16] 1 }
-                $mockDesiredValues = @{ Example = [System.Int16] 2 }
+                $mockCurrentValues = @{
+                    Example = [System.Int16] 1
+                }
+                $mockDesiredValues = @{
+                    Example = [System.Int16] 2
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -66,8 +80,12 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when a value is different for [UInt16]' {
-                $mockCurrentValues = @{ Example = [System.UInt16] 1 }
-                $mockDesiredValues = @{ Example = [System.UInt16] 2 }
+                $mockCurrentValues = @{
+                    Example = [System.UInt16] 1
+                }
+                $mockDesiredValues = @{
+                    Example = [System.UInt16] 2
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -78,8 +96,12 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when a value is different for [Boolean]' {
-                $mockCurrentValues = @{ Example = [System.Boolean] $true }
-                $mockDesiredValues = @{ Example = [System.Boolean] $false }
+                $mockCurrentValues = @{
+                    Example = [System.Boolean] $true
+                }
+                $mockDesiredValues = @{
+                    Example = [System.Boolean] $false
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -91,7 +113,9 @@ InModuleScope 'CertificateDsc.Common' {
 
             It 'Should return false when a value is missing' {
                 $mockCurrentValues = @{ }
-                $mockDesiredValues = @{ Example = 'test' }
+                $mockDesiredValues = @{
+                    Example = 'test'
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -102,8 +126,15 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return true when only a specified value matches, but other non-listed values do not' {
-                $mockCurrentValues = @{ Example = 'test'; SecondExample = 'true' }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false' }
+                $mockCurrentValues = @{
+                    Example = 'test'
+                    SecondExample = 'true'
+                }
+
+                $mockDesiredValues = @{
+                    Example = 'test'
+                    SecondExample = 'false'
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -115,8 +146,14 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when only specified values do not match, but other non-listed values do ' {
-                $mockCurrentValues = @{ Example = 'test'; SecondExample = 'true' }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false' }
+                $mockCurrentValues = @{
+                    Example = 'test'
+                    SecondExample = 'true'
+                }
+                $mockDesiredValues = @{
+                    Example = 'test'
+                    SecondExample = 'false'
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -129,7 +166,10 @@ InModuleScope 'CertificateDsc.Common' {
 
             It 'Should return false when an empty hash table is used in the current values' {
                 $mockCurrentValues = @{ }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = 'false' }
+                $mockDesiredValues = @{
+                    Example = 'test'
+                    SecondExample = 'false'
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -140,7 +180,10 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return true when evaluating a table against a CimInstance' {
-                $mockCurrentValues = @{ Handle = '0'; ProcessId = '1000' }
+                $mockCurrentValues = @{
+                    Handle = '0'
+                    ProcessId = '1000'
+                }
 
                 $mockWin32ProcessProperties = @{
                     Handle    = 0
@@ -166,7 +209,10 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when evaluating a table against a CimInstance and a value is wrong' {
-                $mockCurrentValues = @{ Handle = '1'; ProcessId = '1000' }
+                $mockCurrentValues = @{
+                    Handle = '1'
+                    ProcessId = '1000'
+                }
 
                 $mockWin32ProcessProperties = @{
                     Handle    = 0
@@ -192,8 +238,14 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return true when evaluating a hash table containing an array' {
-                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('1', '2') }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
+                $mockCurrentValues = @{
+                    Example = 'test'
+                    SecondExample = @('1', '2')
+                }
+                $mockDesiredValues = @{
+                    Example = 'test'
+                    SecondExample = @('1', '2')
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -204,8 +256,15 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when evaluating a hash table containing an array with wrong values' {
-                $mockCurrentValues = @{ Example = 'test'; SecondExample = @('A', 'B') }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
+                $mockCurrentValues = @{
+                    Example = 'test'
+                    SecondExample = @('A', 'B')
+                }
+
+                $mockDesiredValues = @{
+                    Example = 'test'
+                    SecondExample = @('1', '2')
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -216,8 +275,14 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when evaluating a hash table containing an array, but the CurrentValues are missing an array' {
-                $mockCurrentValues = @{ Example = 'test' }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
+                $mockCurrentValues = @{
+                    Example = 'test'
+                }
+
+                $mockDesiredValues = @{
+                    Example = 'test'
+                    SecondExample = @('1', '2')
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -228,8 +293,15 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when evaluating a hash table containing an array, but the property i CurrentValues is $null' {
-                $mockCurrentValues = @{ Example = 'test'; SecondExample = $null }
-                $mockDesiredValues = @{ Example = 'test'; SecondExample = @('1', '2') }
+                $mockCurrentValues = @{
+                    Example = 'test'
+                    SecondExample = $null
+                }
+
+                $mockDesiredValues = @{
+                    Example = 'test'
+                    SecondExample = @('1', '2')
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -242,7 +314,9 @@ InModuleScope 'CertificateDsc.Common' {
 
         Context -Name 'When passing invalid types for DesiredValues' -Fixture {
             It 'Should throw the correct error when DesiredValues is of wrong type' {
-                $mockCurrentValues = @{ Example = 'something' }
+                $mockCurrentValues = @{
+                    Example = 'something'
+                }
                 $mockDesiredValues = 'NotHashTable'
 
                 $testParameters = @{
@@ -273,8 +347,13 @@ InModuleScope 'CertificateDsc.Common' {
                     }
                 }
 
-                $mockCurrentValues = @{ Example = New-Object -TypeName MockUnknownType }
-                $mockDesiredValues = @{ Example = New-Object -TypeName MockUnknownType }
+                $mockCurrentValues = @{
+                    Example = New-Object -TypeName MockUnknownType
+                }
+
+                $mockDesiredValues = @{
+                    Example = New-Object -TypeName MockUnknownType
+                }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -289,7 +368,9 @@ InModuleScope 'CertificateDsc.Common' {
 
         Context -Name 'When passing an CimInstance as DesiredValue and ValuesToCheck is $null' -Fixture {
             It 'Should throw the correct error' {
-                $mockCurrentValues = @{ Example = 'something' }
+                $mockCurrentValues = @{
+                    Example = 'something'
+                }
 
                 $mockWin32ProcessProperties = @{
                     Handle    = 0
@@ -769,7 +850,9 @@ InModuleScope 'CertificateDsc.Common' {
         }
 
         Context 'When FIPS is enabled' {
-            Mock -CommandName Get-ItemProperty -MockWith { @{ Enabled = 1 } }
+            Mock -CommandName Get-ItemProperty -MockWith { @{
+                Enabled = 1
+            } }
 
             Context 'When a single valid FIPS thumbrpint by parameter is passed' {
                 $result = Test-Thumbprint -Thumbprint $validFipsThumbprint
@@ -1276,7 +1359,7 @@ InModuleScope 'CertificateDsc.Common' {
                 [CmdletBinding()]
                 param
                 (
-                    $DomainName
+                    [Parameter]$DomainName
                 )
                 return New-Object -TypeName psobject -Property @{
                     Children = @(
@@ -1317,7 +1400,7 @@ InModuleScope 'CertificateDsc.Common' {
                 [CmdletBinding()]
                 param
                 (
-                    $DomainName
+                    [Parameter]$DomainName
                 )
                 return New-Object -TypeName psobject -Property @{
                     Children = @(
@@ -1356,7 +1439,7 @@ InModuleScope 'CertificateDsc.Common' {
                 [CmdletBinding()]
                 param
                 (
-                    $DomainName
+                    [Parameter]$DomainName
                 )
                 New-InvalidOperationException `
                     -Message ($LocalizedData.DomainNotJoinedError)
