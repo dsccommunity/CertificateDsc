@@ -83,6 +83,7 @@ InModuleScope 'CertificateDsc.Common' {
                 $mockCurrentValues = @{
                     Example = [System.UInt16] 1
                 }
+
                 $mockDesiredValues = @{
                     Example = [System.UInt16] 2
                 }
@@ -99,6 +100,7 @@ InModuleScope 'CertificateDsc.Common' {
                 $mockCurrentValues = @{
                     Example = [System.Boolean] $true
                 }
+
                 $mockDesiredValues = @{
                     Example = [System.Boolean] $false
                 }
@@ -112,7 +114,8 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when a value is missing' {
-                $mockCurrentValues = @{ }
+                $mockCurrentValues = @{}
+
                 $mockDesiredValues = @{
                     Example = 'test'
                 }
@@ -150,6 +153,7 @@ InModuleScope 'CertificateDsc.Common' {
                     Example = 'test'
                     SecondExample = 'true'
                 }
+
                 $mockDesiredValues = @{
                     Example = 'test'
                     SecondExample = 'false'
@@ -165,7 +169,8 @@ InModuleScope 'CertificateDsc.Common' {
             }
 
             It 'Should return false when an empty hash table is used in the current values' {
-                $mockCurrentValues = @{ }
+                $mockCurrentValues = @{}
+
                 $mockDesiredValues = @{
                     Example = 'test'
                     SecondExample = 'false'
@@ -242,6 +247,7 @@ InModuleScope 'CertificateDsc.Common' {
                     Example = 'test'
                     SecondExample = @('1', '2')
                 }
+
                 $mockDesiredValues = @{
                     Example = 'test'
                     SecondExample = @('1', '2')
@@ -850,9 +856,11 @@ InModuleScope 'CertificateDsc.Common' {
         }
 
         Context 'When FIPS is enabled' {
-            Mock -CommandName Get-ItemProperty -MockWith { @{
-                Enabled = 1
-            } }
+            Mock -CommandName Get-ItemProperty -MockWith {
+                @{
+                    Enabled = 1
+                }
+            }
 
             Context 'When a single valid FIPS thumbrpint by parameter is passed' {
                 $result = Test-Thumbprint -Thumbprint $validFipsThumbprint
