@@ -48,11 +48,13 @@ function Get-InvalidOperationRecord
     [CmdletBinding()]
     param
     (
-        [Parameter][ValidateNotNullOrEmpty()]
+        [Parameter]
+        [ValidateNotNullOrEmpty()]
         [String]
         $Message,
 
-        [Parameter][ValidateNotNull()]
+        [Parameter]
+        [ValidateNotNull()]
         [System.Management.Automation.ErrorRecord]
         $ErrorRecord
     )
