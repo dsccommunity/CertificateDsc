@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed unit test according to styling guide.
 - Corrected incorrectly located entries in `CHANGELOG.MD`.
 - Fix bug `Find-Certificate` when invalid certificate path is passed - fixes
   [Issue #208](https://github.com/PowerShell/CertificateDsc/issues/208).

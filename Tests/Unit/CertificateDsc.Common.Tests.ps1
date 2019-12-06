@@ -1367,7 +1367,8 @@ InModuleScope 'CertificateDsc.Common' {
                 [CmdletBinding()]
                 param
                 (
-                    [Parameter]$DomainName
+                    [Parameter()]
+                    $DomainName
                 )
                 return New-Object -TypeName psobject -Property @{
                     Children = @(
@@ -1408,7 +1409,8 @@ InModuleScope 'CertificateDsc.Common' {
                 [CmdletBinding()]
                 param
                 (
-                    [Parameter]$DomainName
+                    [Parameter()]
+                    $DomainName
                 )
                 return New-Object -TypeName psobject -Property @{
                     Children = @(
@@ -1447,7 +1449,8 @@ InModuleScope 'CertificateDsc.Common' {
                 [CmdletBinding()]
                 param
                 (
-                    [Parameter]$DomainName
+                    [Parameter()]
+                    $DomainName
                 )
                 New-InvalidOperationException `
                     -Message ($LocalizedData.DomainNotJoinedError)

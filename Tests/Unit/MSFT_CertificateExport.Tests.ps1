@@ -232,10 +232,17 @@ try
                     [CmdletBinding()]
                     param
                     (
-                        [Parameter]$FilePath,
-                        [Parameter]$Cert,
-                        [Parameter]$Force,
-                        [Parameter]$Type
+                        [Parameter()]
+                        $FilePath,
+
+                        [Parameter()]
+                        $Cert,
+
+                        [Parameter()]
+                        $Force,
+
+                        [Parameter()]
+                        $Type
                     )
                 }
 
@@ -264,13 +271,26 @@ try
                     [CmdletBinding()]
                     param
                     (
-                        [Parameter]$FilePath,
-                        [Parameter]$Cert,
-                        [Parameter]$Force,
-                        [Parameter]$Type,
-                        [Parameter]$Password,
-                        [Parameter]$ChainOption,
-                        [Parameter]$ProtectTo
+                        [Parameter()]
+                        $FilePath,
+
+                        [Parameter()]
+                        $Cert,
+
+                        [Parameter()]
+                        $Force,
+
+                        [Parameter()]
+                        $Type,
+
+                        [Parameter()]
+                        $Password,
+
+                        [Parameter()]
+                        $ChainOption,
+
+                        [Parameter()]
+                        $ProtectTo
                     )
                 }
 
