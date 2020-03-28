@@ -115,7 +115,10 @@ try
             return $true
         }
 
-        $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{FriendlyName = 'Subject Alternative Name' }
+        $sanOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{
+            FriendlyName = 'Subject Alternative Name'
+        }
+
         $sanExt = [PSCustomObject] @{
             Oid      = $sanOid
             Critical = $false
@@ -1820,7 +1823,7 @@ OID = $oid
             }
 
             Context 'When called with certificate issuer with multiple X500 paths not matching the CA root name' {
-                It 'Should return a true' {
+                It 'Should return a false' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=abc.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
                         -CARootName 'xyz.contoso.com' | Should -Be $false
@@ -1831,10 +1834,18 @@ OID = $oid
         Describe 'MSFT_CertReq\ConvertTo-StringEnclosedInDoubleQuotes' {
             Context 'When called with test values' {
                 $testValues = @(
-                    @{ Value = 'test' },
-                    @{ Value = '"test' },
-                    @{ Value = 'test"' },
-                    @{ Value = '"test"' }
+                    @{
+                        Value = 'test'
+                    },
+                    @{
+                        Value = '"test'
+                    },
+                    @{
+                        Value = 'test"'
+                    },
+                    @{
+                        Value = '"test"'
+                    }
                 )
 
                 It 'Should return ''"test"'' when called with ''<Value>''' -TestCases $testValues {
@@ -1846,6 +1857,29 @@ OID = $oid
                     )
 
                     ConvertTo-StringEnclosedInDoubleQuotes -Value $Value | Should -Be '"test"'
+                }
+            }
+        }
+
+        Describe 'MSFT_CertReq\Get-CertificateCommonName' {
+            Context 'When called with certificate distinguished name with single X500 path' {
+                It 'Should return a string value containing only exactly the Common Name' {
+                    Get-CertificateCommonName `
+                        -DistinguishedName 'CN=xyz.contoso.com' | Should -BeExactly "xyz.contoso.com"
+                }
+            }
+
+            Context 'When called with certificate distinguished name with multiple X500 paths' {
+                It 'Should return a string value containing only exactly the Common Name' {
+                    Get-CertificateCommonName `
+                        -DistinguishedName 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeExactly "xyz.contoso.com"
+                }
+            }
+
+            Context 'When called with certificate distinguished name with multiple X500 paths and CN at the end' {
+                It 'Should return a string value containing only exactly the Common Name' {
+                    Get-CertificateCommonName `
+                        -DistinguishedName 'E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country, CN=xyz.contoso.com' | Should -BeExactly "xyz.contoso.com"
                 }
             }
         }

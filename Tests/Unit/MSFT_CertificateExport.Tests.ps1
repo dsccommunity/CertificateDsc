@@ -40,15 +40,25 @@ try
             Issuer            = "CN=$certificateSubject"
             FriendlyName      = $certificateFriendlyName
             DnsNameList       = @(
-                @{ Unicode = $certificateDNSNames[0] }
-                @{ Unicode = $certificateDNSNames[1] }
+                @{
+                    Unicode = $certificateDNSNames[0]
+                }
+                @{
+                    Unicode = $certificateDNSNames[1]
+                }
             )
             Extensions        = @(
-                @{ EnhancedKeyUsages = ($certificateKeyUsage -join ', ') }
+                @{
+                    EnhancedKeyUsages = ($certificateKeyUsage -join ', ')
+                }
             )
             EnhancedKeyUsages = @(
-                @{ FriendlyName = $certificateEKU[0] }
-                @{ FriendlyName = $certificateEKU[1] }
+                @{
+                    FriendlyName = $certificateEKU[0]
+                }
+                @{
+                    FriendlyName = $certificateEKU[1]
+                }
             )
             NotBefore         = (Get-Date).AddDays(-30) # Issued on
             NotAfter          = (Get-Date).AddDays(31) # Expires after
@@ -222,9 +232,16 @@ try
                     [CmdletBinding()]
                     param
                     (
+                        [Parameter()]
                         $FilePath,
+
+                        [Parameter()]
                         $Cert,
+
+                        [Parameter()]
                         $Force,
+
+                        [Parameter()]
                         $Type
                     )
                 }
@@ -254,12 +271,25 @@ try
                     [CmdletBinding()]
                     param
                     (
+                        [Parameter()]
                         $FilePath,
+
+                        [Parameter()]
                         $Cert,
+
+                        [Parameter()]
                         $Force,
+
+                        [Parameter()]
                         $Type,
+
+                        [Parameter()]
                         $Password,
+
+                        [Parameter()]
                         $ChainOption,
+
+                        [Parameter()]
                         $ProtectTo
                     )
                 }

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Fixed unit test according to styling guide.
+- Corrected incorrectly located entries in `CHANGELOG.MD`.
+- Fix bug `Find-Certificate` when invalid certificate path is passed - fixes
+  [Issue #208](https://github.com/PowerShell/CertificateDsc/issues/208).
+- CertReq:
+  - Added `Get-CertificateCommonName` function as a fix for multiple
+    certificates being issued when having a third party CA which doesn't
+    format the Issuer CN in the same order as a MS CA - fixes [Issue #207](https://github.com/PowerShell/CertificateDsc/issues/207).
+  - Updated `Compare-CertificateIssuer` to use the new
+    `Get-CertificateCommonName` function.
+  - Added check for X500 subject name in Get-TargetResource, which already
+    exists in Test- and Set-TargetResource - fixes [Issue #210](https://github.com/PowerShell/CertificateDsc/issues/210).
+  - Corrected name of working path to remove `x` - fixes [Issue #211](https://github.com/PowerShell/CertificateDsc/issues/211).
+
 ## 4.7.0.0
 
 - Opted into Common Tests 'Common Tests - Validate Localization' -
