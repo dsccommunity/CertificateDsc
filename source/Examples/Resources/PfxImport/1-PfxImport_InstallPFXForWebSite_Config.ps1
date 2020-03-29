@@ -16,6 +16,7 @@
 #>
 
 #Requires -module CertificateDsc
+#Requires -module xWebAdministration
 
 <#
     .DESCRIPTION
