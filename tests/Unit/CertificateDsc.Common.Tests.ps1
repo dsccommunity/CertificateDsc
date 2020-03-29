@@ -22,6 +22,8 @@ $script:subModuleFile = Join-Path -Path $script:subModulesFolder -ChildPath "$($
 Import-Module $script:subModuleFile -Force -ErrorAction Stop
 #endregion HEADER
 
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+
 InModuleScope $script:subModuleName {
     Describe 'CertificateDsc.Common\Test-DscParameterState' -Tag TestDscParameterState {
         Context -Name 'When passing values' -Fixture {
