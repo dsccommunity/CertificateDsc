@@ -1,8 +1,5 @@
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
-param ()
-
-$script:dscModuleName = 'ComputerManagementDsc'
-$script:dscResourceName = 'DSC_PfxImport'
+$script:dscModuleName = 'CertificateDsc'
+$script:dscResourceName = 'DSC_CertificateImport'
 
 function Invoke-TestSetup
 {
@@ -47,41 +44,23 @@ try
             }
         ) -join ''
 
-        $testFile = 'test.pfx'
-
-        $testUsername = 'DummyUsername'
-        $testPassword = 'DummyPassword'
-        $testCredential = New-Object `
-            -TypeName System.Management.Automation.PSCredential `
-            -ArgumentList $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
+        $testFile = 'test.cer'
+        $certificateFriendlyName = 'Test Certificate Friendly Name'
 
         $validPath = "TestDrive:\$testFile"
         $validCertPath = "Cert:\LocalMachine\My"
-        $validCertFullPath = '{0}\{1}' -f $validCertPath, $validThumbprint
 
-        $certificateFriendlyName = 'Test Certificate Friendly Name'
-
-        $validCertificateWithPrivateKey_mock = {
+        $validCertificate_mock = {
             @{
-                Thumbprint    = $validThumbprint
-                HasPrivateKey = $true
-                FriendlyName  = $certificateFriendlyName
-            }
-        }
-
-        $validCertificateWithoutPrivateKey_mock = {
-            @{
-                Thumbprint    = $validThumbprint
-                HasPrivateKey = $false
-                FriendlyName  = $certificateFriendlyName
+                Thumbprint   = $validThumbprint
+                FriendlyName = $certificateFriendlyName
             }
         }
 
         $validCertificateWithDifferentFriendlyName_mock = {
             @{
-                Thumbprint    = $validThumbprint
-                HasPrivateKey = $true
-                FriendlyName  = 'Different Friendly Name'
+                Thumbprint   = $validThumbprint
+                FriendlyName = 'Different Friendly Name'
             }
         }
 
@@ -95,11 +74,9 @@ try
                 $Store -eq 'My'
         }
 
-        $importPfxCertificate_parameterfilter = {
+        $importCertificateEx_parameterfilter = {
             $CertStoreLocation -eq $validCertPath -and `
-                $FilePath -eq $validPath -and `
-                $Exportable -eq $True -and `
-                $Password -eq $testCredential.Password
+                $FilePath -eq $validPath
         }
 
         $setCertificateFriendlyNameInCertificateStore_parameterfilter = {
@@ -116,14 +93,12 @@ try
         }
 
         $presentParams = @{
-            Thumbprint = $validThumbprint
-            Path       = $validPath
-            Ensure     = 'Present'
-            Location   = 'LocalMachine'
-            Store      = 'My'
-            Exportable = $True
-            Credential = $testCredential
-            Verbose    = $True
+            Thumbprint   = $validThumbprint
+            Path         = $validPath
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Verbose      = $true
         }
 
         $presentParamsWithFriendlyName = @{
@@ -132,24 +107,23 @@ try
             Ensure       = 'Present'
             Location     = 'LocalMachine'
             Store        = 'My'
-            Exportable   = $True
-            Credential   = $testCredential
-            Verbose      = $True
+            Verbose      = $true
             FriendlyName = $certificateFriendlyName
         }
 
         $absentParams = @{
             Thumbprint = $validThumbprint
+            Path       = $validPath
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
             Store      = 'My'
-            Verbose    = $True
+            Verbose    = $true
         }
 
-        Describe 'DSC_PfxImport\Get-TargetResource' -Tag 'Get' {
-            Context 'When the certificate exists with a private key' {
+        Describe 'DSC_CertificateImport\Get-TargetResource' -Tag 'Get' {
+            Context 'When the certificate exists' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithPrivateKey_mock
+                    -MockWith $validCertificate_mock
 
                 It 'Should not throw exception' {
                     {
@@ -165,35 +139,6 @@ try
                     $script:result.Thumbprint | Should -BeExactly $validThumbprint
                     $script:result.Path | Should -BeExactly $validPath
                     $script:result.Ensure | Should -BeExactly 'Present'
-                    $script:result.FriendlyName | Should -BeExactly $certificateFriendlyName
-                }
-
-                It 'Should call the expected mocks' {
-                    Assert-MockCalled `
-                        -CommandName Get-CertificateFromCertificateStore `
-                        -ParameterFilter $getCertificateFromCertificateStore_parameterfilter `
-                        -Exactly -Times 1
-                }
-            }
-
-            Context 'When the certificate exists without private key' {
-                Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithoutPrivateKey_mock
-
-                It 'Should not throw exception' {
-                    {
-                        $script:result = Get-TargetResource @presentParams
-                    } | Should -Not -Throw
-                }
-
-                It 'Should return a hashtable' {
-                    $script:result | Should -BeOfType System.Collections.Hashtable
-                }
-
-                It 'Should contain the input values' {
-                    $script:result.Thumbprint | Should -BeExactly $validThumbprint
-                    $script:result.Path | Should -BeExactly $validPath
-                    $script:result.Ensure | Should -BeExactly 'Absent'
                     $script:result.FriendlyName | Should -BeExactly $certificateFriendlyName
                 }
 
@@ -234,7 +179,7 @@ try
             }
         }
 
-        Describe 'DSC_PfxImport\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_CertificateImport\Test-TargetResource' -Tag 'Test' {
             Context 'When certificate is not in store but should be' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
@@ -253,7 +198,7 @@ try
 
             Context 'When certificate is in store and should be' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithPrivateKey_mock
+                    -MockWith $validCertificate_mock
 
                 It 'Should return true' {
                     Test-TargetResource @presentParams | Should -Be $true
@@ -262,7 +207,7 @@ try
 
             Context 'When certificate is in store and should be and the FriendlyName is correct' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithPrivateKey_mock
+                    -MockWith $validCertificate_mock
 
                 It 'Should return true' {
                     Test-TargetResource @presentParamsWithFriendlyName | Should -Be $true
@@ -280,7 +225,7 @@ try
 
             Context 'When certificate is in store but should not be' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithPrivateKey_mock
+                    -MockWith $validCertificate_mock
 
                 It 'Should return false' {
                     Test-TargetResource @absentParams | Should -Be $false
@@ -288,15 +233,15 @@ try
             }
         }
 
-        Describe 'DSC_PfxImport\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_CertificateImport\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Test-Path -MockWith { $true }
-                Mock -CommandName Import-PfxCertificate
+                Mock -CommandName Import-CertificateEx
                 Mock -CommandName Remove-CertificateFromCertificateStore
                 Mock -CommandName Set-CertificateFriendlyNameInCertificateStore
             }
 
-            Context 'When PFX file exists and certificate should be in the store but is not' {
+            Context 'When certificate file exists and certificate should be in the store but is not' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
                 It 'Should not throw exception' {
@@ -312,10 +257,10 @@ try
                         -Exactly -Times 1
                 }
 
-                It 'Should call Import-PfxCertificate with expected parameters' {
+                It 'Should call Import-Certificate with expected parameters' {
                     Assert-MockCalled `
-                        -CommandName Import-PfxCertificate `
-                        -ParameterFilter $importPfxCertificate_parameterfilter `
+                        -CommandName Import-CertificateEx `
+                        -ParameterFilter $importCertificateEx_parameterfilter `
                         -Exactly -Times 1
                 }
 
@@ -328,9 +273,9 @@ try
                 }
             }
 
-            Context 'When PFX file exists and certificate should be in the store and is' {
+            Context 'When certificate file exists and certificate should be in the store and is' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithPrivateKey_mock
+                    -MockWith $validCertificate_mock
 
                 It 'Should not throw exception' {
                     {
@@ -338,12 +283,12 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Test-Path with expected parameters' {
+                It 'Should not call Test-Path' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should not call Import-PfxCertificate with expected parameters' {
-                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                It 'Should not call Import-Certificate' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -355,7 +300,7 @@ try
                 }
             }
 
-            Context 'When PFX file exists and certificate should be in the store and is and the friendly name is different' {
+            Context 'When certificate file exists and certificate should be in the store and is and the friendly name is different' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithDifferentFriendlyName_mock
 
@@ -369,8 +314,8 @@ try
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should not call Import-PfxCertificate with the parameters supplied' {
-                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                It 'Should not call Import-Certificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
                 It 'Should call Set-CertificateFriendlyNameInCertificateStore with expected parameters' {
@@ -385,9 +330,9 @@ try
                 }
             }
 
-            Context 'When PFX file exists and certificate should be in the store and is and the friendly name is the same' {
+            Context 'When certificate file exists and certificate should be in the store and is and the friendly name is the same' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithPrivateKey_mock
+                    -MockWith $validCertificate_mock
 
                 It 'Should not throw exception' {
                     {
@@ -399,8 +344,8 @@ try
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should not call Import-PfxCertificate with the parameters supplied' {
-                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                It 'Should not call Import-Certificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -412,10 +357,9 @@ try
                 }
             }
 
-
-            Context 'When PFX file exists and certificate should not be in the store but is' {
+            Context 'When certificate file exists and certificate should not be in the store but is' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
-                    -MockWith $validCertificateWithPrivateKey_mock
+                    -MockWith $validCertificate_mock
 
                 It 'Should not throw exception' {
                     {
@@ -427,8 +371,8 @@ try
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should not call Import-PfxCertificate' {
-                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                It 'Should not call Import-CertificateEx' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -443,7 +387,7 @@ try
                 }
             }
 
-            Context 'When PFX file exists and certificate should not be in the store and is not' {
+            Context 'When certificate file exists and certificate should not be in the store and is not' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
                 It 'Should not throw exception' {
@@ -456,8 +400,8 @@ try
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
-                It 'Should not call Import-PfxCertificate' {
-                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                It 'Should not call Import-CertificateEx' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -472,9 +416,7 @@ try
                 }
             }
 
-            Context 'When PFX file does not exist and certificate should be in the store' {
-                Mock -CommandName Get-CertificateFromCertificateStore
-
+            Context 'When certificate file does not exist and certificate should be in the store' {
                 Mock -CommandName Test-Path -MockWith { $false }
 
                 It 'Should throw exception' {
@@ -483,15 +425,15 @@ try
                     } | Should -Throw ($script:localizedData.CertificatePfxFileNotFoundError -f $validPath)
                 }
 
-                It 'Should call Test-Path with expected parameters' {
+                It 'Should call Test-Path with the parameters supplied' {
                     Assert-MockCalled `
                         -CommandName Test-Path `
                         -ParameterFilter $testPath_parameterfilter `
                         -Exactly -Times 1
                 }
 
-                It 'Should not call Import-PfxCertificate' {
-                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                It 'Should not call Import-CertificateEx' {
+                    Assert-MockCalled -CommandName Import-CertificateEx -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {

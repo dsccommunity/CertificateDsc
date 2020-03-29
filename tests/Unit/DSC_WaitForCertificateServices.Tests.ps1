@@ -1,4 +1,4 @@
-$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscModuleName = 'CertificateDsc'
 $script:dscResourceName = 'DSC_WaitForCertificateServices'
 
 function Invoke-TestSetup

@@ -25,6 +25,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.PDT' -Sc
 function Get-Arguments
 {
     [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -39,13 +40,13 @@ function Get-Arguments
         $NewArgumentNames
     )
 
-    $returnValue=@{}
+    $returnValue = @{}
 
-    for ($i=0;$i -lt $ArgumentNames.Count;$i++)
+    for ($i=0; $i -lt $ArgumentNames.Count; $i++)
     {
         $argumentName = $ArgumentNames[$i]
 
-        if ($NewArgumentNames -eq $null)
+        if ($null -eq $NewArgumentNames)
         {
             $newArgumentName = $argumentName
         }
@@ -356,7 +357,7 @@ namespace Source
 }
 
 "@
-    Add-Type -TypeDefinition $ProgramSource -ReferencedAssemblies "System.ServiceProcess"
+    Add-Type -TypeDefinition $ProgramSource -ReferencedAssemblies 'System.ServiceProcess'
 } # end function Initialize-PInvoke
 
 <#
@@ -379,11 +380,11 @@ function Get-Win32Process
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.Strng]
         $Path,
 
         [Parameter()]
-        [String]
+        [System.Strng]
         $Arguments,
 
         [Parameter()]
@@ -393,19 +394,21 @@ function Get-Win32Process
 
     $fileName = [io.path]::GetFileNameWithoutExtension($Path)
     $getProcesses = @(Get-Process -Name $fileName -ErrorAction SilentlyContinue)
+
     $processes = foreach ($process in $GetProcesses)
     {
         if ($process.Path -ieq $Path)
         {
             try
             {
-                [wmi]"Win32_Process.Handle='$($process.Id)'"
+                [wmi] "Win32_Process.Handle='$($process.Id)'"
             }
             catch
             {
             }
         }
     }
+
     if ($PSBoundParameters.ContainsKey('Credential'))
     {
         $processes = $processes |
@@ -413,10 +416,12 @@ function Get-Win32Process
                 (Get-Win32ProcessOwner $_) -eq $Credential.UserName
             }
     }
-    if ($Arguments -eq $null)
+
+    if ($null -eq $Arguments)
     {
-        $Arguments = ""
+        $Arguments = ''
     }
+
     $processes = $processes |
         Where-Object -FilterScript {
             (Get-Win32ProcessArgumentsFromCommandLine $_.CommandLine) -eq $Arguments
@@ -448,7 +453,8 @@ function Get-Win32ProcessOwner
     catch
     {
     }
-    if ($owner.Domain -ne $null)
+
+    if ($null -ne $owner.Domain)
     {
         return $owner.Domain + "\" + $owner.User
     }
@@ -470,19 +476,22 @@ function Get-Win32ProcessArgumentsFromCommandLine
     param
     (
         [Parameter()]
-        [String]
+        [System.Strng]
         $CommandLine
     )
 
-    if ($commandLine -eq $null)
+    if ($null -eq $commandLine)
     {
-        return ""
+        return ''
     }
+
     $commandLine = $commandLine.Trim()
+
     if ($commandLine.Length -eq 0)
     {
-        return ""
+        return ''
     }
+
     if ($commandLine[0] -eq '"')
     {
         $charToLookfor = [char]'"'
@@ -491,11 +500,14 @@ function Get-Win32ProcessArgumentsFromCommandLine
     {
         $charToLookfor = [char]' '
     }
+
     $endOfCommand = $commandLine.IndexOf($charToLookfor ,1)
+
     if ($endOfCommand -eq -1)
     {
-        return ""
+        return ''
     }
+
     return $commandLine.Substring($endOfCommand+1).Trim()
 } # end funcion Get-Win32ProcessArgumentsFromCommandLine
 
@@ -518,11 +530,11 @@ function Start-Win32Process
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.Strng]
         $Path,
 
         [Parameter()]
-        [String]
+        [System.Strng]
         $Arguments,
 
         [Parameter()]
@@ -530,11 +542,14 @@ function Start-Win32Process
         $Credential
     )
 
-    $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
+    $getArguments = Get-Arguments `
+        -FunctionBoundParameters $PSBoundParameters `
+        -ArgumentNames ('Path','Arguments','Credential')
     $processes = @(Get-Win32Process @getArguments)
+
     if ($processes.Count -eq 0)
     {
-        if($PSBoundParameters.ContainsKey("Credential"))
+        if ($PSBoundParameters.ContainsKey('Credential'))
         {
             try
             {
@@ -558,7 +573,7 @@ function Start-Win32Process
                 }
                 catch
                 {
-                    $exception = New-Object System.ArgumentException $_
+                    $exception = New-Object -TypeName System.ArgumentException $_
                     $errorCategory = [System.Management.Automation.ErrorCategory]::OperationStopped
                     $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord $exception, "Win32Exception", $errorCategory, $null
                     $err = $errorRecord
@@ -567,25 +582,30 @@ function Start-Win32Process
         }
         else
         {
-            $startArguments = Get-Arguments $PSBoundParameters `
-                    ("Path",     "Arguments",    "Credential") `
-                    ("FilePath", "ArgumentList", "Credential")
-            if([string]::IsNullOrEmpty($Arguments))
+            $startArguments = Get-Arguments -FunctionBoundParameters $PSBoundParameters `
+                    -ArgumentNames ('Path', 'Arguments', 'Credential') `
+                    -NewArgumentNames ('FilePath', 'ArgumentList', 'Credential')
+
+            if ([System.Strng]::IsNullOrEmpty($Arguments))
             {
-                $null = $startArguments.Remove("ArgumentList")
+                $null = $startArguments.Remove('ArgumentList')
             }
-            $err = Start-Process @StartArguments
+
+            $err = Start-Process @startArguments
         }
-        if($err -ne $null)
+
+        if ($null -ne $err)
         {
             throw $err
         }
-        Wait-Win32ProcessStart @GetArguments
+
+        Wait-Win32ProcessStart @getArguments
     }
     else
     {
         return ($script:localizedData.ProcessAlreadyStarted -f $Path,$processes.ProcessId)
     }
+
     $processes = @(Get-Win32Process @getArguments)
     return ($script:localizedData.ProcessStarted -f $Path,$processes.ProcessId)
 } # end function Start-Win32Process
@@ -613,11 +633,11 @@ function Wait-Win32ProcessStart
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.Strng]
         $Path,
 
         [Parameter()]
-        [String]
+        [System.Strng]
         $Arguments,
 
         [Parameter()]
@@ -629,14 +649,18 @@ function Wait-Win32ProcessStart
         $Timeout = 5000
     )
 
-    $start = [DateTime]::Now
-    $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
+    $start = [System.DateTime]::Now
+    $getArguments = Get-Arguments `
+        -FunctionBoundParameters $PSBoundParameters `
+        -ArgumentNames ('Path','Arguments','Credential')
     $started = (@(Get-Win32Process @GetArguments).Count -ge 1)
-    While (-not $started -and ([DateTime]::Now - $start).TotalMilliseconds -lt $Timeout)
+
+    while (-not $started -and ([System.DateTime]::Now - $start).TotalMilliseconds -lt $Timeout)
     {
         Start-Sleep -Seconds 1
         $started = @(Get-Win32Process @GetArguments).Count -ge 1
     }
+
     return $started
 } # end function Wait-Win32ProcessStart
 
@@ -664,11 +688,11 @@ function Wait-Win32ProcessStop
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.Strng]
         $Path,
 
         [Parameter()]
-        [String]
+        [System.Strng]
         $Arguments,
 
         [Parameter()]
@@ -680,14 +704,18 @@ function Wait-Win32ProcessStop
         $Timeout = 30000
     )
 
-    $start = [DateTime]::Now
-    $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
+    $start = [System.DateTime]::Now
+    $getArguments = Get-Arguments `
+        -FunctionBoundParameters $PSBoundParameters `
+        -ArgumentNames ('Path','Arguments','Credential')
     $stopped = (@(Get-Win32Process @GetArguments).Count -eq 0)
-    While (-not $stopped -and ([DateTime]::Now - $start).TotalMilliseconds -lt $Timeout)
+
+    while (-not $stopped -and ([System.DateTime]::Now - $start).TotalMilliseconds -lt $Timeout)
     {
         Start-Sleep -Seconds 1
         $stopped = (@(Get-Win32Process @GetArguments).Count -eq 0)
     }
+
     return $stopped
 } # end function Wait-Win32ProcessStop
 
@@ -714,11 +742,11 @@ function Wait-Win32ProcessEnd
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.Strng]
         $Path,
 
         [Parameter()]
-        [String]
+        [System.Strng]
         $Arguments,
 
         [Parameter()]
@@ -726,13 +754,17 @@ function Wait-Win32ProcessEnd
         $Credential
     )
 
-    $getArguments = Get-Arguments $PSBoundParameters ("Path","Arguments","Credential")
-    # Wait for the process to start
+    $getArguments = Get-Arguments `
+        -FunctionBoundParameters $PSBoundParameters `
+        -ArgumentNames ('Path','Arguments','Credential')
+
+        # Wait for the process to start
     if (-not (Wait-Win32ProcessStart @getArguments))
     {
         New-InvalidOperationException `
             -Message ($script:localizedData.ProcessFailedToStartError -f $Path,$Arguments)
     }
+
     if (-not (Wait-Win32ProcessStop @getArguments))
     {
         # The process did not stop.

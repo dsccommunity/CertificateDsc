@@ -4,17 +4,17 @@
     These integration tests are configured to use credentials to connect to the CA.
     Therefore, automation of these tests shouldn't be performed using a production CA.
 #>
-
-$script:DSCModuleName = 'CertificateDsc'
-$script:DSCResourceName = 'DSC_CertReq'
+$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscResourceName = 'DSC_CertReq'
 
 <#
     These tests can only be run if a CA is available and configured to be used on the
     computer running these tests. This is usually required to be a domain joined computer.
 #>
-$CertUtilResult = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
-$Result = ([regex]::matches($CertUtilResult, 'Name:[ \t]+`([\sA-Za-z0-9._-]+)''', 'IgnoreCase'))
-if ([String]::IsNullOrEmpty($Result))
+$certUtilResult = & "$env:SystemRoot\system32\certutil.exe" @('-dump')
+$result = ([regex]::matches($certUtilResult, 'Name:[ \t]+`([\sA-Za-z0-9._-]+)''', 'IgnoreCase'))
+
+if ([System.String]::IsNullOrEmpty($result))
 {
     Describe "$($script:DSCResourceName)_Integration" {
         It 'should complete integration tests' {
@@ -23,23 +23,23 @@ if ([String]::IsNullOrEmpty($Result))
     return
 } # if
 
-#region HEADER
-# Integration Test Template Version: 1.1.1
-[System.String] $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+try
 {
-    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath '\DSCResource.Tests\'))
+    Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
+}
+catch [System.IO.FileNotFoundException]
+{
+    throw 'DscResource.Test module dependency not found. Please run ".\build.ps1 -Tasks build" first.'
 }
 
-Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
-$TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:DSCModuleName `
-    -DSCResourceName $script:DSCResourceName `
-    -TestType Integration
-#endregion
+$script:testEnvironment = Initialize-TestEnvironment `
+    -DSCModuleName $script:dscModuleName `
+    -DSCResourceName $script:dscResourceName `
+    -ResourceType 'Mof' `
+    -TestType 'Integration'
 
-# Using try/finally to always cleanup even if something awful happens.
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
+
 try
 {
     Describe "$($script:DSCResourceName)_Integration" {
@@ -244,6 +244,6 @@ try
 }
 finally
 {
-    Restore-TestEnvironment -TestEnvironment $TestEnvironment
+    Restore-TestEnvironment -TestEnvironment $script:testEnvironment
 }
 

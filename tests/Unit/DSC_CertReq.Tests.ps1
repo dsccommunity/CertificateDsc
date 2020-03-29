@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param ()
 
-$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscModuleName = 'CertificateDsc'
 $script:dscResourceName = 'DSC_CertReq'
 
 function Invoke-TestSetup

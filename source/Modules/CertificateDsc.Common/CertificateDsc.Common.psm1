@@ -519,7 +519,7 @@ function Test-CertificatePath
         $Quiet
     )
 
-    Process
+    process
     {
         foreach ($pathNode in $Path)
         {
@@ -584,7 +584,7 @@ function Test-Thumbprint
         $Quiet
     )
 
-    Begin
+    begin
     {
         # Get FIPS registry key
         $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
@@ -620,15 +620,15 @@ function Test-Thumbprint
             $validHash = New-Object `
                 -TypeName PSObject `
                 -Property @{
-                Hash      = $hashProvider.BaseType.Name
-                BitSize   = $bitSize
-                HexLength = $bitSize / 4
-            }
+                    Hash      = $hashProvider.BaseType.Name
+                    BitSize   = $bitSize
+                    HexLength = $bitSize / 4
+                }
             $validHashes += @( $validHash )
         }
     }
 
-    Process
+    process
     {
         foreach ($hash in $Thumbprint)
         {
