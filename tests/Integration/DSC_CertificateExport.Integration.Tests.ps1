@@ -1,5 +1,5 @@
 #region HEADER
-$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscModuleName = 'CertificateDsc'
 $script:dscResourceName = 'DSC_CertificateExport'
 
 try

@@ -5,7 +5,7 @@
     Therefore, automation of these tests shouldn't be performed using a production CA.
 #>
 
-$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscModuleName = 'CertificateDsc'
 $script:dscResourceName = 'DSC_WaitForCertificateServices'
 
 try

@@ -1,7 +1,7 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
 
-$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscModuleName = 'CertificateDsc'
 $script:dscResourceName = 'DSC_PfxImport'
 
 try

@@ -4,7 +4,7 @@
     These integration tests are configured to use credentials to connect to the CA.
     Therefore, automation of these tests shouldn't be performed using a production CA.
 #>
-$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscModuleName = 'CertificateDsc'
 $script:dscResourceName = 'DSC_CertReq'
 
 <#
