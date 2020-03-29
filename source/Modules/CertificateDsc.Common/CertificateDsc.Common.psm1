@@ -593,7 +593,8 @@ function Test-Thumbprint
             Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
             Otherwise, the call to GetTypes() fails.
         #>
-        $allHashProviders = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $null -ne $_.DefinedTypes}).GetTypes()
+        $allHashProviders = ([System.AppDomain]::CurrentDomain.GetAssemblies() |
+            Where-Object -FilterScript { $null -ne $_.DefinedTypes}).GetTypes()
 
         if ($fips -eq $true)
         {
@@ -653,7 +654,7 @@ function Test-Thumbprint
             }
         }
     }
-} # end function Test-Thumbprint
+} # end function [System.DateTime]mbprint
 
 <#
     .SYNOPSIS
