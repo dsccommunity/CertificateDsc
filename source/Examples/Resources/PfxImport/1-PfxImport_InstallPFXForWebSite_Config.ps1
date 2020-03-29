@@ -15,8 +15,8 @@
 .PRIVATEDATA 2016-Datacenter,2016-Datacenter-Server-Core
 #>
 
-#Requires -module CertificateDsc
-#Requires -module xWebAdministration
+#Requires -Modules CertificateDsc
+#Requires -Modules @{ ModuleName="xWebAdministration"; ModuleVersion="3.1.1" }
 
 <#
     .DESCRIPTION
@@ -34,7 +34,7 @@ Configuration PfxImport_InstallPFXForWebSite_Config
     )
 
     Import-DscResource -ModuleName CertificateDsc
-    Import-DscResource -ModuleName xWebAdministration
+    Import-DscResource -ModuleName xWebAdministration -ModuleVersion 3.1.1
 
     Node localhost
     {
