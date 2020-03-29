@@ -1,4 +1,4 @@
-Configuration MSFT_PfxImport_Add_Config {
+Configuration DSC_PfxImport_Add_Config {
     Import-DscResource -ModuleName CertificateDsc
 
     node localhost {
@@ -14,7 +14,7 @@ Configuration MSFT_PfxImport_Add_Config {
     }
 }
 
-Configuration MSFT_PfxImport_Remove_Config {
+Configuration DSC_PfxImport_Remove_Config {
     Import-DscResource -ModuleName CertificateDsc
 
     node localhost {

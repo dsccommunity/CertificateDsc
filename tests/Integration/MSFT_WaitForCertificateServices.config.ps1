@@ -1,4 +1,4 @@
-Configuration MSFT_WaitForCertificateServices_Config {
+Configuration DSC_WaitForCertificateServices_Config {
     Import-DscResource -ModuleName CertificateDsc
 
     node localhost {

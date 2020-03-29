@@ -1,5 +1,5 @@
 $script:DSCModuleName = 'CertificateDsc'
-$script:DSCResourceName = 'MSFT_CertificateExport'
+$script:DSCResourceName = 'DSC_CertificateExport'
 
 # Load the common test helper
 Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global

@@ -2,31 +2,40 @@
 [CmdletBinding()]
 param ()
 
-#region HEADER
-$script:dscModuleName = 'CertificateDsc'
-$script:dscResourceName = 'MSFT_CertReq'
+$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscResourceName = 'DSC_CertReq'
 
-# Unit Test Template Version: 1.2.4
-$script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+function Invoke-TestSetup
 {
-    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
+    try
+    {
+        Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
+    }
+    catch [System.IO.FileNotFoundException]
+    {
+        throw 'DscResource.Test module dependency not found. Please run ".\build.ps1 -Tasks build" first.'
+    }
+
+    $script:testEnvironment = Initialize-TestEnvironment `
+        -DSCModuleName $script:dscModuleName `
+        -DSCResourceName $script:dscResourceName `
+        -ResourceType 'Mof' `
+        -TestType 'Unit'
+
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 }
 
-Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
+function Invoke-TestCleanup
+{
+    Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+}
 
-$TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:dscModuleName `
-    -DSCResourceName $script:dscResourceName `
-    -ResourceType 'Mof' `
-    -TestType Unit
-#endregion HEADER
+Invoke-TestSetup
 
 # Begin Testing
 try
 {
-    InModuleScope $script:DSCResourceName {
+    InModuleScope $script:dscResourceName {
         $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes }).GetTypes()
         $validThumbprint = (
             $definedRuntimeTypes | Where-Object -FilterScript {
@@ -631,7 +640,7 @@ OID = $oid
             )
         }
 
-        Describe 'MSFT_CertReq\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_CertReq\Get-TargetResource' -Tag 'Get' {
             BeforeAll {
                 Mock -CommandName Get-ChildItem `
                     -Mockwith { $validCert } `
@@ -711,7 +720,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_CertReq\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Test-Path -MockWith { $true } `
                     -ParameterFilter $pathCertReqTestReq_parameterFilter
@@ -1040,9 +1049,9 @@ OID = $oid
 
                 Mock -CommandName Import-Module
 
-                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq
+                Mock -CommandName Start-Win32Process -ModuleName DSC_CertReq
 
-                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq
 
                 It 'Should not throw' {
                     { Set-TargetResource @paramsStandard -Verbose } | Should -Not -Throw
@@ -1075,9 +1084,9 @@ OID = $oid
                     Assert-MockCalled -CommandName Remove-Item -Exactly -Times 1 `
                         -ParameterFilter $pathCertReqTestOut_parameterFilter
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName DSC_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq -Exactly -Times 1
 
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 0 `
                         -ParameterFilter $pathCertLocalMachineMy_parameterFilter
@@ -1100,9 +1109,9 @@ OID = $oid
 
                 Mock -CommandName Import-Module
 
-                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq
+                Mock -CommandName Start-Win32Process -ModuleName DSC_CertReq
 
-                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq
 
                 It 'Should not throw' {
                     { Set-TargetResource @paramsStandardProviderNameWithQuotes -Verbose } | Should -Not -Throw
@@ -1135,9 +1144,9 @@ OID = $oid
                     Assert-MockCalled -CommandName Remove-Item -Exactly -Times 1 `
                         -ParameterFilter $pathCertReqTestOut_parameterFilter
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName DSC_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq -Exactly -Times 1
 
                     Assert-MockCalled -CommandName Get-ChildItem -Exactly -Times 0 `
                         -ParameterFilter $pathCertLocalMachineMy_parameterFilter
@@ -1156,9 +1165,9 @@ OID = $oid
 
                 Mock -CommandName Import-Module
 
-                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq
+                Mock -CommandName Start-Win32Process -ModuleName DSC_CertReq
 
-                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq
 
                 It 'Should not throw' {
                     { Set-TargetResource @paramsStandardMachineContext -Verbose } | Should -Not -Throw
@@ -1175,10 +1184,10 @@ OID = $oid
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly 1 `
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName DSC_CertReq -Exactly 1 `
                         -ParameterFilter { $Arguments -like "*-adminforcemachine*" }
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq -Exactly -Times 1
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
@@ -1208,9 +1217,9 @@ OID = $oid
 
                 Mock -CommandName New-InvalidOperationException
 
-                Mock -CommandName Start-Win32Process -ModuleName MSFT_CertReq
+                Mock -CommandName Start-Win32Process -ModuleName DSC_CertReq
 
-                Mock -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq
+                Mock -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq
 
                 It 'Should not throw' {
                     { Set-TargetResource @paramsStandard -Verbose } | Should -Not -Throw
@@ -1227,9 +1236,9 @@ OID = $oid
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName DSC_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq -Exactly -Times 1
 
                     Assert-MockCalled -CommandName Test-Path  -Exactly -Times 1 `
                         -ParameterFilter { $Path -eq 'CertReq-Test.out' }
@@ -1405,9 +1414,9 @@ OID = $oid
 
                     Assert-MockCalled -CommandName CertReq.exe -Exactly -Times 2
 
-                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Start-Win32Process -ModuleName DSC_CertReq -Exactly -Times 1
 
-                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName MSFT_CertReq -Exactly -Times 1
+                    Assert-MockCalled -CommandName Wait-Win32ProcessStop -ModuleName DSC_CertReq -Exactly -Times 1
 
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 1 `
                         -ParameterFilter $pathCertReqTestOut_parameterFilter
@@ -1423,7 +1432,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_CertReq\Test-TargetResource' -Tag 'Test' {
             Context 'When a valid certificate does not exist and a certificate with an empty Subject exists in the Store' {
                 Mock -CommandName Find-CertificateAuthority `
                     -MockWith {
@@ -1696,7 +1705,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Assert-ResourceProperty' {
+        Describe 'DSC_CertReq\Assert-ResourceProperty' {
             Context 'When RSA key type and key length is valid' {
                 It 'Should not throw' {
                     { Assert-ResourceProperty @paramRsaValid -Verbose } | Should -Not -Throw
@@ -1728,7 +1737,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Compare-CertificateSubject' {
+        Describe 'DSC_CertReq\Compare-CertificateSubject' {
             Context 'When called with matching subjects containing with single X500 paths' {
                 It 'Should return a true' {
                     Compare-CertificateSubject `
@@ -1794,7 +1803,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Compare-CertificateIssuer' {
+        Describe 'DSC_CertReq\Compare-CertificateIssuer' {
             Context 'When called with certificate issuer with single X500 paths matching the CA root name' {
                 It 'Should return a true' {
                     Compare-CertificateIssuer `
@@ -1828,7 +1837,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\ConvertTo-StringEnclosedInDoubleQuotes' {
+        Describe 'DSC_CertReq\ConvertTo-StringEnclosedInDoubleQuotes' {
             Context 'When called with test values' {
                 $testValues = @(
                     @{ Value = 'test' },
@@ -1850,7 +1859,7 @@ OID = $oid
             }
         }
 
-        Describe 'MSFT_CertReq\Get-CertificateCommonName' {
+        Describe 'DSC_CertReq\Get-CertificateCommonName' {
             Context 'When called with certificate distinguished name with single X500 path' {
                 It 'Should return a string value containing only exactly the Common Name' {
                     Get-CertificateCommonName `
@@ -1876,5 +1885,5 @@ OID = $oid
 }
 finally
 {
-    Restore-TestEnvironment -TestEnvironment $testEnvironment
+    Invoke-TestCleanup
 }

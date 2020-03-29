@@ -1,23 +1,32 @@
-#region HEADER
-$script:dscModuleName = 'CertificateDsc'
-$script:dscResourceName = 'MSFT_WaitForCertificateServices'
+$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscResourceName = 'DSC_WaitForCertificateServices'
 
-# Unit Test Template Version: 1.2.4
-$script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+function Invoke-TestSetup
 {
-    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
+    try
+    {
+        Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
+    }
+    catch [System.IO.FileNotFoundException]
+    {
+        throw 'DscResource.Test module dependency not found. Please run ".\build.ps1 -Tasks build" first.'
+    }
+
+    $script:testEnvironment = Initialize-TestEnvironment `
+        -DSCModuleName $script:dscModuleName `
+        -DSCResourceName $script:dscResourceName `
+        -ResourceType 'Mof' `
+        -TestType 'Unit'
+
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 }
 
-Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
+function Invoke-TestCleanup
+{
+    Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+}
 
-$TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:dscModuleName `
-    -DSCResourceName $script:dscResourceName `
-    -ResourceType 'Mof' `
-    -TestType Unit
-#endregion HEADER
+Invoke-TestSetup
 
 # Begin Testing
 try
@@ -37,7 +46,7 @@ try
 
         $ca = "$caServerFQDN\$caRootName"
 
-        Describe 'MSFT_WaitForCertificateServices\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_WaitForCertificateServices\Get-TargetResource' -Tag 'Get' {
             Context 'Online CA parameters passed' {
                 $result = Get-TargetResource @paramsCAOnline -Verbose
 
@@ -54,7 +63,7 @@ try
             }
         }
 
-        Describe 'MSFT_WaitForCertificateServices\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_WaitForCertificateServices\Set-TargetResource' -Tag 'Set' {
             Context 'CA is online' {
                 Mock `
                     -CommandName Test-CertificateAuthority `
@@ -104,7 +113,7 @@ try
             }
         }
 
-        Describe 'MSFT_WaitForCertificateServices\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_WaitForCertificateServices\Test-TargetResource' -Tag 'Test' {
             Context 'CA is online' {
                 Mock `
                     -CommandName Test-CertificateAuthority `
@@ -153,7 +162,5 @@ try
 }
 finally
 {
-    #region FOOTER
-    Restore-TestEnvironment -TestEnvironment $TestEnvironment
-    #endregion
+    Invoke-TestCleanup
 }

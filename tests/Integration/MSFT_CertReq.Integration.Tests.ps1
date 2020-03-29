@@ -6,7 +6,7 @@
 #>
 
 $script:DSCModuleName = 'CertificateDsc'
-$script:DSCResourceName = 'MSFT_CertReq'
+$script:DSCResourceName = 'DSC_CertReq'
 
 <#
     These tests can only be run if a CA is available and configured to be used on the

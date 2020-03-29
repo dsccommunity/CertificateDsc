@@ -6,7 +6,7 @@
 #>
 
 $script:DSCModuleName = 'CertificateDsc'
-$script:DSCResourceName = 'MSFT_WaitForCertificateServices'
+$script:DSCResourceName = 'DSC_WaitForCertificateServices'
 
 # Load the common test helper
 Import-Module -Name (Join-Path -Path (Join-Path -Path (Split-Path $PSScriptRoot -Parent) -ChildPath 'TestHelpers') -ChildPath 'CommonTestHelper.psm1') -Global

@@ -8,7 +8,7 @@ Import-Module -Name (Join-Path -Path $modulePath `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
 # Import Localization Strings.
-$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_CertificateExport'
+$script:localizedData = Get-LocalizedData -ResourceName 'DSC_CertificateExport'
 
 <#
     .SYNOPSIS

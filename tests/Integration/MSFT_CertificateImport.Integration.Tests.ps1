@@ -1,5 +1,5 @@
 $script:DSCModuleName = 'CertificateDsc'
-$script:DSCResourceName = 'MSFT_CertificateImport'
+$script:DSCResourceName = 'DSC_CertificateImport'
 
 #region HEADER
 # Integration Test Template Version: 1.1.1

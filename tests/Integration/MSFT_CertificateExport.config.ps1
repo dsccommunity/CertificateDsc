@@ -1,4 +1,4 @@
-Configuration MSFT_CertificateExport_Config {
+Configuration DSC_CertificateExport_Config {
     Import-DscResource -ModuleName CertificateDsc
 
     node localhost {

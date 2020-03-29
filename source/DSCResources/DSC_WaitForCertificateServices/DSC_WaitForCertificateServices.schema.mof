@@ -1,6 +1,6 @@
 
 [ClassVersion("1.0.0.0"), FriendlyName("WaitForCertificateServices")]
-class MSFT_WaitForCertificateServices : OMI_BaseResource
+class DSC_WaitForCertificateServices : OMI_BaseResource
 {
     [Key, Description("The FQDN of the Active Directory Certificate Service Certificate Authority to wait for.")] String CAServerFQDN;
     [Key, Description("The name of the Active Directory Certificate Service Certificate Authority to wait for.")] String CARootName;

@@ -1,26 +1,35 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param ()
 
-#region HEADER
-$script:dscModuleName = 'CertificateDsc'
-$script:dscResourceName = 'MSFT_PfxImport'
+$script:dscModuleName = 'ComputerManagementDsc'
+$script:dscResourceName = 'DSC_PfxImport'
 
-# Unit Test Template Version: 1.2.4
-$script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+function Invoke-TestSetup
 {
-    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
+    try
+    {
+        Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
+    }
+    catch [System.IO.FileNotFoundException]
+    {
+        throw 'DscResource.Test module dependency not found. Please run ".\build.ps1 -Tasks build" first.'
+    }
+
+    $script:testEnvironment = Initialize-TestEnvironment `
+        -DSCModuleName $script:dscModuleName `
+        -DSCResourceName $script:dscResourceName `
+        -ResourceType 'Mof' `
+        -TestType 'Unit'
+
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\CommonTestHelper.psm1')
 }
 
-Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
+function Invoke-TestCleanup
+{
+    Restore-TestEnvironment -TestEnvironment $script:testEnvironment
+}
 
-$TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:dscModuleName `
-    -DSCResourceName $script:dscResourceName `
-    -ResourceType 'Mof' `
-    -TestType Unit
-#endregion HEADER
+Invoke-TestSetup
 
 # Begin Testing
 try
@@ -137,7 +146,7 @@ try
             Verbose    = $True
         }
 
-        Describe 'MSFT_PfxImport\Get-TargetResource' -Tag 'Get' {
+        Describe 'DSC_PfxImport\Get-TargetResource' -Tag 'Get' {
             Context 'When the certificate exists with a private key' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
                     -MockWith $validCertificateWithPrivateKey_mock
@@ -225,7 +234,7 @@ try
             }
         }
 
-        Describe 'MSFT_PfxImport\Test-TargetResource' -Tag 'Test' {
+        Describe 'DSC_PfxImport\Test-TargetResource' -Tag 'Test' {
             Context 'When certificate is not in store but should be' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
@@ -279,7 +288,7 @@ try
             }
         }
 
-        Describe 'MSFT_PfxImport\Set-TargetResource' -Tag 'Set' {
+        Describe 'DSC_PfxImport\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Test-Path -MockWith { $true }
                 Mock -CommandName Import-PfxCertificate
@@ -498,7 +507,5 @@ try
 }
 finally
 {
-    #region FOOTER
-    Restore-TestEnvironment -TestEnvironment $TestEnvironment
-    #endregion
+    Invoke-TestCleanup
 }

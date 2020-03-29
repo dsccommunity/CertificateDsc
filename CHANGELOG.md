@@ -19,3 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added check for X500 subject name in Get-TargetResource, which already
     exists in Test- and Set-TargetResource - fixes [Issue #210](https://github.com/PowerShell/CertificateDsc/issues/210).
   - Corrected name of working path to remove `x` - fixes [Issue #211](https://github.com/PowerShell/CertificateDsc/issues/211).
+- BREAKING CHANGE: Changed resource prefix from MSFT to DSC.
+- Updated to use continuous delivery pattern using Azure DevOps - Fixes
+  [Issue #215](https://github.com/dsccommunity/CertificateDsc/issues/215).
+- Updated Examples and Module Manifest to be DSC Community from Microsoft.

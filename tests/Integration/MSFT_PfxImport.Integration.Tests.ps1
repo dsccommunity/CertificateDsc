@@ -2,7 +2,7 @@
 param ()
 
 $script:DSCModuleName = 'CertificateDsc'
-$script:DSCResourceName = 'MSFT_PfxImport'
+$script:DSCResourceName = 'DSC_PfxImport'
 
 #region HEADER
 # Integration Test Template Version: 1.1.1

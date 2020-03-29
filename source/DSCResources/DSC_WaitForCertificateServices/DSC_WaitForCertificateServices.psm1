@@ -15,7 +15,7 @@ Import-Module -Name (Join-Path -Path $modulePath `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
 # Import Localization Strings.
-$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_WaitForCertificateServices'
+$script:localizedData = Get-LocalizedData -ResourceName 'DSC_WaitForCertificateServices'
 
 <#
     .SYNOPSIS

@@ -1,5 +1,5 @@
 [ClassVersion("1.0"), FriendlyName("PfxImport")]
-class MSFT_PfxImport : OMI_BaseResource
+class DSC_PfxImport : OMI_BaseResource
 {
     [Key,Description("The thumbprint (unique identifier) of the PFX file you're importing.")] string Thumbprint;
     [Write,Description("The path to the PFX file you want to import.")] string Path;
