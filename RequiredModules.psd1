@@ -19,5 +19,5 @@
     'DscResource.AnalyzerRules' = 'latest'
     'DscResource.DocGenerator'  = 'latest'
     xDscResourceDesigner        = 'latest'
-    xWebAdministration          = 'latest'
+    xWebAdministration          = '3.1.1'
 }
