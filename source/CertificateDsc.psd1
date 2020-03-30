@@ -15,7 +15,7 @@
     Copyright            = 'Copyright the DSC Community contributors. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description          = 'DSC resources for simplifying administration of certificates on a Windows Server.'
+    Description          = 'DSC resources for managing certificates on a Windows Server.'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion    = '4.0'
@@ -46,13 +46,12 @@
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
     PrivateData          = @{
-
         PSData = @{
             # Set to a prerelease string value if the release should be a prerelease.
             Prerelease   = ''
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags         = @('DesiredStateConfiguration', 'DSC', 'DSCResource')
+            Tags         = @('DesiredStateConfiguration', 'DSC', 'DSCResource', 'Certificate', 'PKI')
 
             # A URL to the license for this module.
             LicenseUri   = 'https://github.com/dsccommunity/CertificateDsc/blob/master/LICENSE'

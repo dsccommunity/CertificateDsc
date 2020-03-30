@@ -2,12 +2,11 @@ TOPIC
     about_CertificateDsc
 
 SHORT DESCRIPTION
-    DSC resources for simplifying administration of certificates on a Windows
-    Server.
+    DSC resources for managing certificates on a Windows Server.
 
 LONG DESCRIPTION
-    This module contains DSC resources for simplifying administration of
-    certificates on a Windows Server.
+    This module contains DSC resources for managing certificates on a Windows
+    Server.
 
 EXAMPLES
     PS C:\> Get-DscResource -Module CertificateDsc
