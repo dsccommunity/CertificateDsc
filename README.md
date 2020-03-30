@@ -48,4 +48,4 @@ This project has adopted [this code of conduct](CODE_OF_CONDUCT.md).
 ## Documentation and Examples
 
 For a full list of resources in CertificateDsc and examples on their use, check out
-the [CertificateDsc wiki](https://github.com/PowerShell/CertificateDsc/wiki).
+the [CertificateDsc wiki](https://github.com/dsccommunity/CertificateDsc/wiki).
