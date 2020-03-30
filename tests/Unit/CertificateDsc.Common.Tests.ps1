@@ -92,7 +92,7 @@ InModuleScope $script:subModuleName {
                     Example = [System.UInt16] 2
                 }
                 $testParameters = @{
-                    CurrentValues = $mockCurrentValuesF
+                    CurrentValues = $mockCurrentValues
                     DesiredValues = $mockDesiredValues
                 }
 
