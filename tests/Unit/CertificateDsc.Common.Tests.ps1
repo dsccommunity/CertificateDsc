@@ -88,7 +88,7 @@ InModuleScope $script:subModuleName {
             }
 
             It 'Should return false when a value is different for [UInt16]' {
-                $mockDesiredValues = @{
+                $mockCurrentValues = @{
                     Example = [System.UInt16] 1
                 }
                 $mockDesiredValues = @{
