@@ -1,5 +1,5 @@
 TOPIC
-    about_NetworkingDsc
+    about_CertificateDsc
 
 SHORT DESCRIPTION
     DSC resources for simplifying administration of certificates on a Windows
