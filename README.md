@@ -1,5 +1,32 @@
 # CertificateDsc
 
+[![Build Status](https://dev.azure.com/dsccommunity/CertificateDsc/_apis/build/status/dsccommunity.CertificateDsc?branchName=master)](https://dev.azure.com/dsccommunity/CertificateDsc/_build/latest?definitionId=18&branchName=master)
+![Code Coverage](https://img.shields.io/azure-devops/coverage/dsccommunity/CertificateDsc/18/master)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/dsccommunity/CertificateDsc/18/master)](https://dsccommunity.visualstudio.com/CertificateDsc/_test/analytics?definitionId=18&contextType=build)
+[![PowerShell Gallery (with prereleases)](https://img.shields.io/powershellgallery/vpre/CertificateDsc?label=CertificateDsc%20Preview)](https://www.powershellgallery.com/packages/CertificateDsc/)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/v/CertificateDsc?label=CertificateDsc)](https://www.powershellgallery.com/packages/CertificateDsc/)
+
+## Code of Conduct
+
+This project has adopted [this code of conduct](CODE_OF_CONDUCT.md).
+
+## Releases
+
+For each merge to the branch `master` a preview release will be
+deployed to [PowerShell Gallery](https://www.powershellgallery.com/).
+Periodically a release version tag will be pushed which will deploy a
+full release to [PowerShell Gallery](https://www.powershellgallery.com/).
+
+## Contributing
+
+Please check out common DSC Community [contributing guidelines](https://dsccommunity.org/guidelines/contributing).
+
+## Change log
+
+A full list of changes in each version can be found in the [change log](CHANGELOG.md).
+
+## Resources
+
 The **CertificateDsc** module is a part of the Windows PowerShell Desired State
 Configuration (DSC) Resource Kit, which is a collection of DSC Resources. This
 module includes DSC resources that simplify administration of certificates on a
@@ -21,27 +48,4 @@ This project has adopted [this code of conduct](CODE_OF_CONDUCT.md).
 ## Documentation and Examples
 
 For a full list of resources in CertificateDsc and examples on their use, check out
-the [CertificateDsc wiki](https://github.com/PowerShell/CertificateDsc/wiki).
-
-## Branches
-
-### master
-
-[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/CertificateDsc/branch/master)
-[![codecov](https://codecov.io/gh/PowerShell/CertificateDsc/branch/master/graph/badge.svg)](https://codecov.io/gh/PowerShell/CertificateDsc/branch/master)
-
-This is the branch containing the latest release - no contributions should be made
-directly to this branch.
-
-### dev
-
-[![Build status](https://ci.appveyor.com/api/projects/status/0u9f8smiidg1j4kn/branch/dev?svg=true)](https://ci.appveyor.com/project/PowerShell/CertificateDsc/branch/dev)
-[![codecov](https://codecov.io/gh/PowerShell/CertificateDsc/branch/dev/graph/badge.svg)](https://codecov.io/gh/PowerShell/CertificateDsc/branch/dev)
-
-This is the development branch to which contributions should be proposed by contributors
-as pull requests. This development branch will periodically be merged to the master
-branch, and be released to [PowerShell Gallery](https://www.powershellgallery.com/).
-
-## Contributing
-
-Please check out common DSC Resources [contributing guidelines](https://github.com/PowerShell/DscResource.Kit/blob/master/CONTRIBUTING.md).
+the [CertificateDsc wiki](https://github.com/dsccommunity/CertificateDsc/wiki).

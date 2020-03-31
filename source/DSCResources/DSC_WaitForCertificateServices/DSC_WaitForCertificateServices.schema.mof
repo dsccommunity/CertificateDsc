@@ -1,0 +1,9 @@
+
+[ClassVersion("1.0.0.0"), FriendlyName("WaitForCertificateServices")]
+class DSC_WaitForCertificateServices : OMI_BaseResource
+{
+    [Key, Description("The FQDN of the Active Directory Certificate Service Certificate Authority to wait for.")] String CAServerFQDN;
+    [Key, Description("The name of the Active Directory Certificate Service Certificate Authority to wait for.")] String CARootName;
+    [Write, Description("Specifies the number of seconds to wait for the Active Directory Certificate Service Certificate Authority to become available. Defaults to 10 seconds.")] Uint32 RetryIntervalSeconds;
+    [Write, Description("The number of times to loop the retry interval while waiting for the Active Directory Certificate Service Certificate Authority. Defaults to 60 retries.")] Uint32 RetryCount;
+};
