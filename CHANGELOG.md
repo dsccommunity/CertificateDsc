@@ -24,3 +24,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [Issue #215](https://github.com/dsccommunity/CertificateDsc/issues/215).
 - Updated Examples and Module Manifest to be DSC Community from Microsoft.
 - Fix style issues in `Certificate.PDT` and `Certificate.Common` modules.
+- Update badges in README.MD to refer to correct pipeline.
+- Correct version number in `GitVersion.yml` file.
