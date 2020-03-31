@@ -380,11 +380,11 @@ function Get-Win32Process
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Strng]
+        [System.String]
         $Path,
 
         [Parameter()]
-        [System.Strng]
+        [System.String]
         $Arguments,
 
         [Parameter()]
@@ -476,7 +476,7 @@ function Get-Win32ProcessArgumentsFromCommandLine
     param
     (
         [Parameter()]
-        [System.Strng]
+        [System.String]
         $CommandLine
     )
 
@@ -530,11 +530,11 @@ function Start-Win32Process
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Strng]
+        [System.String]
         $Path,
 
         [Parameter()]
-        [System.Strng]
+        [System.String]
         $Arguments,
 
         [Parameter()]
@@ -586,7 +586,7 @@ function Start-Win32Process
                     -ArgumentNames ('Path', 'Arguments', 'Credential') `
                     -NewArgumentNames ('FilePath', 'ArgumentList', 'Credential')
 
-            if ([System.Strng]::IsNullOrEmpty($Arguments))
+            if ([System.String]::IsNullOrEmpty($Arguments))
             {
                 $null = $startArguments.Remove('ArgumentList')
             }
@@ -633,11 +633,11 @@ function Wait-Win32ProcessStart
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Strng]
+        [System.String]
         $Path,
 
         [Parameter()]
-        [System.Strng]
+        [System.String]
         $Arguments,
 
         [Parameter()]
@@ -688,11 +688,11 @@ function Wait-Win32ProcessStop
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Strng]
+        [System.String]
         $Path,
 
         [Parameter()]
-        [System.Strng]
+        [System.String]
         $Arguments,
 
         [Parameter()]
@@ -742,11 +742,11 @@ function Wait-Win32ProcessEnd
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Strng]
+        [System.String]
         $Path,
 
         [Parameter()]
-        [System.Strng]
+        [System.String]
         $Arguments,
 
         [Parameter()]
