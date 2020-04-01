@@ -1,0 +1,23 @@
+[ClassVersion("0.1.0.0"), FriendlyName("CertReq")]
+class DSC_CertReq : OMI_BaseResource
+{
+    [Key, Description("Provide the text string to use as the subject of the certificate.")] String Subject;
+    [Write, Description("The type of CA in use, Standalone/Enterprise.")] String CAType;
+    [Write, Description("The FQDN of the Active Directory Certificate Authority on the local area network. Leave empty to automatically locate.")] String CAServerFQDN;
+    [Write, Description("The name of the certificate authority, by default this will be in format domain-servername-ca. Leave empty to automatically locate.")] String CARootName;
+    [Write, Description("The bit length of the encryption key to be used. Defaults to 2048."), ValueMap{"192","224","256","384","521","1024","2048","4096","8192"}, Values{"192","224","256","384","521","1024","2048","4096","8192"}] String KeyLength;
+    [Write, Description("The option to allow the certificate to be exportable, by default it will be true.")] Boolean Exportable;
+    [Write, Description("The selection of provider for the type of encryption to be used.")] String ProviderName;
+    [Write, Description("The Object Identifier that is used to name the object.")] String OID;
+    [Write, Description("The Keyusage is a restriction method that determines what a certificate can be used for.")] String KeyUsage;
+    [Write, Description("The template used for the definition of the certificate.")] String CertificateTemplate;
+    [Write, Description("The subject alternative name used to create the certificate.")] String SubjectAltName;
+    [Write, Description("The `PSCredential` object containing the credentials that will be used to access the template in the Certificate Authority."), EmbeddedInstance("MSFT_Credential")] String Credential;
+    [Write, Description("Determines if the resource will also renew a certificate within 7 days of expiration.")] Boolean AutoRenew;
+    [Write, Description("The URL to the Certification Enrollment Policy Service.")] String CepURL;
+    [Write, Description("The URL to the Certification Enrollment Service.")] String CesURL;
+    [Write, Description("Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication")] Boolean UseMachineContext;
+    [Write, Description("Specifies a friendly name for the certificate.")] String FriendlyName;
+    [Write, Description("Specifies if the key type should be RSA or ECDH, defaults to RSA."), ValueMap{"RSA","ECDH"}, Values{"RSA","ECDH"}] String KeyType;
+    [Write, Description("Specifies if the request type should be CMC or PKCS10, deafults to CMC."), ValueMap{"CMC","PKCS10"},Values{"CMC","PKCS10"}] String RequestType;
+};

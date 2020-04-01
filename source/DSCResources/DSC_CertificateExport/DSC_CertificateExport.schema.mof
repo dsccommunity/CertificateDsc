@@ -1,0 +1,20 @@
+[ClassVersion("1.0.0.0"), FriendlyName("CertificateExport")]
+class DSC_CertificateExport : OMI_BaseResource
+{
+    [Key,Description("The path to the file you that will contain the exported certificate.")] string Path;
+    [Write,Description("The thumbprint of the certificate to export. Certificate selector parameter.")] string Thumbprint;
+    [Write,Description("The friendly name of the certificate to export. Certificate selector parameter.")] string FriendlyName;
+    [Write,Description("The subject of the certificate to export. Certificate selector parameter.")] string Subject;
+    [Write,Description("The subject alternative name of the certificate to export must contain these values. Certificate selector parameter.")] string DNSName[];
+    [Write,Description("The issuer of the certificate to export. Certificate selector parameter.")] string Issuer;
+    [Write,Description("The key usage of the certificate to export must contain these values. Certificate selector parameter.")] string KeyUsage[];
+    [Write,Description("The enhanced key usage of the certificate to export must contain these values. Certificate selector parameter.")] string EnhancedKeyUsage[];
+    [Write,Description("The Windows Certificate Store Name to search for the certificate to export from. Certificate selector parameter. Defaults to 'My'.")] string Store;
+    [Write,Description("Allow an expired certificate to be exported. Certificate selector parameter.")] boolean AllowExpired;
+    [Write,Description("Causes an existing exported certificate to be compared with the certificate identified for export and re-exported if it does not match.")] boolean MatchSource;
+    [Write,Description("Specifies the type of certificate to export."),ValueMap{"Cert", "P7B", "SST", "PFX"},Values{"Cert", "P7B", "SST", "PFX"}] string Type;
+    [Write,Description("Specifies the options for building a chain when exporting a PFX certificate."),ValueMap{"BuildChain","EndEntityCertOnly"},Values{"BuildChain","EndEntityCertOnly"}] string ChainOption;
+    [Write,Description("Specifies the password used to protect an exported PFX file."),EmbeddedInstance("MSFT_Credential")] String Password;
+    [Write,Description("Specifies an array of strings for the username or group name that can access the private key of an exported PFX file without any password.")] string ProtectTo[];
+    [Read,Description("Returns true if the certificate file already exists and therefore has been exported.")] boolean IsExported;
+};

@@ -1,1 +1,10 @@
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
 * text eol=crlf
+
+# Ensure any exe files are treated as binary
+*.exe binary
+*.jpg binary
+*.xl* binary
+*.pfx binary
