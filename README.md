@@ -1,8 +1,8 @@
 # CertificateDsc
 
-[![Build Status](https://dev.azure.com/dsccommunity/CertificateDsc/_apis/build/status/dsccommunity.CertificateDsc?branchName=master)](https://dev.azure.com/dsccommunity/CertificateDsc/_build/latest?definitionId=18&branchName=master)
-![Code Coverage](https://img.shields.io/azure-devops/coverage/dsccommunity/CertificateDsc/18/master)
-[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/dsccommunity/CertificateDsc/18/master)](https://dsccommunity.visualstudio.com/CertificateDsc/_test/analytics?definitionId=18&contextType=build)
+[![Build Status](https://dev.azure.com/dsccommunity/CertificateDsc/_apis/build/status/dsccommunity.CertificateDsc?branchName=master)](https://dev.azure.com/dsccommunity/CertificateDsc/_build/latest?definitionId=28&branchName=master)
+![Code Coverage](https://img.shields.io/azure-devops/coverage/dsccommunity/CertificateDsc/28/master)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/dsccommunity/CertificateDsc/28/master)](https://dsccommunity.visualstudio.com/CertificateDsc/_test/analytics?definitionId=28&contextType=build)
 [![PowerShell Gallery (with prereleases)](https://img.shields.io/powershellgallery/vpre/CertificateDsc?label=CertificateDsc%20Preview)](https://www.powershellgallery.com/packages/CertificateDsc/)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/v/CertificateDsc?label=CertificateDsc)](https://www.powershellgallery.com/packages/CertificateDsc/)
 
