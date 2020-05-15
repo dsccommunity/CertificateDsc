@@ -1430,6 +1430,38 @@ OID = $oid
                     Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
                 }
             }
+
+            Context 'When CertReq.exe throws a random error' {
+
+                 Mock -CommandName Set-Content -ParameterFilter {
+                    $Path -eq 'CertReq-Test.inf'
+                }
+
+                Mock -CommandName Find-CertificateAuthority -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName   = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem
+
+                Mock -CommandName Get-Content -Mockwith { 'Output' } `
+                    -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                Mock -CommandName Remove-Item `
+                    -ParameterFilter $pathCertReqTestOut_parameterFilter
+
+                Mock -CommandName CertReq.exe -ParameterFilter {@('-accept', '-m', '-q', $pathCertReqTestCer_parameterFilter)} -MockWith {'0x'}
+
+                $errorRecord = Get-InvalidOperationRecord `
+                    -Message ($LocalizedData.GenericErrorThrown -f '0x')
+
+                It 'Should Throw A New-InvalidOperationException' {
+                    { Set-TargetResource @paramsAutoDiscovery -Verbose } | Should -Throw $errorRecord
+                }
+
+            }
         }
 
         Describe 'DSC_CertReq\Test-TargetResource' -Tag 'Test' {
