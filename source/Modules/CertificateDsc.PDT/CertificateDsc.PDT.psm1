@@ -1,12 +1,13 @@
 $modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) -ChildPath 'Modules'
+Import-Module -Name (Join-Path -Path $modulePath -ChildPath 'DscResource.Common')
 
 # Import the Certificate Resource Common Module.
 Import-Module -Name (Join-Path -Path $modulePath `
         -ChildPath (Join-Path -Path 'CertificateDsc.Common' `
             -ChildPath 'CertificateDsc.Common.psm1'))
 
-# Import Localization Strings.
-$script:localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.PDT' -ScriptRoot $PSScriptRoot
+# Import Localization Strings
+$script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
 <#
     .SYNOPSIS
