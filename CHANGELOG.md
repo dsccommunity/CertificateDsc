@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Merge `HISTORIC_CHANGELOG.md` into `CHANGELOG.md` - Fixes [Issue #227](https://github.com/dsccommunity/CertificateDsc/issues/227).
 - Fixed build failures caused by changes in `ModuleBuilder` module v1.7.0
   by changing `CopyDirectories` to `CopyPaths` - Fixes [Issue #230](https://github.com/dsccommunity/CertificateDsc/issues/230).
+- Updated to use the common module _DscResource.Common_ - Fixes [Issue #229](https://github.com/dsccommunity/CertificateDsc/issues/229).
 
 ## [4.7.0.0] - 2019-06-26
 
