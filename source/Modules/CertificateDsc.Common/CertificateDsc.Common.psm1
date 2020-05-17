@@ -1212,8 +1212,6 @@ function Set-CertificateFriendlyNameInCertificateStore
     }
 }
 
-$script:localizedData = Get-LocalizedData -ResourceName 'CertificateDsc.Common' -ScriptRoot $PSScriptRoot
-
 Export-ModuleMember -Function @(
     'Test-CertificatePath',
     'Test-Thumbprint',
