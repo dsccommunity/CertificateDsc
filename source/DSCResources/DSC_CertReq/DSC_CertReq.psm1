@@ -197,16 +197,16 @@ function Get-TargetResource
         $Subject = "CN=$Subject"
     } # if
 
-    $cert = Get-Childitem -Path Cert:\LocalMachine\My |
+    $cert = Get-ChildItem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
             $_.Subject -eq $Subject -and `
             (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
-    }
+        }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $cert = $cert |
         Sort-Object -Property NotBefore -Descending |
-        Select-Object -First 1
+            Select-Object -First 1
 
     if ($cert)
     {
@@ -231,7 +231,7 @@ function Get-TargetResource
     }
     else
     {
-        $returnValue = @{}
+        $returnValue = @{ }
     }
 
     $returnValue
@@ -419,17 +419,17 @@ function Set-TargetResource
     # If we should look for renewals, check for existing certs
     if ($AutoRenew)
     {
-        $certs = Get-Childitem -Path Cert:\LocalMachine\My |
+        $certs = Get-ChildItem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
                 $_.Subject -eq $Subject -and `
                 (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
-                $_.NotAfter -lt (Get-Date).AddDays(30)
-        }
+                    $_.NotAfter -lt (Get-Date).AddDays(30)
+            }
 
         # If multiple certs have the same subject and were issued by the CA and are 30 days from expiration, return the newest
         $firstCert = $certs |
             Sort-Object -Property NotBefore -Descending |
-            Select-Object -First 1
+                Select-Object -First 1
         $thumbprint = $firstCert |
             ForEach-Object -Process { $_.Thumbprint }
     } # if
@@ -669,10 +669,17 @@ CertificateTemplate = "$CertificateTemplate"
 
         $acceptRequest = & certreq.exe @('-accept', '-machine', '-q', $cerPath)
 
-        Write-Verbose -Message ( @(
-                "$($MyInvocation.MyCommand): "
-                $($script:localizedData.AcceptingRequestResultCertificateMessage -f ($acceptRequest | Out-String))
-            ) -join '' )
+        if ($acceptRequest -match '0x')
+        {
+            New-InvalidOperationException -Message ($script:localizedData.GenericErrorThrown -f ($acceptRequest | Out-String))
+        }
+        else
+        {
+            Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.AcceptingRequestResultCertificateMessage -f ($acceptRequest | Out-String))
+                ) -join '' )
+        }
     }
     else
     {
@@ -867,26 +874,26 @@ function Test-TargetResource
             $($script:localizedData.TestingCertReqStatusMessage -f $Subject, $ca)
         ) -join '' )
 
-    $certificate = Get-Childitem -Path Cert:\LocalMachine\My |
+    $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
             (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
             (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
-    }
+        }
 
     # Exception for standard template DomainControllerAuthentication
     if ($CertificateTemplate -eq 'DomainControllerAuthentication')
     {
-        $certificate = Get-Childitem -Path Cert:\LocalMachine\My |
+        $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
                 (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
                 (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
-        }
+            }
     }
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $certificate = $certificate |
         Sort-Object -Property NotBefore -Descending |
-        Select-Object -First 1
+            Select-Object -First 1
 
     if ($certificate)
     {
@@ -1027,9 +1034,9 @@ function Assert-ResourceProperty
     )
 
     if ((($KeyType -eq 'RSA') -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
-    (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
+        (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
     {
-        New-InvalidArgumentException -Message (($script:localizedData.InvalidKeySize) -f $KeyLength,$KeyType) -ArgumentName 'KeyLength'
+        New-InvalidArgumentException -Message (($script:localizedData.InvalidKeySize) -f $KeyLength, $KeyType) -ArgumentName 'KeyLength'
     }
 }# end function Assert-ResourceProperty
 
@@ -1128,7 +1135,7 @@ function ConvertTo-StringEnclosedInDoubleQuotes
     {
         $Value = '"{0}' -f $Value
     }
-    if ($Value[$Value.Length-1] -ne '"')
+    if ($Value[$Value.Length - 1] -ne '"')
     {
         $Value = '{0}"' -f $Value
     }
@@ -1156,6 +1163,6 @@ function Get-CertificateCommonName
     )
 
     return ($DistinguishedName.split(',') |
-        ForEach-Object -Process { $_.TrimStart(' ') } |
-        Where-Object -FilterScript { $_ -match 'CN=' }).replace('CN=', '')
+            ForEach-Object -Process { $_.TrimStart(' ') } |
+                Where-Object -FilterScript { $_ -match 'CN=' }).replace('CN=', '')
 }
