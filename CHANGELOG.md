@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed build failures caused by changes in `ModuleBuilder` module v1.7.0
   by changing `CopyDirectories` to `CopyPaths` - Fixes [Issue #230](https://github.com/dsccommunity/CertificateDsc/issues/230).
 - Updated to use the common module _DscResource.Common_ - Fixes [Issue #229](https://github.com/dsccommunity/CertificateDsc/issues/229).
+- Pin `Pester` module to 4.10.1 because Pester 5.0 is missing code
+  coverage - Fixes [Issue #233](https://github.com/dsccommunity/CertificateDsc/issues/233).
 
 ## [4.7.0.0] - 2019-06-26
 
