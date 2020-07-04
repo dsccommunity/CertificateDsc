@@ -5,8 +5,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Added a catch for certreq generic errors which fixes [Issue #224](https://github.com/dsccommunity/CertificateDsc/issues/224)
-
 ### Changed
 
 - Corrected incorrectly located entries in `CHANGELOG.MD`.
@@ -36,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated to use the common module _DscResource.Common_ - Fixes [Issue #229](https://github.com/dsccommunity/CertificateDsc/issues/229).
 - Pin `Pester` module to 4.10.1 because Pester 5.0 is missing code
   coverage - Fixes [Issue #233](https://github.com/dsccommunity/CertificateDsc/issues/233).
+- Added a catch for certreq generic errors which fixes [Issue #224](https://github.com/dsccommunity/CertificateDsc/issues/224)
+- CertificateDsc
+  - Automatically publish documentation to GitHub Wiki - Fixes [Issue #235](https://github.com/dsccommunity/CertificateDsc/issues/235).
+
 
 ## [4.7.0.0] - 2019-06-26
 
