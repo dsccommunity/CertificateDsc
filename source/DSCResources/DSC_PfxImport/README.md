@@ -3,6 +3,13 @@
 The resource is used to import a PFX certificate into a Windows certificate
 store.
 
+## Credentials for Importing a Private Key
+
+Depending on your operating system and domain configuration, you may need to
+use a local or domain administrator credential to import certificates with a
+private key. To do this, set the `PsDscRunAsCredential` parameter with this
+resource to the credential of a local or domain administrator for this machine.
+
 ## Requirements
 
 - Target machine must be running Windows Server 2008 R2 or later.
