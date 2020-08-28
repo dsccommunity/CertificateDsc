@@ -22,7 +22,7 @@
         Import a PFX into the 'Root' Local Machine certificate store using
         an administrator credential.
 #>
-Configuration PfxImport_InstallPFX_Config
+Configuration PfxImport_InstallPFXAdministrator_Config
 {
     param
     (
