@@ -20,7 +20,11 @@
 <#
     .DESCRIPTION
         Import a PFX into the 'Root' Local Machine certificate store using
-        an administrator credential.
+        an administrator credential. The password in the Credential parameter
+        is used to decrypt the PFX file and the PsDscRunAsCredential is the
+        account that is used to import the certificate and private key into
+        Local Machine store. The PsDscRunAsCredential must have permission
+        to import the certificate and private key.
 #>
 Configuration PfxImport_InstallPFXAdministrator_Config
 {
