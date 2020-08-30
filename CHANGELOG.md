@@ -38,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CertificateDsc
   - Automatically publish documentation to GitHub Wiki - Fixes [Issue #235](https://github.com/dsccommunity/CertificateDsc/issues/235).
 
+### Added
+
+- PfxImport:
+  - Added example showing importing private key using `PsDscRunAsCredential`
+    to specify an administrator account - Fixes [Issue #213](https://github.com/dsccommunity/CertificateDsc/issues/213).
 
 ## [4.7.0.0] - 2019-06-26
 
