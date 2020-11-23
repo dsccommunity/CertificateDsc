@@ -14,6 +14,23 @@ Configuration DSC_PfxImport_Add_Config {
     }
 }
 
+Configuration DSC_PfxImport_Add_Config_With_Content {
+    Import-DscResource -ModuleName CertificateDsc
+
+    node localhost {
+        PfxImport Integration_Test {
+            Thumbprint   = $Node.Thumbprint
+            Path         = $Node.Path
+            Content      = $Node.Content
+            Location     = $Node.Location
+            Store        = $Node.Store
+            Ensure       = $Node.Ensure
+            Credential   = $Node.Credential
+            FriendlyName = $Node.FriendlyName
+        }
+    }
+}
+
 Configuration DSC_PfxImport_Remove_Config {
     Import-DscResource -ModuleName CertificateDsc
 

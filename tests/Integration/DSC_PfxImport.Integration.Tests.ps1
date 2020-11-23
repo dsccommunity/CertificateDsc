@@ -60,7 +60,7 @@ try
                 -FilePath $pfxPath `
                 -Password $testCredential.Password
 
-            $contentByte = Get-Content -Path D:\ContentStore\Certificates\RpsRoot.cer -Encoding Byte
+            $contentByte = Get-Content -Path $pfxPath -Encoding Byte
             $testBase64Content = [System.Convert]::ToBase64String($contentByte)
 
             $null = Export-Certificate `
@@ -257,7 +257,7 @@ try
         Context 'When certificate content has not been imported yet' {
             It 'Should compile the MOF without throwing an exception' {
                 {
-                    & "$($script:DSCResourceName)_Add_Config" `
+                    & "$($script:DSCResourceName)_Add_Config_With_Content" `
                         -OutputPath $TestDrive `
                         -ConfigurationData $configDataForAddWithContent
                 } | Should -Not -Throw
