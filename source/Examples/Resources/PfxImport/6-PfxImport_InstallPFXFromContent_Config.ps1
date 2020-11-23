@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 1.0.0
-.GUID a93bd794-e0c1-45fb-a988-c637257d4b35
+.GUID fa81342d-b96d-401b-8a18-c96bebd4aff6
 .AUTHOR DSC Community
 .COMPANYNAME DSC Community
 .COPYRIGHT Copyright the DSC Community contributors. All rights reserved.
