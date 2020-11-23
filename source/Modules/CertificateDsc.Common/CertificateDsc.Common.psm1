@@ -1212,6 +1212,38 @@ function Set-CertificateFriendlyNameInCertificateStore
     }
 }
 
+<#
+    .SYNOPSIS
+    This function sets the content of a specified file with the decoded value
+    from a base64 encoded string.
+
+    .PARAMETER Path
+    The path to where the content is witten.
+
+    .PARAMETER Value
+    The base64 endoed string that will be decoded.
+#>
+function Set-Base64Content
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Path,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Value
+    )
+
+    $byteValue = [Convert]::FromBase64String($Value)
+    [io.file]::WriteAllBytes($Path, $byteValue)
+}
+
+
 Export-ModuleMember -Function @(
     'Test-CertificatePath',
     'Test-Thumbprint',
@@ -1235,4 +1267,5 @@ Export-ModuleMember -Function @(
     'Get-CertificateFromCertificateStore',
     'Remove-CertificateFromCertificateStore',
     'Set-CertificateFriendlyNameInCertificateStore'
+    'Set-Base64Content'
 )

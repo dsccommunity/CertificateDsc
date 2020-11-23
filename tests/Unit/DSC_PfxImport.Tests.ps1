@@ -55,6 +55,12 @@ try
             -TypeName System.Management.Automation.PSCredential `
             -ArgumentList $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
 
+            $enc = [system.Text.Encoding]::UTF8
+
+
+
+        $testContent = 'Test certificate content'
+
         $validPath = "TestDrive:\$testFile"
         $validCertPath = "Cert:\LocalMachine\My"
         $validCertFullPath = '{0}\{1}' -f $validCertPath, $validThumbprint
@@ -87,6 +93,16 @@ try
 
         $testPath_parameterfilter = {
             $Path -eq $validPath
+        }
+
+        $setBase64Content_parameterfilter = {
+            $Path -eq $validPath -and `
+                $Value -eq $testContent
+        }
+
+        $removeItem_parameterfilter = {
+            $Path -eq $validPath -and `
+                $force -eq $true
         }
 
         $getCertificateFromCertificateStore_parameterfilter = {
@@ -126,6 +142,18 @@ try
             Verbose    = $True
         }
 
+        $presentParamsWithContent = @{
+            Thumbprint = $validThumbprint
+            Path       = $validPath
+            Content    = $testContent
+            Ensure     = 'Present'
+            Location   = 'LocalMachine'
+            Store      = 'My'
+            Exportable = $True
+            Credential = $testCredential
+            Verbose    = $True
+        }
+
         $presentParamsWithFriendlyName = @{
             Thumbprint   = $validThumbprint
             Path         = $validPath
@@ -138,8 +166,30 @@ try
             FriendlyName = $certificateFriendlyName
         }
 
+        $presentParamsWithFriendlyNameWithContent = @{
+            Thumbprint   = $validThumbprint
+            Path         = $validPath
+            Content      = $testContent
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Exportable   = $True
+            Credential   = $testCredential
+            Verbose      = $True
+            FriendlyName = $certificateFriendlyName
+        }
+
         $absentParams = @{
             Thumbprint = $validThumbprint
+            Ensure     = 'Absent'
+            Location   = 'LocalMachine'
+            Store      = 'My'
+            Verbose    = $True
+        }
+
+        $absentParamsWithContent = @{
+            Thumbprint = $validThumbprint
+            Content    = $testContent
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
             Store      = 'My'
@@ -290,10 +340,12 @@ try
 
         Describe 'DSC_PfxImport\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
+                Mock -CommandName Set-Base64Content
                 Mock -CommandName Test-Path -MockWith { $true }
                 Mock -CommandName Import-PfxCertificate
                 Mock -CommandName Remove-CertificateFromCertificateStore
                 Mock -CommandName Set-CertificateFriendlyNameInCertificateStore
+                Mock -CommandName Remove-Item
             }
 
             Context 'When PFX file exists and certificate should be in the store but is not' {
@@ -303,6 +355,10 @@ try
                     {
                         Set-TargetResource @presentParams
                     } | Should -Not -Throw
+                }
+
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should call Test-Path with expected parameters' {
@@ -316,6 +372,56 @@ try
                     Assert-MockCalled `
                         -CommandName Import-PfxCertificate `
                         -ParameterFilter $importPfxCertificate_parameterfilter `
+                        -Exactly -Times 1
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
+
+            Context 'When PFX content is used and certificate should be in the store but is not' {
+                Mock -CommandName Get-CertificateFromCertificateStore
+
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParamsWithContent
+                    } | Should -Not -Throw
+                }
+
+                It 'Should call Set-Base64Content with expected parameters' {
+                    Assert-MockCalled `
+                        -CommandName Set-Base64Content `
+                        -ParameterFilter $setBase64Content_parameterfilter `
+                        -Exactly -Times 1
+                }
+
+                It 'Should call Test-Path with expected parameters' {
+                    Assert-MockCalled `
+                        -CommandName Test-Path `
+                        -ParameterFilter $testPath_parameterfilter `
+                        -Exactly -Times 1
+                }
+
+                It 'Should call Import-PfxCertificate with expected parameters' {
+                    Assert-MockCalled `
+                        -CommandName Import-PfxCertificate `
+                        -ParameterFilter $importPfxCertificate_parameterfilter `
+                        -Exactly -Times 1
+                }
+
+                It 'Should call Remove-Item with expected parameters' {
+                    Assert-MockCalled `
+                        -CommandName Remove-Item `
+                        -ParameterFilter $removeItem_parameterfilter `
                         -Exactly -Times 1
                 }
 
@@ -338,12 +444,55 @@ try
                     } | Should -Not -Throw
                 }
 
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
                 It 'Should not call Test-Path with expected parameters' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-PfxCertificate with expected parameters' {
                     Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
+
+            Context 'When PFX content is used and certificate should be in the store and is' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificateWithPrivateKey_mock
+
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParamsWithContent
+                    } | Should -Not -Throw
+                }
+
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
+                It 'Should not call Test-Path with expected parameters' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should not call Import-PfxCertificate with expected parameters' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -365,12 +514,58 @@ try
                     } | Should -Not -Throw
                 }
 
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
                 It 'Should not call Test-Path with the parameters supplied' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-PfxCertificate with the parameters supplied' {
                     Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
+                }
+
+                It 'Should call Set-CertificateFriendlyNameInCertificateStore with expected parameters' {
+                    Assert-MockCalled `
+                        -CommandName Set-CertificateFriendlyNameInCertificateStore `
+                        -ParameterFilter $setCertificateFriendlyNameInCertificateStore_parameterfilter `
+                        -Exactly -Times 1
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
+
+            Context 'When PFX content is used and certificate should be in the store and is and the friendly name is different' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificateWithDifferentFriendlyName_mock
+
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParamsWithFriendlyNameWithContent
+                    } | Should -Not -Throw
+                }
+
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
+                It 'Should not call Test-Path with the parameters supplied' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should not call Import-PfxCertificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
                 }
 
                 It 'Should call Set-CertificateFriendlyNameInCertificateStore with expected parameters' {
@@ -395,12 +590,20 @@ try
                     } | Should -Not -Throw
                 }
 
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
                 It 'Should not call Test-Path with the parameters supplied' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-PfxCertificate with the parameters supplied' {
                     Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -412,6 +615,40 @@ try
                 }
             }
 
+            Context 'When PFX content is used and certificate should be in the store and is and the friendly name is the same' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificateWithPrivateKey_mock
+
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @presentParamsWithFriendlyNameWithContent
+                    } | Should -Not -Throw
+                }
+
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
+                It 'Should not call Test-Path with the parameters supplied' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should not call Import-PfxCertificate with the parameters supplied' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
 
             Context 'When PFX file exists and certificate should not be in the store but is' {
                 Mock -CommandName Get-CertificateFromCertificateStore `
@@ -423,12 +660,58 @@ try
                     } | Should -Not -Throw
                 }
 
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
                 It 'Should not call Test-Path' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-PfxCertificate' {
                     Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should call Remove-CertificateFromCertificateStore with expected parameters' {
+                    Assert-MockCalled `
+                        -CommandName Remove-CertificateFromCertificateStore `
+                        -ParameterFilter $removeCertificateFromCertificateStore_parameterfilter `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'When PFX content is used and certificate should not be in the store but is' {
+                Mock -CommandName Get-CertificateFromCertificateStore `
+                    -MockWith $validCertificateWithPrivateKey_mock
+
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @absentParamsWithContent
+                    } | Should -Not -Throw
+                }
+
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
+                It 'Should not call Test-Path' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should not call Import-PfxCertificate' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -452,12 +735,57 @@ try
                     } | Should -Not -Throw
                 }
 
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
                 It 'Should not call Test-Path' {
                     Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
                 }
 
                 It 'Should not call Import-PfxCertificate' {
                     Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled `
+                        -CommandName Remove-CertificateFromCertificateStore `
+                        -ParameterFilter $removeCertificateFromCertificateStore_parameterfilter `
+                        -Exactly -Times 1
+                }
+            }
+
+            Context 'When PFX content is used and certificate should not be in the store and is not' {
+                Mock -CommandName Get-CertificateFromCertificateStore
+
+                It 'Should not throw exception' {
+                    {
+                        Set-TargetResource @absentParamsWithContent
+                    } | Should -Not -Throw
+                }
+
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
+                It 'Should not call Test-Path' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should not call Import-PfxCertificate' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
@@ -483,6 +811,10 @@ try
                     } | Should -Throw ($script:localizedData.CertificatePfxFileNotFoundError -f $validPath)
                 }
 
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
+                }
+
                 It 'Should call Test-Path with expected parameters' {
                     Assert-MockCalled `
                         -CommandName Test-Path `
@@ -492,6 +824,47 @@ try
 
                 It 'Should not call Import-PfxCertificate' {
                     Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
+                }
+
+                It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {
+                    Assert-MockCalled -CommandName Set-CertificateFriendlyNameInCertificateStore -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-CertificateFromCertificateStore' {
+                    Assert-MockCalled -CommandName Remove-CertificateFromCertificateStore -Exactly -Times 0
+                }
+            }
+
+            Context 'When PFX content can not be written due to bad path and certificate should be in the store' {
+                Mock -CommandName Set-Base64Content -MockWith { throw }
+
+                It 'Should throw exception' {
+                    {
+                        Set-TargetResource @presentParamsWithContent
+                    } | Should -Throw
+                }
+
+                It 'Should call Set-Base64Content with the parameters supplied' {
+                    Assert-MockCalled `
+                        -CommandName Set-Base64Content `
+                        -ParameterFilter $setBase64Content_parameterfilter `
+                        -Exactly -Times 1
+                }
+
+                It 'Should not call Test-Path' {
+                    Assert-MockCalled -CommandName Test-Path -Exactly -Times 0
+                }
+
+                It 'Should not call Import-PfxCertificate' {
+                    Assert-MockCalled -CommandName Import-PfxCertificate -Exactly -Times 0
+                }
+
+                It 'Should not call Remove-Item' {
+                    Assert-MockCalled -CommandName Remove-Item -Exactly -Times 0
                 }
 
                 It 'Should not call Set-CertificateFriendlyNameInCertificateStore' {

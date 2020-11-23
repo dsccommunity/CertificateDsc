@@ -23,6 +23,10 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
     The path to the PFX file you want to import.
     This parameter is ignored.
 
+    .PARAMETER Content
+    The content of the PFX file you want to import.
+    This parameter is ignored.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
 
@@ -61,6 +65,11 @@ function Get-TargetResource
         [Parameter()]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -157,6 +166,9 @@ function Get-TargetResource
     .PARAMETER Path
     The path to the PFX file you want to import.
 
+    .PARAMETER Content
+    The content of the PFX file you want to import.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
 
@@ -191,6 +203,11 @@ function Test-TargetResource
         [Parameter()]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -259,6 +276,9 @@ function Test-TargetResource
     .PARAMETER Path
     The path to the PFX file you want to import.
 
+    .PARAMETER Content
+    The content of the PFX file you want to import.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the PFX file to.
 
@@ -292,6 +312,11 @@ function Set-TargetResource
         [Parameter()]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -339,6 +364,11 @@ function Set-TargetResource
                     $($script:localizedData.ImportingPfxMessage -f $Path, $Location, $Store)
                 ) -join '' )
 
+            if ($PSBoundParameters.ContainsKey('Content'))
+            {
+                Set-Base64Content -Value $Content -Path $Path -ErrorAction Stop
+            }
+
             # Check that the certificate PFX file exists before trying to import
             if (-not (Test-Path -Path $Path))
             {
@@ -373,6 +403,11 @@ function Set-TargetResource
             else
             {
                 Import-PfxCertificateEx @importPfxCertificateParameters
+            }
+
+            if ($PSBoundParameters.ContainsKey('Content'))
+            {
+                Remove-Item -Path $Path -Force
             }
         }
 

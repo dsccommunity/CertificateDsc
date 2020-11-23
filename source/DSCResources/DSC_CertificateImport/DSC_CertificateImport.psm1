@@ -23,6 +23,10 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
     The path to the CER file you want to import.
     This parameter is ignored.
 
+    .PARAMETER Content
+    The content of the CER file you want to import.
+    This parameter is ignored.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
 
@@ -51,6 +55,11 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -112,6 +121,9 @@ function Get-TargetResource
     .PARAMETER Path
     The path to the CER file you want to import.
 
+    .PARAMETER Content
+    The content of the CER file you want to import.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
 
@@ -138,6 +150,11 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -198,6 +215,9 @@ function Test-TargetResource
     .PARAMETER Path
     The path to the CER file you want to import.
 
+    .PARAMETER Content
+    The content of the CER file you want to import.
+
     .PARAMETER Location
     The Windows Certificate Store Location to import the certificate to.
 
@@ -223,6 +243,11 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -262,6 +287,11 @@ function Set-TargetResource
                     $($script:localizedData.ImportingCertficateMessage -f $Path, $Location, $Store)
                 ) -join '' )
 
+            if ($PSBoundParameters.ContainsKey('Content'))
+            {
+                Set-Base64Content -Value $Content -Path $Path -ErrorAction Stop
+            }
+
             # Check that the certificate file exists before trying to import
             if (-not (Test-Path -Path $Path))
             {
@@ -287,6 +317,11 @@ function Set-TargetResource
                 https://github.com/dsccommunity/CertificateDsc/issues/161
             #>
             Import-CertificateEx @importCertificateParameters
+
+            if ($PSBoundParameters.ContainsKey('Content'))
+            {
+                Remove-Item -Path $Path -Force
+            }
         }
 
         if ($PSBoundParameters.ContainsKey('FriendlyName') `

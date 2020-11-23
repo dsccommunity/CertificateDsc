@@ -5,6 +5,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- PfxImport:
+  - Added Base64Content parameter to specify the content of a PFX file that can be included in the configuration MOF.
+
+- CertificateImport:
+  - Added Base64Content parameter to specify the content of a certificate file that can be included in the configuration MOF.
+
 ## [5.0.0] - 2020-10-16
 
 ### Changed
