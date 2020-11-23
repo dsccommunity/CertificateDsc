@@ -17,8 +17,14 @@
 
 #Requires -module CertificateDsc
 
-$contentByte = Get-Content -Path D:\MyTrustedRoot.cer -Encoding Byte
-$contentBase64 = ([System.Convert]::ToBase64String($contentByte))
+<#
+    .DESCRIPTION
+        Create mock base64 value
+    example for converting an existing file:
+    $contentByte = Get-Content -Path D:\MyTrustedRoot.cer -Encoding Byte
+    $contentBase64 = ([System.Convert]::ToBase64String($contentByte))
+#>
+$contentBase64 = [System.Convert]::ToBase64String(@(00, 00, 00))
 
 <#
     .DESCRIPTION
