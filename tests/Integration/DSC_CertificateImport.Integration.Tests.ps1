@@ -45,8 +45,8 @@ try
                 -Path $certificate.PSPath `
                 -Force
             $certificateFriendlyName = 'Test Certificate Friendly Name'
-            $contentByte = Get-Content -Path $certificatePath -Encoding Byte
-            $testBase64Content = [System.Convert]::ToBase64String($contentByte)
+
+            $testBase64Content = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificatePath))
         }
 
         AfterAll {

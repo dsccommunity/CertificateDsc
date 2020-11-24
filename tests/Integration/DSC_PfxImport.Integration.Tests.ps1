@@ -41,13 +41,9 @@ try
                 -Path $env:Temp `
                 -ChildPath "PfxImport-$($certificate.Thumbprint).pfx"
 
-            $pfxPathContentOutput1 = Join-Path `
+            $pfxPathContentOutput = Join-Path `
                 -Path $env:Temp `
                 -ChildPath "PfxContentImport1-$($certificate.Thumbprint).pfx"
-
-            $pfxPathContentOutput2 = Join-Path `
-                -Path $env:Temp `
-                -ChildPath "PfxContentImport2-$($certificate.Thumbprint).pfx"
 
             $cerPath = Join-Path `
                 -Path $env:Temp `
@@ -64,8 +60,7 @@ try
                 -FilePath $pfxPath `
                 -Password $testCredential.Password
 
-            $contentByte = Get-Content -Path $pfxPath -Encoding Byte
-            $testBase64Content = [System.Convert]::ToBase64String($contentByte)
+            $testBase64Content = [Convert]::ToBase64String([IO.File]::ReadAllBytes($pfxPath))
 
             $null = Export-Certificate `
                 -Type CERT `
@@ -94,7 +89,7 @@ try
                 )
             }
 
-            $configDataForAddWithContent1 = @{
+            $configDataForAddWithContent = @{
                 AllNodes = @(
                     @{
                         NodeName                    = 'localhost'
@@ -102,24 +97,7 @@ try
                         Location                    = 'LocalMachine'
                         Store                       = 'My'
                         Ensure                      = 'Present'
-                        Path                        = $pfxPathContentOutput1
-                        Content                     = $testBase64Content
-                        Credential                  = $testCredential
-                        FriendlyName                = $certificateFriendlyName
-                        PSDscAllowPlainTextPassword = $true
-                    }
-                )
-            }
-
-            $configDataForAddWithContent2 = @{
-                AllNodes = @(
-                    @{
-                        NodeName                    = 'localhost'
-                        Thumbprint                  = $certificate.Thumbprint
-                        Location                    = 'LocalMachine'
-                        Store                       = 'My'
-                        Ensure                      = 'Present'
-                        Path                        = $pfxPathContentOutput2
+                        Path                        = $pfxPathContentOutput
                         Content                     = $testBase64Content
                         Credential                  = $testCredential
                         FriendlyName                = $certificateFriendlyName
@@ -280,7 +258,7 @@ try
                 {
                     & "$($script:DSCResourceName)_Add_Config_With_Content" `
                         -OutputPath $TestDrive `
-                        -ConfigurationData $configDataForAddWithContent1
+                        -ConfigurationData $configDataForAddWithContent
                 } | Should -Not -Throw
             }
 
@@ -321,9 +299,9 @@ try
 
             It 'Should compile the MOF without throwing an exception' {
                 {
-                    & "$($script:DSCResourceName)_Add_Config" `
+                    & "$($script:DSCResourceName)_Add_Config_With_Content" `
                         -OutputPath $TestDrive `
-                        -ConfigurationData $configDataForAddWithContent2
+                        -ConfigurationData $configDataForAddWithContent
                 } | Should -Not -Throw
             }
 
@@ -358,7 +336,7 @@ try
         Context 'When certificate content has already been imported' {
             It 'Should compile the MOF without throwing an exception' {
                 {
-                    & "$($script:DSCResourceName)_Add_Config" `
+                    & "$($script:DSCResourceName)_Add_Config_With_Content" `
                         -OutputPath $TestDrive `
                         -ConfigurationData $configDataForAddWithContent
                 } | Should -Not -Throw
