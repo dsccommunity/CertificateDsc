@@ -41,9 +41,13 @@ try
                 -Path $env:Temp `
                 -ChildPath "PfxImport-$($certificate.Thumbprint).pfx"
 
-            $pfxPathContentOutput = Join-Path `
+            $pfxPathContentOutput1 = Join-Path `
                 -Path $env:Temp `
-                -ChildPath "PfxContentImport-$($certificate.Thumbprint).pfx"
+                -ChildPath "PfxContentImport1-$($certificate.Thumbprint).pfx"
+
+            $pfxPathContentOutput2 = Join-Path `
+                -Path $env:Temp `
+                -ChildPath "PfxContentImport2-$($certificate.Thumbprint).pfx"
 
             $cerPath = Join-Path `
                 -Path $env:Temp `
@@ -90,7 +94,7 @@ try
                 )
             }
 
-            $configDataForAddWithContent = @{
+            $configDataForAddWithContent1 = @{
                 AllNodes = @(
                     @{
                         NodeName                    = 'localhost'
@@ -98,7 +102,24 @@ try
                         Location                    = 'LocalMachine'
                         Store                       = 'My'
                         Ensure                      = 'Present'
-                        Path                        = $pfxPathContentOutput
+                        Path                        = $pfxPathContentOutput1
+                        Content                     = $testBase64Content
+                        Credential                  = $testCredential
+                        FriendlyName                = $certificateFriendlyName
+                        PSDscAllowPlainTextPassword = $true
+                    }
+                )
+            }
+
+            $configDataForAddWithContent2 = @{
+                AllNodes = @(
+                    @{
+                        NodeName                    = 'localhost'
+                        Thumbprint                  = $certificate.Thumbprint
+                        Location                    = 'LocalMachine'
+                        Store                       = 'My'
+                        Ensure                      = 'Present'
+                        Path                        = $pfxPathContentOutput2
                         Content                     = $testBase64Content
                         Credential                  = $testCredential
                         FriendlyName                = $certificateFriendlyName
@@ -259,7 +280,7 @@ try
                 {
                     & "$($script:DSCResourceName)_Add_Config_With_Content" `
                         -OutputPath $TestDrive `
-                        -ConfigurationData $configDataForAddWithContent
+                        -ConfigurationData $configDataForAddWithContent1
                 } | Should -Not -Throw
             }
 
@@ -302,7 +323,7 @@ try
                 {
                     & "$($script:DSCResourceName)_Add_Config" `
                         -OutputPath $TestDrive `
-                        -ConfigurationData $configDataForAddWithContent
+                        -ConfigurationData $configDataForAddWithContent2
                 } | Should -Not -Throw
             }
 
