@@ -47,7 +47,7 @@ try
         $testFile = 'test.cer'
         $certificateFriendlyName = 'Test Certificate Friendly Name'
 
-        $certificateContent = 'Test certificate content'
+        $certificateContent = [System.Convert]::ToBase64String(@(00, 00, 00))
 
         $validPath = "TestDrive:\$testFile"
         $validCertPath = "Cert:\LocalMachine\My"
@@ -70,7 +70,7 @@ try
             $Path -eq $validPath
         }
 
-        $setContent_parameterfilter = {
+        $setBase64Content_parameterfilter = {
             $Path -eq $validPath -and `
                 $Value -eq $certificateContent
         }
@@ -278,7 +278,7 @@ try
 
         Describe 'DSC_CertificateImport\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
-                Mock -CommandName Set-Content
+                Mock -CommandName Set-Base64Content
                 Mock -CommandName Test-Path -MockWith { $true }
                 Mock -CommandName Import-CertificateEx
                 Mock -CommandName Remove-CertificateFromCertificateStore
@@ -295,8 +295,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should call Test-Path with expected parameters' {
@@ -335,10 +335,10 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should call Set-Content with expected parameters' {
+                It 'Should call Set-Base64Content with expected parameters' {
                     Assert-MockCalled `
-                        -CommandName Set-Content `
-                        -ParameterFilter $setContent_parameterfilter `
+                        -CommandName Set-Base64Content `
+                        -ParameterFilter $setBase64Content_parameterfilter `
                         -Exactly -Times 1
                 }
 
@@ -382,8 +382,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -417,8 +417,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -452,8 +452,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -490,8 +490,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -528,8 +528,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -563,8 +563,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -598,8 +598,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -636,8 +636,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -673,8 +673,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -710,8 +710,8 @@ try
                     } | Should -Not -Throw
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should not call Test-Path' {
@@ -747,8 +747,8 @@ try
                     } | Should -Throw ($script:localizedData.CertificatePfxFileNotFoundError -f $validPath)
                 }
 
-                It 'Should not call Set-Content' {
-                    Assert-MockCalled -CommandName Set-Content -Exactly -Times 0
+                It 'Should not call Set-Base64Content' {
+                    Assert-MockCalled -CommandName Set-Base64Content -Exactly -Times 0
                 }
 
                 It 'Should call Test-Path with the parameters supplied' {
@@ -776,7 +776,7 @@ try
             }
 
             Context 'When certificate content can not be written due to bad path and certificate should be in the store' {
-                Mock -CommandName Set-Content -MockWith { throw }
+                Mock -CommandName Set-Base64Content -MockWith { throw }
 
                 It 'Should throw exception' {
                     {
@@ -784,10 +784,10 @@ try
                     } | Should -Throw
                 }
 
-                It 'Should call Set-Content with the parameters supplied' {
+                It 'Should call Set-Base64Content with the parameters supplied' {
                     Assert-MockCalled `
-                        -CommandName Set-Content `
-                        -ParameterFilter $setContent_parameterfilter `
+                        -CommandName Set-Base64Content `
+                        -ParameterFilter $setBase64Content_parameterfilter `
                         -Exactly -Times 1
                 }
 

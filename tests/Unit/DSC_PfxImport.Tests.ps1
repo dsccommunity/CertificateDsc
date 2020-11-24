@@ -55,11 +55,7 @@ try
             -TypeName System.Management.Automation.PSCredential `
             -ArgumentList $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
 
-            $enc = [system.Text.Encoding]::UTF8
-
-
-
-        $testContent = 'Test certificate content'
+        $certificateContent = [System.Convert]::ToBase64String(@(00, 00, 00))
 
         $validPath = "TestDrive:\$testFile"
         $validCertPath = "Cert:\LocalMachine\My"
@@ -97,7 +93,7 @@ try
 
         $setBase64Content_parameterfilter = {
             $Path -eq $validPath -and `
-                $Value -eq $testContent
+                $Value -eq $certificateContent
         }
 
         $removeItem_parameterfilter = {
@@ -145,7 +141,7 @@ try
         $presentParamsWithContent = @{
             Thumbprint = $validThumbprint
             Path       = $validPath
-            Content    = $testContent
+            Content    = $certificateContent
             Ensure     = 'Present'
             Location   = 'LocalMachine'
             Store      = 'My'
@@ -169,7 +165,7 @@ try
         $presentParamsWithFriendlyNameWithContent = @{
             Thumbprint   = $validThumbprint
             Path         = $validPath
-            Content      = $testContent
+            Content      = $certificateContent
             Ensure       = 'Present'
             Location     = 'LocalMachine'
             Store        = 'My'
@@ -189,7 +185,7 @@ try
 
         $absentParamsWithContent = @{
             Thumbprint = $validThumbprint
-            Content    = $testContent
+            Content    = $certificateContent
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
             Store      = 'My'
