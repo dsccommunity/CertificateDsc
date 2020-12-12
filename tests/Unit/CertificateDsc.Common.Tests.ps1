@@ -168,7 +168,6 @@ InModuleScope $script:subModuleName {
             "
 
     $cerBytes = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithSan)
-    $base64Cer = [System.Convert]::ToBase64String($cerBytes)
     $cerBytesWithoutSan = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithoutSan)
     $cerBytesWithAltTemplateName = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateName)
     $cerBytesWithAltTemplateInformation = [System.Text.Encoding]::ASCII.GetBytes($cerFileWithAltTemplateInformation)
@@ -1719,39 +1718,6 @@ Minor Version Number=5
                 Assert-MockCalled -CommandName Get-ChildItem -ParameterFilter {
                     $Path -eq 'Cert:\LocalMachine\TestStore\627b268587e95099e72aab831a81f887d7a20578'
                 } -Exactly -Times 1
-            }
-        }
-    }
-
-    Describe 'CertificateDsc.Common\Set-Base64Content' -Tag 'Set-Base64Content' {
-        Context 'When the value and path parameters are valid' {
-
-            It 'Should not throw exception' {
-                {
-                    Set-Base64Content -Path $validTmpPath -Value $base64Cer
-                } | Should -Not -Throw
-            }
-
-            It 'Should create expected file' {
-                Get-Content -Path $validTmpPath -Raw | Should -Be $cerFileWithSan
-            }
-        }
-
-        Context 'When the path is invalid' {
-
-            It 'Should throw exception' {
-                {
-                    Set-Base64Content -Path $inValidPath -Value $base64Cer
-                } | Should -Throw
-            }
-        }
-
-        Context 'When the value is invalid' {
-
-            It 'Should throw exception' {
-                {
-                    Set-Base64Content -Path $validPath -Value $cerFileWithSan
-                } | Should -Throw
             }
         }
     }

@@ -51,14 +51,21 @@ try
 
         AfterAll {
             # Cleanup
-            $null = Remove-Item `
-                -Path $certificatePath `
-                -Force `
-                -ErrorAction SilentlyContinue
-            $null = Remove-Item `
-                -Path $certificate.PSPath `
-                -Force `
-                -ErrorAction SilentlyContinue
+            if ($null -ne $certificatePath)
+            {
+                $null = Remove-Item `
+                    -Path $certificatePath `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+            }
+
+            if ($null -ne $certificate.PSPath)
+            {
+                $null = Remove-Item `
+                    -Path $certificate.PSPath `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+            }
         }
 
         Context 'Import certificate file' {

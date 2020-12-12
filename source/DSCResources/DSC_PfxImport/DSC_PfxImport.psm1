@@ -364,19 +364,6 @@ function Set-TargetResource
                     $($script:localizedData.ImportingPfxMessage -f $Path, $Location, $Store)
                 ) -join '' )
 
-            if ($PSBoundParameters.ContainsKey('Content'))
-            {
-                Set-Base64Content -Value $Content -Path $Path -ErrorAction Stop
-            }
-
-            # Check that the certificate PFX file exists before trying to import
-            if (-not (Test-Path -Path $Path))
-            {
-                New-InvalidArgumentException `
-                    -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
-                    -ArgumentName 'Path'
-            }
-
             $getCertificateStorePathParameters = @{
                 Location = $Location
                 Store    = $Store
@@ -386,7 +373,6 @@ function Set-TargetResource
             $importPfxCertificateParameters = @{
                 Exportable        = $Exportable
                 CertStoreLocation = $certificateStore
-                FilePath          = $Path
                 Verbose           = $VerbosePreference
             }
 
@@ -395,19 +381,29 @@ function Set-TargetResource
                 $importPfxCertificateParameters['Password'] = $Credential.Password
             }
 
-            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
-            if (Test-CommandExists -Name 'Import-PfxCertificate')
+            if ($PSBoundParameters.ContainsKey('Content'))
             {
-                Import-PfxCertificate @importPfxCertificateParameters
+                Import-PfxCertificateEx @importPfxCertificateParameters -Base64Content $Content
             }
             else
             {
-                Import-PfxCertificateEx @importPfxCertificateParameters
-            }
+                # Check that the certificate PFX file exists before trying to import
+                if (-not (Test-Path -Path $Path))
+                {
+                    New-InvalidArgumentException `
+                        -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
+                        -ArgumentName 'Path'
+                }
 
-            if ($PSBoundParameters.ContainsKey('Content'))
-            {
-                Remove-Item -Path $Path -Force
+                # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
+                if (Test-CommandExists -Name 'Import-PfxCertificate')
+                {
+                    Import-PfxCertificate @importPfxCertificateParameters -FilePath $Path
+                }
+                else
+                {
+                    Import-PfxCertificateEx @importPfxCertificateParameters -FilePath $Path
+                }
             }
         }
 

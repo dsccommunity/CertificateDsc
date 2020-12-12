@@ -287,19 +287,6 @@ function Set-TargetResource
                     $($script:localizedData.ImportingCertficateMessage -f $Path, $Location, $Store)
                 ) -join '' )
 
-            if ($PSBoundParameters.ContainsKey('Content'))
-            {
-                Set-Base64Content -Value $Content -Path $Path -ErrorAction Stop
-            }
-
-            # Check that the certificate file exists before trying to import
-            if (-not (Test-Path -Path $Path))
-            {
-                New-InvalidArgumentException `
-                    -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
-                    -ArgumentName 'Path'
-            }
-
             $getCertificateStorePathParameters = @{
                 Location = $Location
                 Store    = $Store
@@ -308,19 +295,28 @@ function Set-TargetResource
 
             $importCertificateParameters = @{
                 CertStoreLocation = $certificateStore
-                FilePath          = $Path
                 Verbose           = $VerbosePreference
             }
 
-            <#
-                Using Import-CertificateEx instead of Import-Certificate due to the following issue:
-                https://github.com/dsccommunity/CertificateDsc/issues/161
-            #>
-            Import-CertificateEx @importCertificateParameters
-
             if ($PSBoundParameters.ContainsKey('Content'))
             {
-                Remove-Item -Path $Path -Force
+                Import-CertificateEx @importCertificateParameters -Base64Content $Content
+            }
+            else
+            {
+                # Check that the certificate file exists before trying to import
+                if (-not (Test-Path -Path $Path))
+                {
+                    New-InvalidArgumentException `
+                        -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
+                        -ArgumentName 'Path'
+                }
+
+                <#
+                    Using Import-CertificateEx instead of Import-Certificate due to the following issue:
+                    https://github.com/dsccommunity/CertificateDsc/issues/161
+                #>
+                Import-CertificateEx @importCertificateParameters -FilePath $Path
             }
         }
 
