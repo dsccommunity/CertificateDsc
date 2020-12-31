@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed `master` branch to `main` - Fixes [Issue #237](https://github.com/dsccommunity/CertificateDsc/issues/237).
+
 ## [5.0.0] - 2020-10-16
 
 ### Changed
