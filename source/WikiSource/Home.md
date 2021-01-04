@@ -33,4 +33,4 @@ Get-DscResource -Module CertificateDsc
 
 ## Change Log
 
-A full list of changes in each version can be found in the [change log](https://github.com/dsccommunity/CertificateDsc/blob/master/CHANGELOG.md).
+A full list of changes in each version can be found in the [change log](https://github.com/dsccommunity/CertificateDsc/blob/main/CHANGELOG.md).

@@ -5,7 +5,7 @@
 .COMPANYNAME DSC Community
 .COPYRIGHT Copyright the DSC Community contributors. All rights reserved.
 .TAGS DSCConfiguration
-.LICENSEURI https://github.com/dsccommunity/CertificateDsc/blob/master/LICENSE
+.LICENSEURI https://github.com/dsccommunity/CertificateDsc/blob/main/LICENSE
 .PROJECTURI https://github.com/dsccommunity/CertificateDsc
 .ICONURI
 .EXTERNALMODULEDEPENDENCIES
