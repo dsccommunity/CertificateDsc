@@ -110,7 +110,6 @@ try
 
         $presentParamsWithContent = @{
             Thumbprint   = $validThumbprint
-            Path         = $validPath
             Content      = $certificateContent
             Ensure       = 'Present'
             Location     = 'LocalMachine'
@@ -209,7 +208,7 @@ try
 
                 It 'Should not throw exception' {
                     {
-                        $script:result = Get-TargetResource @presentParams
+                        $script:result = Get-TargetResource @presentParamsWithContent
                     } | Should -Not -Throw
                 }
 
@@ -219,7 +218,8 @@ try
 
                 It 'Should contain the input values' {
                     $script:result.Thumbprint | Should -BeExactly $validThumbprint
-                    $script:result.Path | Should -BeExactly $validPath
+                    $script:result.Path | Should -BeExactly ''
+                    $script:result.Content | Should -BeExactly $presentParamsWithContent.Content
                     $script:result.Ensure | Should -BeExactly 'Absent'
                     $script:result.FriendlyName | Should -BeNullOrEmpty
                 }

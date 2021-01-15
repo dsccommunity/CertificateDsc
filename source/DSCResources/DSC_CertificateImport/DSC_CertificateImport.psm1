@@ -103,6 +103,7 @@ function Get-TargetResource
     return @{
         Thumbprint   = $Thumbprint
         Path         = $Path
+        Content      = $Content
         Location     = $Location
         Store        = $Store
         Ensure       = $Ensure
