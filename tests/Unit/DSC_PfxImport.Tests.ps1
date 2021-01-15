@@ -172,6 +172,17 @@ try
             FriendlyName = $certificateFriendlyName
         }
 
+        $presentParamsWithoutContentAndPath = @{
+            Thumbprint   = $validThumbprint
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Exportable   = $True
+            Credential   = $testCredential
+            Verbose      = $True
+            FriendlyName = $certificateFriendlyName
+        }
+
         $absentParams = @{
             Thumbprint = $validThumbprint
             Ensure     = 'Absent'
@@ -183,6 +194,14 @@ try
         $absentParamsWithContent = @{
             Thumbprint = $validThumbprint
             Content    = $certificateContent
+            Ensure     = 'Absent'
+            Location   = 'LocalMachine'
+            Store      = 'My'
+            Verbose    = $True
+        }
+
+        $absentParamsWithoutContentAndPath = @{
+            Thumbprint = $validThumbprint
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
             Store      = 'My'
@@ -338,6 +357,20 @@ try
                 Mock -CommandName Import-PfxCertificateEx
                 Mock -CommandName Remove-CertificateFromCertificateStore
                 Mock -CommandName Set-CertificateFriendlyNameInCertificateStore
+            }
+
+            Context 'When Content and Path parameters are null' {
+                It 'Should throw exception wnen Ensure is Present' {
+                    {
+                        Set-TargetResource @presentParamsWithoutContentAndPath
+                    } | Should -Throw ($script:localizedData.ContentAndPathParametersAreNull)
+                }
+
+                It 'Should not throw exception wnen Ensure is Absent' {
+                    {
+                        Set-TargetResource @absentParamsWithoutContentAndPath
+                    } | Should -Not -Throw
+                }
             }
 
             Context 'When PFX file exists and certificate should be in the store but is not' {

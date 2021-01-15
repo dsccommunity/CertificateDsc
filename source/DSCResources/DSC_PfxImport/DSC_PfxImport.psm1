@@ -352,6 +352,8 @@ function Set-TargetResource
             $($script:localizedData.SettingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
+    Assert-ResourceProperty @PSBoundParameters
+
     if ($Ensure -ieq 'Present')
     {
         $currentState = Get-TargetResource @PSBoundParameters
@@ -438,5 +440,38 @@ function Set-TargetResource
             -Store $Store
     }
 } # end function Set-TargetResource
+
+function Assert-ResourceProperty
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.String]
+        $Path,
+
+        [Parameter()]
+        [System.String]
+        $Content,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
+        [Parameter(ValueFromRemainingArguments)]
+        $RemainingParameters
+    )
+
+    if ($Ensure -ieq 'Present')
+    {
+        if ([string]::IsNullOrWhiteSpace($Content) -band [string]::IsNullOrWhiteSpace($Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.ContentAndPathParametersAreNull) `
+                -ArgumentName 'Path|Content'
+        }
+    }
+}
 
 Export-ModuleMember -Function *-TargetResource

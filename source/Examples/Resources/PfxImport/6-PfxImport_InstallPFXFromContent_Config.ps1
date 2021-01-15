@@ -19,14 +19,6 @@
 
 <#
     .DESCRIPTION
-        Create mock base64 value
-    example for converting an existing file:
-    $contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificateFilePath))
-#>
-$contentBase64 = [System.Convert]::ToBase64String(@(00, 00, 00))
-
-<#
-    .DESCRIPTION
         Import a PFX into the 'My' Local Machine certificate store.
 #>
 Configuration PfxImport_InstallPFXFromContent_Config
@@ -41,12 +33,19 @@ Configuration PfxImport_InstallPFXFromContent_Config
 
     Import-DscResource -ModuleName CertificateDsc
 
+    <#
+        .DESCRIPTION
+            Create mock base64 value
+            example for converting an existing file:
+            $contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificateFilePath))
+    #>
+    $contentBase64 = [System.Convert]::ToBase64String(@(00, 00, 00))
+
     Node localhost
     {
         PfxImport CompanyCert
         {
             Thumbprint = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
-            Path       = 'C:\Windows\Temp\CompanyCert.pfx'
             Content    = $contentBase64
             Location   = 'LocalMachine'
             Store      = 'My'

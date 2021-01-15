@@ -19,20 +19,20 @@
 
 <#
     .DESCRIPTION
-        Create mock base64 value
-    example for converting an existing file:
-    $contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificateFilePath))
-#>
-$contentBase64 = [System.Convert]::ToBase64String(@(00, 00, 00))
-
-<#
-    .DESCRIPTION
         Import public key certificate into Trusted Root store from
         a provided base64 encoded string.
 #>
 Configuration CertificateImport_WithContent_Config
 {
     Import-DscResource -ModuleName CertificateDsc
+
+    <#
+        .DESCRIPTION
+            Create mock base64 value
+            example for converting an existing file:
+            $contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificateFilePath))
+    #>
+    $contentBase64 = [System.Convert]::ToBase64String(@(00, 00, 00))
 
     Node localhost
     {
@@ -41,7 +41,6 @@ Configuration CertificateImport_WithContent_Config
             Thumbprint   = 'c81b94933420221a7ac004a90242d8b1d3e5070d'
             Location     = 'LocalMachine'
             Store        = 'Root'
-            Path         = 'C:\Windows\Temp\MyTrustedRoot.cer'
             Content      = $contentBase64
         }
     }

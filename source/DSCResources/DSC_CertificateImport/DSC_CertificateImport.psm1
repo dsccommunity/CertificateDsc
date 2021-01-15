@@ -52,12 +52,11 @@ function Get-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $Path,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String]
         $Content,
 
@@ -147,12 +146,11 @@ function Test-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $Path,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String]
         $Content,
 
@@ -240,12 +238,11 @@ function Set-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $Path,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String]
         $Content,
 
@@ -274,6 +271,8 @@ function Set-TargetResource
             "$($MyInvocation.MyCommand): "
             $($script:localizedData.SettingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
+
+    Assert-ResourceProperty @PSBoundParameters
 
     if ($Ensure -ieq 'Present')
     {
@@ -351,5 +350,38 @@ function Set-TargetResource
             -Store $Store
     }
 }  # end function Test-TargetResource
+
+function Assert-ResourceProperty
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.String]
+        $Path,
+
+        [Parameter()]
+        [System.String]
+        $Content,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
+        [Parameter(ValueFromRemainingArguments)]
+        $RemainingParameters
+    )
+
+    if ($Ensure -ieq 'Present')
+    {
+        if ([string]::IsNullOrWhiteSpace($Content) -band [string]::IsNullOrWhiteSpace($Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.ContentAndPathParametersAreNull) `
+                -ArgumentName 'Path|Content'
+        }
+    }
+}
 
 Export-ModuleMember -Function *-TargetResource

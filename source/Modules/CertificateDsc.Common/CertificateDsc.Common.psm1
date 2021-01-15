@@ -994,11 +994,11 @@ function Import-PfxCertificateEx
 
     if ($PSCmdlet.ParameterSetName -eq 'Path')
     {
-        $certificateData = $FilePath
+        $importDataValue = $FilePath
     }
     else
     {
-        $certificateData = [Convert]::FromBase64String($Base64Content)
+        $importDataValue = [Convert]::FromBase64String($Base64Content)
     }
 
     if ($Exportable)
@@ -1008,11 +1008,11 @@ function Import-PfxCertificateEx
 
     if ($Password)
     {
-        $cert.Import($certificateData, $Password, $flags)
+        $cert.Import($importDataValue, $Password, $flags)
     }
     else
     {
-        $cert.Import($certificateData, $flags)
+        $cert.Import($importDataValue, $flags)
     }
 
     $certStore = New-Object `

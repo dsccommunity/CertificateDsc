@@ -139,6 +139,14 @@ try
             FriendlyName = $certificateFriendlyName
         }
 
+        $presentParamsWithoutContentAndPath = @{
+            Thumbprint   = $validThumbprint
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Verbose      = $true
+        }
+
         $absentParams = @{
             Thumbprint = $validThumbprint
             Path       = $validPath
@@ -152,6 +160,14 @@ try
             Thumbprint = $validThumbprint
             Path       = $validPath
             Content    = $certificateContent
+            Ensure     = 'Absent'
+            Location   = 'LocalMachine'
+            Store      = 'My'
+            Verbose    = $true
+        }
+
+        $absentParamsWithoutContentAndPath = @{
+            Thumbprint = $validThumbprint
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
             Store      = 'My'
@@ -277,6 +293,20 @@ try
                 Mock -CommandName Import-CertificateEx
                 Mock -CommandName Remove-CertificateFromCertificateStore
                 Mock -CommandName Set-CertificateFriendlyNameInCertificateStore
+            }
+
+            Context 'When Content and Path parameters are null' {
+                It 'Should throw exception wnen Ensure is Present' {
+                    {
+                        Set-TargetResource @presentParamsWithoutContentAndPath
+                    } | Should -Throw
+                }
+
+                It 'Should not throw exception wnen Ensure is Absent' {
+                    {
+                        Set-TargetResource @absentParamsWithoutContentAndPath
+                    } | Should -Not -Throw
+                }
             }
 
             Context 'When certificate file exists and certificate should be in the store but is not' {
