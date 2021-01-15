@@ -27,10 +27,9 @@ Configuration CertificateImport_WithContent_Config
     Import-DscResource -ModuleName CertificateDsc
 
     <#
-        .DESCRIPTION
-            Create mock base64 value
-            example for converting an existing file:
-            $contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificateFilePath))
+        Create mock base64 value
+        example for converting an existing file:
+        $contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificateFilePath))
     #>
     $contentBase64 = [System.Convert]::ToBase64String(@(00, 00, 00))
 
