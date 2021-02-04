@@ -969,6 +969,11 @@ function Import-PfxCertificateEx
 
     $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
 
+    if ($location -eq 'LocalMachine')
+    {
+        $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::MachineKeySet
+    }
+
     if ($Exportable)
     {
         $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
