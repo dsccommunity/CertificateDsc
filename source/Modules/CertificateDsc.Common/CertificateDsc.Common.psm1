@@ -973,6 +973,10 @@ function Import-PfxCertificateEx
     {
         $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::MachineKeySet
     }
+    else
+    {
+        $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet
+    }
 
     if ($Exportable)
     {

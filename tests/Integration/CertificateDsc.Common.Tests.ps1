@@ -156,12 +156,15 @@ InModuleScope $script:subModuleName {
     Describe 'CertificateDsc.Common\Import-PfxCertificateEx' {
         Context 'Import a valid PKCS12 PFX Certificate file into "CurrentUser\My" store with non-exportable key' {
             It 'Should not throw an exception' {
-                { Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\CurrentUser\My' -Password $testPasswordSecure } | Should -Not -Throw
+                {
+                    Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\CurrentUser\My' -Password $testPasswordSecure
+                } | Should -Not -Throw
             }
 
             It 'Should have imported the certificate with the correct values' {
                 $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $certificate.Thumbprint)
-                $importedCert.PrivateKey.CspKeyContainerInfo.MachineKeyStore | Should -Be $false
+                $rsaKey = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($importedCert)
+                $rsaKey.Key.IsMachineKey | Should -Be $false
                 $importedCert.Thumbprint | Should -Be $certificate.Thumbprint
                 $importedCert.HasPrivateKey | Should -Be $true
             }
@@ -186,12 +189,15 @@ InModuleScope $script:subModuleName {
 
         Context 'Import a valid PKCS12 PFX Certificate file into "LocalMachine\My" store with non-exportable key' {
             It 'Should not throw an exception' {
-                { Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\LocalMachine\My' -Password $testPasswordSecure } | Should -Not -Throw
+                {
+                    Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\LocalMachine\My' -Password $testPasswordSecure
+                } | Should -Not -Throw
             }
 
             It 'Should have imported the certificate with the correct values' {
                 $importedCert = Get-ChildItem -Path ('Cert:\LocalMachine\My\{0}' -f $certificate.Thumbprint)
-                $importedCert.PrivateKey.CspKeyContainerInfo.MachineKeyStore | Should -Be $true
+                $rsaKey = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($importedCert)
+                $rsaKey.Key.IsMachineKey | Should -Be $true
                 $importedCert.Thumbprint | Should -Be $certificate.Thumbprint
                 $importedCert.HasPrivateKey | Should -Be $true
             }
