@@ -8,6 +8,7 @@ assembly-informational-format: '{NuGetVersionV2}+Sha.{Sha}.Date.{CommitDate}'
 branches:
   master:
     tag: preview
+    regex: ^main$
   pull-request:
     tag: PR
   feature:
@@ -20,7 +21,6 @@ branches:
     increment: Patch
     regex: (hot)?fix(es)?[\/-]
     source-branches: ['master']
-
 ignore:
   sha: []
 merge-message-formats: {}
