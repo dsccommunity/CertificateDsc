@@ -62,7 +62,7 @@ try
         AfterAll {
             # Cleanup
             $validCertificate = Get-Item -Path "cert:\LocalMachine\My\$($script:validCertificateThumbprint)"
-            $null = Remove-Item -Path $validCertificate.PSPath -Force -ErrorAction SilentlyContinue
+            $null = Remove-Item -Path $validCertificate.PSPath -Force -ErrorAction SilentlyContinue -Confirm:$False
             $null = Remove-Item -Path $script:pfxPath -Force -ErrorAction SilentlyContinue
             $null = Remove-Item -Path $script:certificatePath -Force -ErrorAction SilentlyContinue
         }
