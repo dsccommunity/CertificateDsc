@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Fix bug where `Import-PfxCertificateEx` would not install private keys in the ALLUSERSPROFILE path when importing to LocalMachine store. [Issue #248](https://github.com/dsccommunity/CertificateDsc/issues/248).
+
 ## [5.0.0] - 2020-10-16
 
 ### Changed
