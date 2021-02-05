@@ -49,3 +49,13 @@ This project has adopted [this code of conduct](CODE_OF_CONDUCT.md).
 
 For a full list of resources in CertificateDsc and examples on their use, check out
 the [CertificateDsc wiki](https://github.com/dsccommunity/CertificateDsc/wiki).
+
+## Operating Systems
+
+These resources are automatically tested on **Windows Server 2016** and
+**Windows Server 2019**.
+
+The resources should still work on Windows Server 2012 R2 and older operating
+systems, but are will no longer be updated to work with these older versions.
+The tests are do not work on Windows Server 2012 R2 and older operating systems
+because of missing features required by the tests.

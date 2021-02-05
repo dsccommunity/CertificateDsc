@@ -26,9 +26,6 @@ try
             $configFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName).config.ps1"
             . $configFile
 
-            # Download and dot source the New-SelfSignedCertificateEx script
-            . (Install-NewSelfSignedCertificateExScript)
-
             # Prepare CER certificate properties
             $script:certificatePath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.cer'
             $null = Remove-Item -Path $script:certificatePath -Force -ErrorAction SilentlyContinue
@@ -47,7 +44,7 @@ try
             $certificateEKU = @('Server Authentication', 'Client authentication')
             $certificateSubject = 'CN=contoso, DC=com'
             $certFriendlyName = 'Contoso Test Cert'
-            $validCertificate = New-SelfSignedCertificateEx `
+            $validCertificate = New-SelfSignedCertificate `
                 -Subject $certificateSubject `
                 -KeyUsage $certificateKeyUsage `
                 -KeySpec 'Exchange' `
