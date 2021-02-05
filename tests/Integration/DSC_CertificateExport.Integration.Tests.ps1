@@ -41,18 +41,25 @@ try
             # Generate the Valid certificate for testing
             $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
             $certificateKeyUsage = @('DigitalSignature', 'DataEncipherment')
-            $certificateEKU = @('Server Authentication', 'Client authentication')
+            <#
+                To set Enhanced Key Usage, we must use OIDs:
+                Enhanced Key Usage. 2.5.29.37
+                Client Authentication. 1.3.6.1.5.5.7.3.2
+                Server Authentication. 1.3.6.1.5.5.7.3.1
+            #>
+            $certificateEKU = '2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1'
             $certificateSubject = 'CN=contoso, DC=com'
             $certFriendlyName = 'Contoso Test Cert'
+            # This will fail if run on OS versions older than Windows Server 2016/Windows 10.
             $validCertificate = New-SelfSignedCertificate `
                 -Subject $certificateSubject `
                 -KeyUsage $certificateKeyUsage `
-                -KeySpec 'Exchange' `
-                -EKU $certificateEKU `
-                -SubjectAlternativeName $certificateDNSNames `
+                -KeySpec 'KeyExchange' `
+                -TextExtension $certificateEKU `
+                -DnsName $certificateDNSNames `
                 -FriendlyName $certFriendlyName `
-                -StoreLocation 'LocalMachine' `
-                -Exportable
+                -CertStoreLocation 'cert:\LocalMachine' `
+                -KeyExportPolicy Exportable
             $script:validCertificateThumbprint = $validCertificate.Thumbprint
         }
 

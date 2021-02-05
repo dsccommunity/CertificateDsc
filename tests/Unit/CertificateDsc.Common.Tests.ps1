@@ -332,37 +332,44 @@ InModuleScope $script:subModuleName {
         $certKeyUsage = @('DigitalSignature', 'DataEncipherment')
         $certKeyUsageReverse = @('DataEncipherment', 'DigitalSignature')
         $certKeyUsageNoMatch = $certKeyUsage + @('KeyEncipherment')
-        $certEKU = @('Server Authentication', 'Client authentication')
-        $certEKUReverse = @('Client authentication', 'Server Authentication')
-        $certEKUNoMatch = $certEKU + @('Encrypting File System')
+        <#
+            To set Enhanced Key Usage, we must use OIDs:
+            Enhanced Key Usage. 2.5.29.37
+            Client Authentication. 1.3.6.1.5.5.7.3.2
+            Server Authentication. 1.3.6.1.5.5.7.3.1
+            Microsoft EFS File Recovery. 1.3.6.1.4.1.311.10.3.4.1
+        #>
+        $certEKU = '2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1'
+        $certEKUReverse = '2.5.29.37={text}1.3.6.1.5.5.7.3.1,1.3.6.1.5.5.7.3.2'
+        $certEKUNoMatch = $certEKU + ',1.3.6.1.4.1.311.10.3.4.1'
         $certSubject = 'CN=contoso, DC=com'
         $certFriendlyName = 'Contoso Test Cert'
         $validCert = New-SelfSignedCertificate `
             -Subject $certSubject `
             -KeyUsage $certKeyUsage `
-            -KeySpec 'Exchange' `
-            -EKU $certEKU `
-            -SubjectAlternativeName $certDNSNames `
+            -KeySpec 'KeyExchange' `
+            -TextExtension $certEKU `
+            -DnsName $certDNSNames `
             -FriendlyName $certFriendlyName `
-            -StoreLocation 'CurrentUser' `
-            -Exportable
+            -CertStoreLocation 'cert:\CurrentUser' `
+            -KeyExportPolicy Exportable
         # Pull the generated certificate from the store so we have the friendlyname
         $validThumbprint = $validCert.Thumbprint
         $validCert = Get-Item -Path "cert:\CurrentUser\My\$validThumbprint"
         Remove-Item -Path $validCert.PSPath -Force
 
         # Generate the Expired certificate for testing but remove it from the store straight away
-        $expiredCert = New-SelfSignedCertificateEx `
+        $expiredCert = New-SelfSignedCertificate `
             -Subject $certSubject `
             -KeyUsage $certKeyUsage `
-            -KeySpec 'Exchange' `
-            -EKU $certEKU `
-            -SubjectAlternativeName $certDNSNames `
+            -KeySpec 'KeyExchange' `
+            -TextExtension $certEKU `
+            -DnsName $certDNSNames `
             -FriendlyName $certFriendlyName `
             -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
             -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
-            -StoreLocation 'CurrentUser' `
-            -Exportable
+            -CertStoreLocation 'cert:\CurrentUser' `
+            -KeyExportPolicy Exportable
         # Pull the generated certificate from the store so we have the friendlyname
         $expiredThumbprint = $expiredCert.Thumbprint
         $expiredCert = Get-Item -Path "cert:\CurrentUser\My\$expiredThumbprint"
