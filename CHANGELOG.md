@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed requirement for tests to use `New-SelfSignedCertificateEx` from
   [TechNet Gallery due to retirement](https://docs.microsoft.com/teamblog/technet-gallery-retirement).
   This will prevent tests from running on Windows Server 2012 R2 - Fixes [Issue #250](https://github.com/dsccommunity/CertificateDsc/issues/250).
+- Fix tests for validating FIPS thumbprints in `Test-Thumbprint` so that it runs
+  on PowerShell Core/7.x.
 
 ## [5.0.0] - 2020-10-16
 

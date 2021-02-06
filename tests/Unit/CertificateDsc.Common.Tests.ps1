@@ -26,7 +26,15 @@ Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\Co
 
 InModuleScope $script:subModuleName {
     $invalidThumbprint = 'Zebra'
-    $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes }).GetTypes()
+    $invalidFipsThumbprint = '93b885adfe0da089cdf634904fd59f71'
+
+    <#
+        In .NET Core CLR the SHA*CryptoServiceProvider classes required for FIPS
+        don't appear with any DefinedTypes. So to allow this code to work in
+        both Windows PowerShell and PowerShell Core/7.x we need to not filter the
+        list of types before finding classes.
+    #>
+    $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies()).GetTypes()
 
     # This thumbprint is valid (but not FIPS valid)
     $validThumbprint = (
@@ -34,7 +42,7 @@ InModuleScope $script:subModuleName {
             $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
             ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
         } | Select-Object -First 1 | ForEach-Object -Process {
-            (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
+            (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
                 '{0:x2}' -f $_
             }
         }
@@ -46,7 +54,7 @@ InModuleScope $script:subModuleName {
             $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
             ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
         } | Select-Object -First 1 | ForEach-Object -Process {
-            (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
+            (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
                 '{0:x2}' -f $_
             }
         }
@@ -179,9 +187,10 @@ InModuleScope $script:subModuleName {
 
         Context 'a single existing file by parameter' {
             $result = Test-CertificatePath -Path $validPath
+
             It 'Should return true' {
-                ($result -is [bool]) | Should -Be $true
-                $result | Should -Be $true
+                $result | Should -BeOfType [System.Boolean]
+                $result | Should -BeTrue
             }
         }
 
@@ -194,17 +203,19 @@ InModuleScope $script:subModuleName {
 
         Context 'a single missing file by parameter with -Quiet' {
             $result = Test-CertificatePath -Path $invalidPath -Quiet
+
             It 'Should return false' {
-                ($result -is [bool]) | Should -Be $true
-                $result | Should -Be $false
+                $result | Should -BeOfType [System.Boolean]
+                $result | Should -BeFalse
             }
         }
 
         Context 'a single existing file by pipeline' {
             $result = $validPath | Test-CertificatePath
+
             It 'Should return true' {
-                ($result -is [bool]) | Should -Be $true
-                $result | Should -Be $true
+                $result | Should -BeOfType [System.Boolean]
+                $result | Should -BeTrue
             }
         }
 
@@ -217,9 +228,10 @@ InModuleScope $script:subModuleName {
 
         Context 'a single missing file by pipeline with -Quiet' {
             $result = $invalidPath | Test-CertificatePath -Quiet
+
             It 'Should return false' {
-                ($result -is [bool]) | Should -Be $true
-                $result | Should -Be $false
+                $result | Should -BeOfType [System.Boolean]
+                $result | Should -BeFalse
             }
         }
     }
@@ -228,9 +240,10 @@ InModuleScope $script:subModuleName {
         Context 'When FIPS not set' {
             Context 'When a single valid thumbrpint by parameter is passed' {
                 $result = Test-Thumbprint -Thumbprint $validThumbprint
+
                 It 'Should return true' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $true
+                    $result | Should -BeTrue
                 }
             }
 
@@ -242,21 +255,24 @@ InModuleScope $script:subModuleName {
 
             Context 'When a single invalid thumbprint by parameter with -Quiet is passed' {
                 $result = Test-Thumbprint $invalidThumbprint -Quiet
+
                 It 'Should return false' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $false
+                    $result | Should -BeFalse
                 }
             }
 
             Context 'When a single valid thumbprint by pipeline is passed' {
                 $result = $validThumbprint | Test-Thumbprint
+
                 It 'Should return true' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $true
+                    $result | Should -BeTrue
                 }
             }
 
             Context 'When a single invalid thumbprint by pipeline is passed' {
+
                 It 'Should throw an exception' {
                     { $invalidThumbprint | Test-Thumbprint } | Should -Throw
                 }
@@ -264,9 +280,10 @@ InModuleScope $script:subModuleName {
 
             Context 'When a single invalid thumbprint by pipeline with -Quiet is passed' {
                 $result = $invalidThumbprint | Test-Thumbprint -Quiet
+
                 It 'Should return false' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $false
+                    $result | Should -BeFalse
                 }
             }
         }
@@ -280,45 +297,49 @@ InModuleScope $script:subModuleName {
 
             Context 'When a single valid FIPS thumbrpint by parameter is passed' {
                 $result = Test-Thumbprint -Thumbprint $validFipsThumbprint
+
                 It 'Should return true' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $true
+                    $result | Should -BeTrue
                 }
             }
 
             Context 'When a single invalid FIPS thumbprint by parameter is passed' {
                 It 'Should throw an exception' {
-                    { Test-Thumbprint -Thumbprint $validThumbprint } | Should -Throw
+                    { Test-Thumbprint -Thumbprint $invalidFipsThumbprint } | Should -Throw
                 }
             }
 
             Context 'When a single invalid FIPS thumbprint by parameter with -Quiet is passed' {
-                $result = Test-Thumbprint $validThumbprint -Quiet
+                $result = Test-Thumbprint $invalidFipsThumbprint -Quiet
+
                 It 'Should return false' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $false
+                    $result | Should -BeFalse
                 }
             }
 
             Context 'When a single valid FIPS thumbprint by pipeline is passed' {
                 $result = $validFipsThumbprint | Test-Thumbprint
+
                 It 'Should return true' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $true
+                    $result | Should -BeTrue
                 }
             }
 
             Context 'When a single invalid FIPS thumbprint by pipeline is passed' {
                 It 'Should throw an exception' {
-                    { $validThumbprint | Test-Thumbprint } | Should -Throw
+                    { $invalidFipsThumbprint | Test-Thumbprint } | Should -Throw
                 }
             }
 
             Context 'When a single invalid FIPS thumbprint by pipeline with -Quiet is passed' {
-                $result = $validThumbprint | Test-Thumbprint -Quiet
+                $result =  $invalidFipsThumbprint | Test-Thumbprint -Quiet
+
                 It 'Should return false' {
                     $result | Should -BeOfType [System.Boolean]
-                    $result | Should -Be $false
+                    $result | Should -BeFalse
                 }
             }
         }
@@ -326,12 +347,12 @@ InModuleScope $script:subModuleName {
 
     Describe 'CertificateDsc.Common\Find-Certificate' -Tag 'Find-Certificate' {
         # Generate the Valid certificate for testing but remove it from the store straight away
-        $certDNSNames = @('www.fabrikam.com', 'www.contoso.com')
-        $certDNSNamesReverse = @('www.contoso.com', 'www.fabrikam.com')
-        $certDNSNamesNoMatch = $certDNSNames + @('www.nothere.com')
-        $certKeyUsage = @('DigitalSignature', 'DataEncipherment')
-        $certKeyUsageReverse = @('DataEncipherment', 'DigitalSignature')
-        $certKeyUsageNoMatch = $certKeyUsage + @('KeyEncipherment')
+        $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
+        $certificateDNSNamesReverse = @('www.contoso.com', 'www.fabrikam.com')
+        $certificateDNSNamesNoMatch = $certificateDNSNames + @('www.nothere.com')
+        $certificateKeyUsage = @('DigitalSignature', 'DataEncipherment')
+        $certificateKeyUsageReverse = @('DataEncipherment', 'DigitalSignature')
+        $certificateKeyUsageNoMatch = $certificateKeyUsage + @('KeyEncipherment')
         <#
             To set Enhanced Key Usage, we must use OIDs:
             Enhanced Key Usage. 2.5.29.37
@@ -339,43 +360,44 @@ InModuleScope $script:subModuleName {
             Server Authentication. 1.3.6.1.5.5.7.3.1
             Microsoft EFS File Recovery. 1.3.6.1.4.1.311.10.3.4.1
         #>
-        $certEKU = '2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1'
-        $certEKUReverse = '2.5.29.37={text}1.3.6.1.5.5.7.3.1,1.3.6.1.5.5.7.3.2'
-        $certEKUNoMatch = $certEKU + ',1.3.6.1.4.1.311.10.3.4.1'
-        $certSubject = 'CN=contoso, DC=com'
-        $certFriendlyName = 'Contoso Test Cert'
-        $validCert = New-SelfSignedCertificate `
-            -Subject $certSubject `
-            -KeyUsage $certKeyUsage `
+        $certificateEKU = @('Server Authentication', 'Client authentication')
+        $certificateEKUOID = '2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1'
+        $certificateEKUReverse = @('Client authentication','Server Authentication')
+        $certificateEKUNoMatch = $certificateEKU + @('Encrypting File System')
+        $certificateSubject = 'CN=contoso, DC=com'
+        $certificateFriendlyName = 'Contoso Test Cert'
+        $validCertificate = New-SelfSignedCertificate `
+            -Subject $certificateSubject `
+            -KeyUsage $certificateKeyUsage `
             -KeySpec 'KeyExchange' `
-            -TextExtension $certEKU `
-            -DnsName $certDNSNames `
-            -FriendlyName $certFriendlyName `
+            -TextExtension $certificateEKUOID `
+            -DnsName $certificateDNSNames `
+            -FriendlyName $certificateFriendlyName `
             -CertStoreLocation 'cert:\CurrentUser' `
             -KeyExportPolicy Exportable
         # Pull the generated certificate from the store so we have the friendlyname
-        $validThumbprint = $validCert.Thumbprint
-        $validCert = Get-Item -Path "cert:\CurrentUser\My\$validThumbprint"
-        Remove-Item -Path $validCert.PSPath -Force
+        $validThumbprint = $validCertificate.Thumbprint
+        $validCertificate = Get-Item -Path "cert:\CurrentUser\My\$validThumbprint"
+        Remove-Item -Path $validCertificate.PSPath -Force
 
         # Generate the Expired certificate for testing but remove it from the store straight away
-        $expiredCert = New-SelfSignedCertificate `
-            -Subject $certSubject `
-            -KeyUsage $certKeyUsage `
+        $expiredCertificate = New-SelfSignedCertificate `
+            -Subject $certificateSubject `
+            -KeyUsage $certificateKeyUsage `
             -KeySpec 'KeyExchange' `
-            -TextExtension $certEKU `
-            -DnsName $certDNSNames `
-            -FriendlyName $certFriendlyName `
+            -TextExtension $certificateEKUOID `
+            -DnsName $certificateDNSNames `
+            -FriendlyName $certificateFriendlyName `
             -NotBefore ((Get-Date) - (New-TimeSpan -Days 2)) `
             -NotAfter ((Get-Date) - (New-TimeSpan -Days 1)) `
             -CertStoreLocation 'cert:\CurrentUser' `
             -KeyExportPolicy Exportable
         # Pull the generated certificate from the store so we have the friendlyname
-        $expiredThumbprint = $expiredCert.Thumbprint
-        $expiredCert = Get-Item -Path "cert:\CurrentUser\My\$expiredThumbprint"
-        Remove-Item -Path $expiredCert.PSPath -Force
+        $expiredThumbprint = $expiredCertificate.Thumbprint
+        $expiredCertificate = Get-Item -Path "cert:\CurrentUser\My\$expiredThumbprint"
+        Remove-Item -Path $expiredCertificate.PSPath -Force
 
-        $nocertThumbprint = '1111111111111111111111111111111111111111'
+        $noCertificateThumbprint = '1111111111111111111111111111111111111111'
 
         # Dynamic mock content for Get-ChildItem
         $mockGetChildItem = {
@@ -383,7 +405,7 @@ InModuleScope $script:subModuleName {
             {
                 'cert:\LocalMachine\My'
                 {
-                    return @( $validCert )
+                    return @( $validCertificate )
                 }
 
                 'cert:\LocalMachine\NoCert'
@@ -393,12 +415,12 @@ InModuleScope $script:subModuleName {
 
                 'cert:\LocalMachine\TwoCerts'
                 {
-                    return @( $expiredCert, $validCert )
+                    return @( $expiredCertificate, $validCertificate )
                 }
 
                 'cert:\LocalMachine\Expired'
                 {
-                    return @( $expiredCert )
+                    return @( $expiredCertificate )
                 }
 
                 default
@@ -435,7 +457,7 @@ InModuleScope $script:subModuleName {
 
         Context 'Thumbprint only is passed and matching certificate does not exist' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -Thumbprint $nocertThumbprint } | Should -Not -Throw
+                { $script:result = Find-Certificate -Thumbprint $noCertificateThumbprint } | Should -Not -Throw
             }
 
             It 'Should return null' {
@@ -450,7 +472,7 @@ InModuleScope $script:subModuleName {
 
         Context 'FriendlyName only is passed and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -FriendlyName $certFriendlyName } | Should -Not -Throw
+                { $script:result = Find-Certificate -FriendlyName $certificateFriendlyName } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -480,7 +502,7 @@ InModuleScope $script:subModuleName {
 
         Context 'Subject only is passed and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -Subject $certSubject } | Should -Not -Throw
+                { $script:result = Find-Certificate -Subject $certificateSubject } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -510,7 +532,7 @@ InModuleScope $script:subModuleName {
 
         Context 'Issuer only is passed and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -Issuer $certSubject } | Should -Not -Throw
+                { $script:result = Find-Certificate -Issuer $certificateSubject } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -540,7 +562,7 @@ InModuleScope $script:subModuleName {
 
         Context 'DNSName only is passed and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -DnsName $certDNSNames } | Should -Not -Throw
+                { $script:result = Find-Certificate -DnsName $certificateDNSNames } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -555,7 +577,7 @@ InModuleScope $script:subModuleName {
 
         Context 'DNSName only is passed in reversed order and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -DnsName $certDNSNamesReverse } | Should -Not -Throw
+                { $script:result = Find-Certificate -DnsName $certificateDNSNamesReverse } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -570,7 +592,7 @@ InModuleScope $script:subModuleName {
 
         Context 'DNSName only is passed with only one matching DNS name and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -DnsName $certDNSNames[0] } | Should -Not -Throw
+                { $script:result = Find-Certificate -DnsName $certificateDNSNames[0] } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -585,7 +607,7 @@ InModuleScope $script:subModuleName {
 
         Context 'DNSName only is passed but an entry is missing and matching certificate does not exist' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -DnsName $certDNSNamesNoMatch } | Should -Not -Throw
+                { $script:result = Find-Certificate -DnsName $certificateDNSNamesNoMatch } | Should -Not -Throw
             }
 
             It 'Should return null' {
@@ -600,7 +622,7 @@ InModuleScope $script:subModuleName {
 
         Context 'KeyUsage only is passed and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -KeyUsage $certKeyUsage } | Should -Not -Throw
+                { $script:result = Find-Certificate -KeyUsage $certificateKeyUsage } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -615,7 +637,7 @@ InModuleScope $script:subModuleName {
 
         Context 'KeyUsage only is passed in reversed order and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -KeyUsage $certKeyUsageReverse } | Should -Not -Throw
+                { $script:result = Find-Certificate -KeyUsage $certificateKeyUsageReverse } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -630,7 +652,7 @@ InModuleScope $script:subModuleName {
 
         Context 'KeyUsage only is passed with only one matching DNS name and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -KeyUsage $certKeyUsage[0] } | Should -Not -Throw
+                { $script:result = Find-Certificate -KeyUsage $certificateKeyUsage[0] } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -645,7 +667,7 @@ InModuleScope $script:subModuleName {
 
         Context 'KeyUsage only is passed but an entry is missing and matching certificate does not exist' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -KeyUsage $certKeyUsageNoMatch } | Should -Not -Throw
+                { $script:result = Find-Certificate -KeyUsage $certificateKeyUsageNoMatch } | Should -Not -Throw
             }
 
             It 'Should return null' {
@@ -660,7 +682,7 @@ InModuleScope $script:subModuleName {
 
         Context 'EnhancedKeyUsage only is passed and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU } | Should -Not -Throw
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certificateEKU } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -675,7 +697,7 @@ InModuleScope $script:subModuleName {
 
         Context 'EnhancedKeyUsage only is passed in reversed order and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUReverse } | Should -Not -Throw
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certificateEKUReverse } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -690,7 +712,7 @@ InModuleScope $script:subModuleName {
 
         Context 'EnhancedKeyUsage only is passed with only one matching DNS name and matching certificate exists' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKU[0] } | Should -Not -Throw
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certificateEKU[0] } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -705,7 +727,7 @@ InModuleScope $script:subModuleName {
 
         Context 'EnhancedKeyUsage only is passed but an entry is missing and matching certificate does not exist' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -EnhancedKeyUsage $certEKUNoMatch } | Should -Not -Throw
+                { $script:result = Find-Certificate -EnhancedKeyUsage $certificateEKUNoMatch } | Should -Not -Throw
             }
 
             It 'Should return null' {
@@ -735,7 +757,7 @@ InModuleScope $script:subModuleName {
 
         Context 'FriendlyName only is passed and both valid and expired certificates exist' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'TwoCerts' } | Should -Not -Throw
+                { $script:result = Find-Certificate -FriendlyName $certificateFriendlyName -Store 'TwoCerts' } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -750,7 +772,7 @@ InModuleScope $script:subModuleName {
 
         Context 'FriendlyName only is passed and only expired certificates exist' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' } | Should -Not -Throw
+                { $script:result = Find-Certificate -FriendlyName $certificateFriendlyName -Store 'Expired' } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -765,7 +787,7 @@ InModuleScope $script:subModuleName {
 
         Context 'FriendlyName only is passed and only expired certificates exist but allowexpired passed' {
             It 'Should not throw exception' {
-                { $script:result = Find-Certificate -FriendlyName $certFriendlyName -Store 'Expired' -AllowExpired:$true } | Should -Not -Throw
+                { $script:result = Find-Certificate -FriendlyName $certificateFriendlyName -Store 'Expired' -AllowExpired:$true } | Should -Not -Throw
             }
 
             It 'Should return expected certificate' {
@@ -923,17 +945,17 @@ InModuleScope $script:subModuleName {
                 } `
                 -MockWith {
                     $retObj = New-Object -TypeName psobject -Property @{
-                    StartInfo      = $null
-                    ExitCode       = 0
-                    StandardOutput = New-Object -TypeName psobject |
-                        Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
-                            return @"
+                        StartInfo      = $null
+                        ExitCode       = 0
+                        StandardOutput = New-Object -TypeName psobject |
+                            Add-Member -MemberType ScriptMethod -Name ReadToEnd -Value {
+                                return @"
 Connecting to LabRootCA1\CA1 ...
 Server "CA1" ICertRequest2 interface is alive (32ms)
 CertUtil: -ping command completed successfully.
 "@
-                    } -PassThru
-                }
+                        } -PassThru
+                    }
 
                 $retObj |
                     Add-Member -MemberType ScriptMethod -Name Start -Value { } -PassThru |
@@ -950,7 +972,7 @@ CertUtil: -ping command completed successfully.
             }
 
             It 'Should return true' {
-                $script:result | Should -Be $True
+                $script:result | Should -BeTrue
             }
 
             It 'Should call expected mocks' {
@@ -1003,7 +1025,7 @@ CertUtil: The parameter is incorrect.
             }
 
             It 'Should return false' {
-                $script:result | Should -Be $false
+                $script:result | Should -BeFalse
             }
 
             It 'Should call expected mocks' {
@@ -1407,7 +1429,6 @@ Minor Version Number=5
     Describe 'CertificateDsc.Common\Get-CertificateSubjectAlternativeNameList' -Tag 'Get-CertificateSubjectAlternativeNameList' {
         Context 'When a certificate with a Subject Alternative Name is used' {
             It 'Should return the list of Subject Alternative Name entries' {
-                $global:certificate = $testCertificate
                 $result = Get-CertificateSubjectAlternativeNameList -Certificate $testCertificate
                 $result | Should -HaveCount 3
                 $result | Should -Contain 'DNS Name=firstsan'
@@ -1443,7 +1464,7 @@ Minor Version Number=5
             }
 
             It 'Should return true' {
-                Test-CommandExists -Name $testCommandName | Should -Be $true
+                Test-CommandExists -Name $testCommandName | Should -BeTrue
             }
         }
 
@@ -1463,7 +1484,7 @@ Minor Version Number=5
             }
 
             It 'Should return false' {
-                Test-CommandExists -Name $testCommandName | Should -Be $false
+                Test-CommandExists -Name $testCommandName | Should -BeFalse
             }
         }
     }
