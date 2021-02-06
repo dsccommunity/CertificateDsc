@@ -47,7 +47,8 @@ try
                 Client Authentication. 1.3.6.1.5.5.7.3.2
                 Server Authentication. 1.3.6.1.5.5.7.3.1
             #>
-            $certificateEKU = '2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1'
+            $certificateEKU = @('Server Authentication', 'Client authentication')
+            $certificateEKUOID = '2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1'
             $certificateSubject = 'CN=contoso, DC=com'
             $certFriendlyName = 'Contoso Test Cert'
             # This will fail if run on OS versions older than Windows Server 2016/Windows 10.
@@ -55,7 +56,7 @@ try
                 -Subject $certificateSubject `
                 -KeyUsage $certificateKeyUsage `
                 -KeySpec 'KeyExchange' `
-                -TextExtension $certificateEKU `
+                -TextExtension $certificateEKUOID `
                 -DnsName $certificateDNSNames `
                 -FriendlyName $certFriendlyName `
                 -CertStoreLocation 'cert:\LocalMachine' `

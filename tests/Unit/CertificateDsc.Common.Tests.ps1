@@ -26,6 +26,7 @@ Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\Co
 
 InModuleScope $script:subModuleName {
     $invalidThumbprint = 'Zebra'
+    # This is valid thumbprint, but not valid for FIPS
     $invalidFipsThumbprint = '93b885adfe0da089cdf634904fd59f71'
 
     <#
