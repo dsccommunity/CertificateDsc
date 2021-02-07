@@ -117,32 +117,31 @@ function New-CertificateThumbprint
 
     if ($Fips)
     {
-        # This thumbprint is valid for FIPS
-        $validThumbprint = (
-            $allRuntimeTypes | Where-Object -FilterScript {
-                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
-            } | Select-Object -First 1 | ForEach-Object -Process {
-                (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
-                    '{0:x2}' -f $_
-                }
-            }
-        ) -join ''
+        # Get the list of supported hash algorthms for FIPS
+        $supportedHashAlgorithms = $allRuntimeTypes | Where-Object -FilterScript {
+            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+            ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+        }
     }
     else
     {
-        # This thumbprint is valid (but not FIPS valid)
-        $validThumbprint = (
-            $allRuntimeTypes | Where-Object -FilterScript {
+        # Get the list of supported hash algorthms
+        $supportedHashAlgorithms = $allRuntimeTypes | Where-Object -FilterScript {
                 $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
                 ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            } | Select-Object -First 1 | ForEach-Object -Process {
-                (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
-                    '{0:x2}' -f $_
-                }
             }
-        ) -join ''
     }
+
+    # Generate a valid thumbprint from the supported algorithms
+    $validThumbprint = ($supportedHashAlgorithms |
+        Select-Object -First 1 |
+        ForEach-Object -Process {
+            (New-Object -TypeName $_).ComputeHash([System.String]::Empty) |
+            ForEach-Object -Process {
+                '{0:x2}' -f $_
+            }
+        }
+    ) -join ''
 
     return $validThumbprint
 }

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `GitVersion.yml` to latest pattern - Fixes [Issue #245](https://github.com/dsccommunity/CertificateDsc/issues/245).
 - Changed `Test-Thumbprint` to cache supported hash algorithms to increase
   performance - Fixes [Issue #221](https://github.com/dsccommunity/CertificateDsc/issues/221).
+- Added warning messages into empty catch blocks in `Certificate.PDT` module to
+  assist with debugging.
 
 ### Fixed
 

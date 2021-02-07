@@ -57,5 +57,5 @@ These resources are automatically tested on **Windows Server 2016** and
 
 The resources should still work on Windows Server 2012 R2 and older operating
 systems, but are will no longer be updated to work with these older versions.
-The tests are do not work on Windows Server 2012 R2 and older operating systems
-because of missing features required by the tests.
+The tests do not work on Windows Server 2012 R2 and older operating systems
+because of the missing features in the `New-SelfSignedCertificate` function.
