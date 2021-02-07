@@ -4,6 +4,8 @@ Import-Module -Name (Join-Path -Path $modulePath -ChildPath 'DscResource.Common'
 # Import Localization Strings
 $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
+$script:supportedHashAlgorithms = $null
+
 <#
     .SYNOPSIS
     Validates the existence of a file at a specific path.
@@ -67,6 +69,105 @@ function Test-CertificatePath
 
 <#
     .SYNOPSIS
+    This function clears the script variable supportedHashAlgorithms. It is
+    just used as by tests and not any of the resources.
+
+    .EXAMPLE
+    Clear-SupportedHashAlgorithmCache
+#>
+function Clear-SupportedHashAlgorithmCache
+{
+    [CmdletBinding()]
+    param ()
+
+    Write-Verbose -Message ($script:localizedData.ClearingSupportedHashAlgorithmsCache)
+
+    $script:supportedHashAlgorithms = $null
+}
+
+<#
+    .SYNOPSIS
+    Returns an array of supported hash algorithms and sizes and caches it in the
+    script variable supportedHashAlgorithms to increase performance.
+
+    .EXAMPLE
+    Get-SupportedHashAlgorithms
+#>
+function Get-SupportedHashAlgorithms
+{
+    [CmdletBinding()]
+    [OutputType([System.Collections.ArrayList])]
+    param ()
+
+    if ($null -eq $script:supportedHashAlgorithms)
+    {
+        # Get FIPS registry key
+        $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
+
+        Write-Verbose -Message ($script:localizedData.GettingAssemblyListForHashAlgorithms)
+        # To ensure the FIPS hash algorithms are loaded by .NET Core load the assembly
+        if ($IsCoreCLR)
+        {
+            Add-Type -AssemblyName System.Security.Cryptography.Csp
+        }
+
+        <#
+            Get a list of Hash Providers, but exclude assemblies that set DefinedTypes
+            to null instead of an empty array. Otherwise, the call to GetTypes() fails.
+        #>
+        $allRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() |
+                Where-Object -FilterScript {
+                    $null -ne $_.DefinedTypes
+                }).GetTypes()
+
+        if ($fips -eq $true)
+        {
+            Write-Verbose -Message ($script:localizedData.FindingSupportedFipsHashAlgorithms)
+
+            # Support only FIPS compliant Hash Algorithms
+            $supportedHashProviders = $allRuntimeTypes | Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+            }
+        }
+        else
+        {
+            Write-Verbose -Message ($script:localizedData.FindingSupportedHashAlgorithms)
+
+            $supportedHashProviders = $allRuntimeTypes | Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+            }
+        }
+
+        # Get a list of all Valid Hash types and lengths into an array list
+        $supportedHashAlgorithms = New-Object -TypeName System.Collections.ArrayList
+
+        Write-Verbose -Message ($script:localizedData.GeneratingSupportedHashAlgorithmsArray -f $supportedHashProviders.Count)
+
+        foreach ($supportedHashProvider in $supportedHashProviders)
+        {
+            $bitSize = (New-Object -TypeName $supportedHashProvider).HashSize
+            $validHash = New-Object `
+                -TypeName PSObject `
+                -Property @{
+                    Hash      = $supportedHashProvider.BaseType.Name
+                    BitSize   = $bitSize
+                    HexLength = $bitSize / 4
+                }
+            $null = $supportedHashAlgorithms.Add($validHash)
+        }
+
+        Write-Verbose -Message ($script:localizedData.SettingSupportedHashAlgorithmsCache)
+
+        $script:supportedHashAlgorithms = $supportedHashAlgorithms
+    }
+
+    return $script:supportedHashAlgorithms
+}
+
+<#
+    .SYNOPSIS
     Validates whether a given certificate is valid based on the hash algoritms available on the
     system.
 
@@ -110,47 +211,7 @@ function Test-Thumbprint
 
     begin
     {
-        # Get FIPS registry key
-        $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
-
-        <#
-            Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
-            Otherwise, the call to GetTypes() fails.
-        #>
-        $allHashProviders = ([System.AppDomain]::CurrentDomain.GetAssemblies() |
-            Where-Object -FilterScript { $null -ne $_.DefinedTypes}).GetTypes()
-
-        if ($fips -eq $true)
-        {
-            # Support only FIPS compliant Hash Algorithms
-            $hashProviders = $allHashProviders | Where-Object -FilterScript {
-                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                    ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
-            }
-        }
-        else
-        {
-            $hashProviders = $allHashProviders | Where-Object -FilterScript {
-                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                    ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            }
-        }
-
-        # Get a list of all Valid Hash types and lengths into an array
-        $validHashes = @()
-
-        foreach ($hashProvider in $hashProviders)
-        {
-            $bitSize = ( New-Object -TypeName $hashProvider ).HashSize
-            $validHash = New-Object `
-                -TypeName PSObject `
-                -Property @{
-                    Hash      = $hashProvider.BaseType.Name
-                    BitSize   = $bitSize
-                    HexLength = $bitSize / 4
-                }
-            $validHashes += @( $validHash )
-        }
+        $validHashAlgorithms = Get-SupportedHashAlgorithms
     }
 
     process
@@ -159,7 +220,7 @@ function Test-Thumbprint
         {
             $isValid = $false
 
-            foreach ($algorithm in $validHashes)
+            foreach ($algorithm in $validHashAlgorithms)
             {
                 if ($hash -cmatch "^[a-fA-F0-9]{$($algorithm.HexLength)}$")
                 {

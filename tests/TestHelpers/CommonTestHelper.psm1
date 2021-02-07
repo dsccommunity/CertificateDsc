@@ -81,6 +81,73 @@ function Get-InvalidOperationRecord
     return New-Object @newObjectParams
 }
 
+
+<#
+    .SYNOPSIS
+        Generates a valid certificate thumprint for use in testing
+
+    .PARAMETER Fips
+        Returns a certificate thumbprint that is FIPS compliant.
+#>
+function New-CertificateThumbprint
+{
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter()]
+        [switch]
+        $Fips
+    )
+
+    # To ensure the FIPS hash algorithms are loaded by .NET Core load the assembly
+    if ($IsCoreCLR)
+    {
+        Add-Type -AssemblyName System.Security.Cryptography.Csp
+    }
+
+    <#
+        Get a list of Hash Providers, but exclude assemblies that set DefinedTypes
+        to null instead of an empty array. Otherwise, the call to GetTypes() fails.
+    #>
+    $allRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() |
+        Where-Object -FilterScript {
+            $null -ne $_.DefinedTypes
+        }).GetTypes()
+
+    if ($Fips)
+    {
+        # This thumbprint is valid for FIPS
+        $validThumbprint = (
+            $allRuntimeTypes | Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+            } | Select-Object -First 1 | ForEach-Object -Process {
+                (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
+                    '{0:x2}' -f $_
+                }
+            }
+        ) -join ''
+    }
+    else
+    {
+        # This thumbprint is valid (but not FIPS valid)
+        $validThumbprint = (
+            $allRuntimeTypes | Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+            } | Select-Object -First 1 | ForEach-Object -Process {
+                (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
+                    '{0:x2}' -f $_
+                }
+            }
+        ) -join ''
+    }
+
+    return $validThumbprint
+}
+
 Export-ModuleMember -Function `
+    New-CertificateThumbprint, `
     Get-InvalidArgumentRecord, `
     Get-InvalidOperationRecord

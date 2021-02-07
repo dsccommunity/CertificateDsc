@@ -29,37 +29,11 @@ InModuleScope $script:subModuleName {
     # This is valid thumbprint, but not valid for FIPS
     $invalidFipsThumbprint = '93b885adfe0da089cdf634904fd59f71'
 
-    <#
-        In .NET Core CLR the SHA*CryptoServiceProvider classes required for FIPS
-        don't appear with any DefinedTypes. So to allow this code to work in
-        both Windows PowerShell and PowerShell Core/7.x we need to not filter the
-        list of types before finding classes.
-    #>
-    $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies()).GetTypes()
-
     # This thumbprint is valid (but not FIPS valid)
-    $validThumbprint = (
-        $definedRuntimeTypes | Where-Object -FilterScript {
-            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-            ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-        } | Select-Object -First 1 | ForEach-Object -Process {
-            (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
-                '{0:x2}' -f $_
-            }
-        }
-    ) -join ''
+    $validThumbprint = New-CertificateThumbprint
 
     # This thumbprint is valid for FIPS
-    $validFipsThumbprint = (
-        $definedRuntimeTypes | Where-Object -FilterScript {
-            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-            ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
-        } | Select-Object -First 1 | ForEach-Object -Process {
-            (New-Object -TypeName $_).ComputeHash([System.String]::Empty) | ForEach-Object -Process {
-                '{0:x2}' -f $_
-            }
-        }
-    ) -join ''
+    $validFipsThumbprint = New-CertificateThumbprint -Fips
 
     $testFile = 'test.pfx'
 
@@ -237,12 +211,86 @@ InModuleScope $script:subModuleName {
         }
     }
 
+    $getItemPropertyFipsNotSet_Mock = {
+        @{
+            Enabled = 0
+        }
+    }
+
+    $getItemPropertyFipsEnabled_Mock = {
+        @{
+            Enabled = 1
+        }
+    }
+
+    $getItemPropertyFips_ParameterFilter = {
+        $Path -eq 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy'
+    }
+
+    Describe 'CertificateDsc.Common\Clear-SupportedHashAlgorithmCache' -Tag 'Clear-SupportedHashAlgorithmCache' {
+        Context 'When called and the cache is not null' {
+            InModuleScope -ModuleName 'CertificateDsc.Common' -ScriptBlock {
+                $script:supportedHashAlgorithms = @( 'Cached Algorithms' )
+
+                It 'Should not have an empty cache' {
+                    $script:supportedHashAlgorithms | Should -Not -BeNullOrEmpty
+                }
+
+                Clear-SupportedHashAlgorithmCache -Verbose
+
+                It 'Should have an empty cache after clearing' {
+                    $script:supportedHashAlgorithms | Should -BeNullOrEmpty
+                }
+            }
+
+            Context 'When called and the cache is already null' {
+                InModuleScope -ModuleName 'CertificateDsc.Common' -ScriptBlock {
+                    $script:supportedHashAlgorithms = $null
+
+                    It 'Should have an empty cache' {
+                        $script:supportedHashAlgorithms | Should -BeNullOrEmpty
+                    }
+
+                    Clear-SupportedHashAlgorithmCache -Verbose
+
+                    It 'Should have an empty cache after clearing' {
+                        $script:supportedHashAlgorithms | Should -BeNullOrEmpty
+                    }
+                }
+            }
+        }
+    }
+
+    Describe 'CertificateDsc.Common\Get-SupportedHashAlgorithms' -Tag 'Get-SupportedHashAlgorithms' {
+        Context 'When FIPS not set' {
+            Clear-SupportedHashAlgorithmCache -Verbose
+            Mock -CommandName Get-ItemProperty -MockWith $getItemPropertyFipsNotSet_Mock -ParameterFilter $getItemPropertyFips_ParameterFilter
+
+            It 'Should return at least one algorithm' {
+                $result = Get-SupportedHashAlgorithms -Verbose
+                $result.Count | Should -BeGreaterThan 0
+            }
+        }
+
+        Context 'When FIPS is enabled' {
+            Clear-SupportedHashAlgorithmCache -Verbose
+            Mock -CommandName Get-ItemProperty -MockWith $getItemPropertyFipsEnabled_Mock -ParameterFilter $getItemPropertyFips_ParameterFilter
+
+            It 'Should return at least one algorithm' {
+                $result = Get-SupportedHashAlgorithms -Verbose
+                $result.Count | Should -BeGreaterThan 0
+            }
+        }
+    }
+
     Describe 'CertificateDsc.Common\Test-Thumbprint' -Tag 'Test-Thumbprint' {
         Context 'When FIPS not set' {
-            Context 'When a single valid thumbrpint by parameter is passed' {
-                $result = Test-Thumbprint -Thumbprint $validThumbprint
+            Clear-SupportedHashAlgorithmCache -Verbose
+            Mock -CommandName Get-ItemProperty -MockWith $getItemPropertyFipsNotSet_Mock -ParameterFilter $getItemPropertyFips_ParameterFilter
 
+            Context 'When a single valid thumbrpint by parameter is passed' {
                 It 'Should return true' {
+                    $result = Test-Thumbprint -Thumbprint $validThumbprint -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeTrue
                 }
@@ -250,39 +298,35 @@ InModuleScope $script:subModuleName {
 
             Context 'When a single invalid thumbprint by parameter is passed' {
                 It 'Should throw an exception' {
-                    { Test-Thumbprint -Thumbprint $invalidThumbprint } | Should -Throw
+                    { Test-Thumbprint -Thumbprint $invalidThumbprint -Verbose } | Should -Throw
                 }
             }
 
             Context 'When a single invalid thumbprint by parameter with -Quiet is passed' {
-                $result = Test-Thumbprint $invalidThumbprint -Quiet
-
                 It 'Should return false' {
+                    $result = Test-Thumbprint $invalidThumbprint -Quiet -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeFalse
                 }
             }
 
             Context 'When a single valid thumbprint by pipeline is passed' {
-                $result = $validThumbprint | Test-Thumbprint
-
                 It 'Should return true' {
+                    $result = $validThumbprint | Test-Thumbprint -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeTrue
                 }
             }
 
             Context 'When a single invalid thumbprint by pipeline is passed' {
-
                 It 'Should throw an exception' {
-                    { $invalidThumbprint | Test-Thumbprint } | Should -Throw
+                    { $invalidThumbprint | Test-Thumbprint -Verbose  } | Should -Throw
                 }
             }
 
             Context 'When a single invalid thumbprint by pipeline with -Quiet is passed' {
-                $result = $invalidThumbprint | Test-Thumbprint -Quiet
-
                 It 'Should return false' {
+                    $result = $invalidThumbprint | Test-Thumbprint -Quiet -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeFalse
                 }
@@ -290,16 +334,12 @@ InModuleScope $script:subModuleName {
         }
 
         Context 'When FIPS is enabled' {
-            Mock -CommandName Get-ItemProperty -MockWith {
-                @{
-                    Enabled = 1
-                }
-            }
+            Clear-SupportedHashAlgorithmCache -Verbose
+            Mock -CommandName Get-ItemProperty -MockWith $getItemPropertyFipsEnabled_Mock -ParameterFilter $getItemPropertyFips_ParameterFilter
 
             Context 'When a single valid FIPS thumbrpint by parameter is passed' {
-                $result = Test-Thumbprint -Thumbprint $validFipsThumbprint
-
                 It 'Should return true' {
+                    $result = Test-Thumbprint -Thumbprint $validFipsThumbprint -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeTrue
                 }
@@ -307,23 +347,21 @@ InModuleScope $script:subModuleName {
 
             Context 'When a single invalid FIPS thumbprint by parameter is passed' {
                 It 'Should throw an exception' {
-                    { Test-Thumbprint -Thumbprint $invalidFipsThumbprint } | Should -Throw
+                    { Test-Thumbprint -Thumbprint $invalidFipsThumbprint -Verbose } | Should -Throw
                 }
             }
 
             Context 'When a single invalid FIPS thumbprint by parameter with -Quiet is passed' {
-                $result = Test-Thumbprint $invalidFipsThumbprint -Quiet
-
                 It 'Should return false' {
+                    $result = Test-Thumbprint $invalidFipsThumbprint -Quiet -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeFalse
                 }
             }
 
             Context 'When a single valid FIPS thumbprint by pipeline is passed' {
-                $result = $validFipsThumbprint | Test-Thumbprint
-
                 It 'Should return true' {
+                    $result = $validFipsThumbprint | Test-Thumbprint -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeTrue
                 }
@@ -331,14 +369,13 @@ InModuleScope $script:subModuleName {
 
             Context 'When a single invalid FIPS thumbprint by pipeline is passed' {
                 It 'Should throw an exception' {
-                    { $invalidFipsThumbprint | Test-Thumbprint } | Should -Throw
+                    { $invalidFipsThumbprint | Test-Thumbprint -Verbose } | Should -Throw
                 }
             }
 
             Context 'When a single invalid FIPS thumbprint by pipeline with -Quiet is passed' {
-                $result =  $invalidFipsThumbprint | Test-Thumbprint -Quiet
-
                 It 'Should return false' {
+                    $result =  $invalidFipsThumbprint | Test-Thumbprint -Quiet -Verbose
                     $result | Should -BeOfType [System.Boolean]
                     $result | Should -BeFalse
                 }
@@ -1136,39 +1173,39 @@ Minor Version Number=5
             } | Add-Member -MemberType ScriptMethod -Name FindAll -Value {
                 $MockSearchResults
             } -PassThru
-    }
-
-    Mock -CommandName New-Object -ParameterFilter $newObject_parameterFilter -MockWith $newObject_mock
-    Mock -CommandName Get-DirectoryEntry
-
-    Context 'When certificate templates are retrieved from Active Directory successfully' {
-        It 'Should get 3 mocked search results' {
-            $SearchResults = Get-CertificateTemplatesFromActiveDirectory
-
-            Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly -Times 1
-            Assert-MockCalled -CommandName New-Object         -Exactly -Times 1
-
-            $SearchResults.Count | Should -Be 3
-        }
-    }
-
-    Context 'When certificate templates are not retrieved from Active Directory successfully' {
-        Mock -CommandName Get-DirectoryEntry -MockWith {
-            throw 'Mock Function Failure'
         }
 
-        It 'Should display a warning message' {
-            $Message = 'Failed to get the certificate templates from Active Directory.'
+        Mock -CommandName New-Object -ParameterFilter $newObject_parameterFilter -MockWith $newObject_mock
+        Mock -CommandName Get-DirectoryEntry
 
-            (Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1).Message | Should -Be $Message
+        Context 'When certificate templates are retrieved from Active Directory successfully' {
+            It 'Should get 3 mocked search results' {
+                $SearchResults = Get-CertificateTemplatesFromActiveDirectory
+
+                Assert-MockCalled -CommandName Get-DirectoryEntry -Exactly -Times 1
+                Assert-MockCalled -CommandName New-Object         -Exactly -Times 1
+
+                $SearchResults.Count | Should -Be 3
+            }
         }
 
-        It 'Should display a verbose message' {
-            $Message = 'Mock Function Failure'
+        Context 'When certificate templates are not retrieved from Active Directory successfully' {
+            Mock -CommandName Get-DirectoryEntry -MockWith {
+                throw 'Mock Function Failure'
+            }
 
-            (Get-CertificateTemplatesFromActiveDirectory -Verbose 4>&1).Message | Should -Be $Message
+            It 'Should display a warning message' {
+                $Message = $LocalizedData.ActiveDirectoryTemplateSearch
+
+                (Get-CertificateTemplatesFromActiveDirectory -Verbose 3>&1).Message | Should -Be $Message
+            }
+
+            It 'Should display a verbose message' {
+                $Message = 'Mock Function Failure'
+
+                (Get-CertificateTemplatesFromActiveDirectory -Verbose 4>&1).Message | Should -Be $Message
+            }
         }
-    }
     }
 
     Describe 'CertificateDsc.Common\Get-CertificateTemplateInformation' -Tag 'Get-CertificateTemplateInformation' {
