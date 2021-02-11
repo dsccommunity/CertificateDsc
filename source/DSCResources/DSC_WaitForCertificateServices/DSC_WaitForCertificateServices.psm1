@@ -21,24 +21,24 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
 <#
     .SYNOPSIS
-    Returns the current state of the wait for Active Directory Certificate
-    Service Certificate Authority resource.
+        Returns the current state of the wait for Active Directory Certificate
+        Service Certificate Authority resource.
 
     .PARAMETER CAServerFQDN
-    The FQDN of the Active Directory Certificate Service Certificate Authority to wait
-    for. Leave empty to automatically detect.
+        The FQDN of the Active Directory Certificate Service Certificate Authority to wait
+        for. Leave empty to automatically detect.
 
     .PARAMETER CARootName
-    The name of the Active Directory Certificate Service Certificate Authority to wait
-    for. Leave empty to automatically detect.
+        The name of the Active Directory Certificate Service Certificate Authority to wait
+        for. Leave empty to automatically detect.
 
     .PARAMETER RetryIntervalSeconds
-    Specifies the number of seconds to wait for the Active Directory Certificate
-    Service Certificate Authority to become available. Defaults to 10 seconds.
+        Specifies the number of seconds to wait for the Active Directory Certificate
+        Service Certificate Authority to become available. Defaults to 10 seconds.
 
     .PARAMETER RetryCount
-    The number of times to loop the retry interval while waiting for the Active
-    Directory Certificate Service Certificate Authority. Defaults to 60 retries.
+        The number of times to loop the retry interval while waiting for the Active
+        Directory Certificate Service Certificate Authority. Defaults to 60 retries.
 #>
 function Get-TargetResource
 {
@@ -81,24 +81,24 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Waits for the Active Directory Certificate Service Certificate Authority to become
-    available or times out.
+        Waits for the Active Directory Certificate Service Certificate Authority to become
+        available or times out.
 
     .PARAMETER CAServerFQDN
-    The FQDN of the Active Directory Certificate Service Certificate Authority to wait
-    for. Leave empty to automatically detect.
+        The FQDN of the Active Directory Certificate Service Certificate Authority to wait
+        for. Leave empty to automatically detect.
 
     .PARAMETER CARootName
-    The name of the Active Directory Certificate Service Certificate Authority to wait
-    for. Leave empty to automatically detect.
+        The name of the Active Directory Certificate Service Certificate Authority to wait
+        for. Leave empty to automatically detect.
 
     .PARAMETER RetryIntervalSeconds
-    Specifies the number of seconds to wait for the Active Directory Certificate
-    Service Certificate Authority to become available. Defaults to 10 seconds.
+        Specifies the number of seconds to wait for the Active Directory Certificate
+        Service Certificate Authority to become available. Defaults to 10 seconds.
 
     .PARAMETER RetryCount
-    The number of times to loop the retry interval while waiting for the Active
-    Directory Certificate Service Certificate Authority. Defaults to 60 retries.
+        The number of times to loop the retry interval while waiting for the Active
+        Directory Certificate Service Certificate Authority. Defaults to 60 retries.
 #>
 function Set-TargetResource
 {
@@ -165,24 +165,24 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Waits for the Active Directory Certificate Service Certificate Authority to
-    become available or times out.
+        Waits for the Active Directory Certificate Service Certificate Authority to
+        become available or times out.
 
     .PARAMETER CAServerFQDN
-    The FQDN of the Active Directory Certificate Service Certificate Authority to wait
-    for. Leave empty to automatically detect.
+        The FQDN of the Active Directory Certificate Service Certificate Authority to wait
+        for. Leave empty to automatically detect.
 
     .PARAMETER CARootName
-    The name of the Active Directory Certificate Service Certificate Authority to wait
-    for. Leave empty to automatically detect.
+        The name of the Active Directory Certificate Service Certificate Authority to wait
+        for. Leave empty to automatically detect.
 
     .PARAMETER RetryIntervalSeconds
-    Specifies the number of seconds to wait for the Active Directory Certificate
-    Service Certificate Authority to become available. Defaults to 10 seconds.
+        Specifies the number of seconds to wait for the Active Directory Certificate
+        Service Certificate Authority to become available. Defaults to 10 seconds.
 
     .PARAMETER RetryCount
-    The number of times to loop the retry interval while waiting for the Active
-    Directory Certificate Service Certificate Authority. Defaults to 60 retries.
+        The number of times to loop the retry interval while waiting for the Active
+        Directory Certificate Service Certificate Authority. Defaults to 60 retries.
 #>
 function Test-TargetResource
 {

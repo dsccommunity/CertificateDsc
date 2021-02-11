@@ -14,10 +14,10 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
 <#
     .SYNOPSIS
-    Returns the current state of the exported certificate.
+        Returns the current state of the exported certificate.
 
     .PARAMETER Path
-    The path to the file you that will contain the exported certificate.
+        The path to the file you that will contain the exported certificate.
 #>
 function Get-TargetResource
 {
@@ -46,66 +46,66 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Exports the certificate.
+        Exports the certificate.
 
     .PARAMETER Path
-    The path to the file you that will contain the exported certificate.
+        The path to the file you that will contain the exported certificate.
 
     .PARAMETER Thumbprint
-    The thumbprint of the certificate to export.
-    Certificate selector parameter.
+        The thumbprint of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to export.
-    Certificate selector parameter.
+        The friendly name of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER Subject
-    The subject of the certificate to export.
-    Certificate selector parameter.
+        The subject of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER DNSName
-    The subject alternative name of the certificate to export must contain these values.
-    Certificate selector parameter.
+        The subject alternative name of the certificate to export must contain these values.
+        Certificate selector parameter.
 
     .PARAMETER Issuer
-    The issuer of the certificate to export.
-    Certificate selector parameter.
+        The issuer of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER KeyUsage
-    The key usage of the certificate to export must contain these values.
-    Certificate selector parameter.
+        The key usage of the certificate to export must contain these values.
+        Certificate selector parameter.
 
     .PARAMETER EnhancedKeyUsage
-    The enhanced key usage of the certificate to export must contain these values.
-    Certificate selector parameter.
+        The enhanced key usage of the certificate to export must contain these values.
+        Certificate selector parameter.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to search for the certificate to export from.
-    Certificate selector parameter.
-    Defaults to 'My'.
+        The Windows Certificate Store Name to search for the certificate to export from.
+        Certificate selector parameter.
+        Defaults to 'My'.
 
     .PARAMETER AllowExpired
-    Allow an expired certificate to be exported.
-    Certificate selector parameter.
+        Allow an expired certificate to be exported.
+        Certificate selector parameter.
 
     .PARAMETER MatchSource
-    Causes an existing exported certificate to be compared with the certificate identified for
-    export and re-exported if it does not match.
+        Causes an existing exported certificate to be compared with the certificate identified for
+        export and re-exported if it does not match.
 
     .PARAMETER Type
-    Specifies the type of certificate to export.
-    Defaults to 'Cert'.
+        Specifies the type of certificate to export.
+        Defaults to 'Cert'.
 
     .PARAMETER ChainOption
-    Specifies the options for building a chain when exporting a PFX certificate.
-    Defaults to 'BuildChain'.
+        Specifies the options for building a chain when exporting a PFX certificate.
+        Defaults to 'BuildChain'.
 
     .PARAMETER Password
-    Specifies the password used to protect an exported PFX file.
+        Specifies the password used to protect an exported PFX file.
 
     .PARAMETER ProtectTo
-    Specifies an array of strings for the username or group name that can access the private
-    key of an exported PFX file without any password.
+        Specifies an array of strings for the username or group name that can access the private
+        key of an exported PFX file without any password.
 #>
 function Set-TargetResource
 {
@@ -251,66 +251,66 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Tests the state of the currently exported certificate.
+        Tests the state of the currently exported certificate.
 
     .PARAMETER Path
-    The path to the file you that will contain the exported certificate.
+        The path to the file you that will contain the exported certificate.
 
     .PARAMETER Thumbprint
-    The thumbprint of the certificate to export.
-    Certificate selector parameter.
+        The thumbprint of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to export.
-    Certificate selector parameter.
+        The friendly name of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER Subject
-    The subject of the certificate to export.
-    Certificate selector parameter.
+        The subject of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER DNSName
-    The subject alternative name of the certificate to export must contain these values.
-    Certificate selector parameter.
+        The subject alternative name of the certificate to export must contain these values.
+        Certificate selector parameter.
 
     .PARAMETER Issuer
-    The issuer of the certificate to export.
-    Certificate selector parameter.
+        The issuer of the certificate to export.
+        Certificate selector parameter.
 
     .PARAMETER KeyUsage
-    The key usage of the certificate to export must contain these values.
-    Certificate selector parameter.
+        The key usage of the certificate to export must contain these values.
+        Certificate selector parameter.
 
     .PARAMETER EnhancedKeyUsage
-    The enhanced key usage of the certificate to export must contain these values.
-    Certificate selector parameter.
+        The enhanced key usage of the certificate to export must contain these values.
+        Certificate selector parameter.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to search for the certificate to export from.
-    Certificate selector parameter.
-    Defaults to 'My'.
+        The Windows Certificate Store Name to search for the certificate to export from.
+        Certificate selector parameter.
+        Defaults to 'My'.
 
     .PARAMETER AllowExpired
-    Allow an expired certificate to be exported.
-    Certificate selector parameter.
+        Allow an expired certificate to be exported.
+        Certificate selector parameter.
 
     .PARAMETER MatchSource
-    Causes an existing exported certificate to be compared with the certificate identified for
-    export and re-exported if it does not match.
+        Causes an existing exported certificate to be compared with the certificate identified for
+        export and re-exported if it does not match.
 
     .PARAMETER Type
-    Specifies the type of certificate to export.
-    Defaults to 'Cert'.
+        Specifies the type of certificate to export.
+        Defaults to 'Cert'.
 
     .PARAMETER ChainOption
-    Specifies the options for building a chain when exporting a PFX certificate.
-    Defaults to 'BuildChain'.
+        Specifies the options for building a chain when exporting a PFX certificate.
+        Defaults to 'BuildChain'.
 
     .PARAMETER Password
-    Specifies the password used to protect an exported PFX file.
+        Specifies the password used to protect an exported PFX file.
 
     .PARAMETER ProtectTo
-    Specifies an array of strings for the username or group name that can access the private
-    key of an exported PFX file without any password.
+        Specifies an array of strings for the username or group name that can access the private
+        key of an exported PFX file without any password.
 #>
 function Test-TargetResource
 {
