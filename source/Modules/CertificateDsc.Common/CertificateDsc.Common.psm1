@@ -4,29 +4,31 @@ Import-Module -Name (Join-Path -Path $modulePath -ChildPath 'DscResource.Common'
 # Import Localization Strings
 $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
+$script:supportedHashAlgorithms = $null
+
 <#
     .SYNOPSIS
-    Validates the existence of a file at a specific path.
+        Validates the existence of a file at a specific path.
 
     .PARAMETER Path
-    The location of the file. Supports any path that Test-Path supports.
+        The location of the file. Supports any path that Test-Path supports.
 
     .PARAMETER Quiet
-    Returns $false if the file does not exist. By default this function throws
-    an exception if the file is missing.
+        Returns $false if the file does not exist. By default this function throws
+        an exception if the file is missing.
 
     .EXAMPLE
-    Test-CertificatePath -Path '\\server\share\Certificates\mycert.cer'
+        Test-CertificatePath -Path '\\server\share\Certificates\mycert.cer'
 
     .EXAMPLE
-    Test-CertificatePath -Path 'C:\certs\my_missing.cer' -Quiet
+        Test-CertificatePath -Path 'C:\certs\my_missing.cer' -Quiet
 
     .EXAMPLE
-    'D:\CertRepo\a_cert.cer' | Test-CertificatePath
+        'D:\CertRepo\a_cert.cer' | Test-CertificatePath
 
     .EXAMPLE
-    Get-ChildItem -Path D:\CertRepo\*.cer |
-        Test-CertificatePath
+        Get-ChildItem -Path D:\CertRepo\*.cer |
+            Test-CertificatePath
 #>
 function Test-CertificatePath
 {
@@ -67,30 +69,130 @@ function Test-CertificatePath
 
 <#
     .SYNOPSIS
-    Validates whether a given certificate is valid based on the hash algoritms available on the
-    system.
+        This function clears the script variable supportedHashAlgorithms. It is
+        just used as by tests and not any of the resources.
+
+    .EXAMPLE
+        Clear-SupportedHashAlgorithmCache
+#>
+function Clear-SupportedHashAlgorithmCache
+{
+    [CmdletBinding()]
+    param ()
+
+    Write-Verbose -Message ($script:localizedData.ClearingSupportedHashAlgorithmsCache)
+
+    $script:supportedHashAlgorithms = $null
+}
+
+<#
+    .SYNOPSIS
+        Returns an array of supported hash algorithms and sizes and caches it in the
+        script variable supportedHashAlgorithms to increase performance.
+
+    .EXAMPLE
+        Get-SupportedHashAlgorithms
+#>
+function Get-SupportedHashAlgorithms
+{
+    [CmdletBinding()]
+    [OutputType([System.Collections.ArrayList])]
+    param ()
+
+    if ($null -eq $script:supportedHashAlgorithms)
+    {
+        # Get FIPS registry key
+        $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
+
+        Write-Verbose -Message ($script:localizedData.GettingAssemblyListForHashAlgorithms)
+
+        # To ensure the FIPS hash algorithms are loaded by .NET Core load the assembly
+        if ($IsCoreCLR)
+        {
+            Add-Type -AssemblyName System.Security.Cryptography.Csp
+        }
+
+        <#
+            Get a list of Hash Providers, but exclude assemblies that set DefinedTypes
+            to null instead of an empty array. Otherwise, the call to GetTypes() fails.
+        #>
+        $allRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() |
+                Where-Object -FilterScript {
+                    $null -ne $_.DefinedTypes
+                }).GetTypes()
+
+        if ($fips -eq $true)
+        {
+            Write-Verbose -Message ($script:localizedData.FindingSupportedFipsHashAlgorithms)
+
+            # Support only FIPS compliant Hash Algorithms
+            $supportedHashProviders = $allRuntimeTypes | Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
+            }
+        }
+        else
+        {
+            Write-Verbose -Message ($script:localizedData.FindingSupportedHashAlgorithms)
+
+            $supportedHashProviders = $allRuntimeTypes | Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+            }
+        }
+
+        # Get a list of all Valid Hash types and lengths into an array list
+        $supportedHashAlgorithms = New-Object -TypeName System.Collections.ArrayList
+
+        Write-Verbose -Message ($script:localizedData.GeneratingSupportedHashAlgorithmsArray -f $supportedHashProviders.Count)
+
+        foreach ($supportedHashProvider in $supportedHashProviders)
+        {
+            $bitSize = (New-Object -TypeName $supportedHashProvider).HashSize
+            $validHash = New-Object `
+                -TypeName PSObject `
+                -Property @{
+                    Hash      = $supportedHashProvider.BaseType.Name
+                    BitSize   = $bitSize
+                    HexLength = $bitSize / 4
+                }
+            $null = $supportedHashAlgorithms.Add($validHash)
+        }
+
+        Write-Verbose -Message ($script:localizedData.SettingSupportedHashAlgorithmsCache)
+
+        $script:supportedHashAlgorithms = $supportedHashAlgorithms
+    }
+
+    return $script:supportedHashAlgorithms
+}
+
+<#
+    .SYNOPSIS
+        Validates whether a given certificate is valid based on the hash algoritms available on the
+        system.
 
     .PARAMETER Thumbprint
-    One or more thumbprints to Test.
+        One or more thumbprints to Test.
 
     .PARAMETER Quiet
-    Returns $false if the thumbprint is not valid. By default this function throws an exception if
-    validation fails.
+        Returns $false if the thumbprint is not valid. By default this function throws an exception if
+        validation fails.
 
     .EXAMPLE
-    Test-Thumbprint `
-        -Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
+        Test-Thumbprint `
+            -Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de
 
     .EXAMPLE
-    Test-Thumbprint `
-        -Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de,0000e3a5a7991cb6ed3cd5dd01045edf7e220000 `
-        -Quiet
+        Test-Thumbprint `
+            -Thumbprint fd94e3a5a7991cb6ed3cd5dd01045edf7e2284de,0000e3a5a7991cb6ed3cd5dd01045edf7e220000 `
+            -Quiet
 
     .EXAMPLE
-    Get-ChildItem -Path Cert:\LocalMachine -Recurse |
-        Where-Object -FilterScript { $_.Thumbprint } |
-        Select-Object -Expression Thumbprint |
-        Test-Thumbprint -Verbose
+        Get-ChildItem -Path Cert:\LocalMachine -Recurse |
+            Where-Object -FilterScript { $_.Thumbprint } |
+            Select-Object -Expression Thumbprint |
+            Test-Thumbprint -Verbose
 #>
 function Test-Thumbprint
 {
@@ -110,47 +212,7 @@ function Test-Thumbprint
 
     begin
     {
-        # Get FIPS registry key
-        $fips = [System.Int32] (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy' -ErrorAction SilentlyContinue).Enabled
-
-        <#
-            Get a list of Hash Providers, but exclude assemblies that set DefinedTypes to null instead of an empty array.
-            Otherwise, the call to GetTypes() fails.
-        #>
-        $allHashProviders = ([System.AppDomain]::CurrentDomain.GetAssemblies() |
-            Where-Object -FilterScript { $null -ne $_.DefinedTypes}).GetTypes()
-
-        if ($fips -eq $true)
-        {
-            # Support only FIPS compliant Hash Algorithms
-            $hashProviders = $allHashProviders | Where-Object -FilterScript {
-                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                    ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
-            }
-        }
-        else
-        {
-            $hashProviders = $allHashProviders | Where-Object -FilterScript {
-                    $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                    ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            }
-        }
-
-        # Get a list of all Valid Hash types and lengths into an array
-        $validHashes = @()
-
-        foreach ($hashProvider in $hashProviders)
-        {
-            $bitSize = ( New-Object -TypeName $hashProvider ).HashSize
-            $validHash = New-Object `
-                -TypeName PSObject `
-                -Property @{
-                    Hash      = $hashProvider.BaseType.Name
-                    BitSize   = $bitSize
-                    HexLength = $bitSize / 4
-                }
-            $validHashes += @( $validHash )
-        }
+        $validHashAlgorithms = Get-SupportedHashAlgorithms
     }
 
     process
@@ -159,7 +221,7 @@ function Test-Thumbprint
         {
             $isValid = $false
 
-            foreach ($algorithm in $validHashes)
+            foreach ($algorithm in $validHashAlgorithms)
             {
                 if ($hash -cmatch "^[a-fA-F0-9]{$($algorithm.HexLength)}$")
                 {
@@ -182,39 +244,38 @@ function Test-Thumbprint
 
 <#
     .SYNOPSIS
-    Locates one or more certificates using the passed certificate selector parameters.
+        Locates one or more certificates using the passed certificate selector parameters.
 
-    If more than one certificate is found matching the selector criteria, they will be
-    returned in order of descending expiration date.
+        If more than one certificate is found matching the selector criteria, they will be
+        returned in order of descending expiration date.
 
     .PARAMETER Thumbprint
-    The thumbprint of the certificate to find.
+        The thumbprint of the certificate to find.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to find.
+        The friendly name of the certificate to find.
 
     .PARAMETER Subject
-    The subject of the certificate to find.
+        The subject of the certificate to find.
 
     .PARAMETER DNSName
-    The subject alternative name of the certificate to export must contain these values.
+        The subject alternative name of the certificate to export must contain these values.
 
     .PARAMETER Issuer
-    The issuer of the certificate to find.
+        The issuer of the certificate to find.
 
     .PARAMETER KeyUsage
-    The key usage of the certificate to find must contain these values.
+        The key usage of the certificate to find must contain these values.
 
     .PARAMETER EnhancedKeyUsage
-    The enhanced key usage of the certificate to find must contain these values.
+        The enhanced key usage of the certificate to find must contain these values.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to search for the certificate in.
-    Defaults to 'My'.
+        The Windows Certificate Store Name to search for the certificate in.
+        Defaults to 'My'.
 
     .PARAMETER AllowExpired
-    Allows expired certificates to be returned.
-
+        Allows expired certificates to be returned.
 #>
 function Find-Certificate
 {
@@ -333,14 +394,14 @@ function Find-Certificate
 
 <#
     .SYNOPSIS
-    Get CDP container.
+        Get CDP container.
 
     .DESCRIPTION
-    Gets the configuration data partition from the active directory configuration
-    naming context.
+        Gets the configuration data partition from the active directory configuration
+        naming context.
 
     .PARAMETER DomainName
-    The domain name.
+        The domain name.
 #>
 function Get-CdpContainer
 {
@@ -381,16 +442,16 @@ function Get-CdpContainer
 
 <#
     .SYNOPSIS
-    Automatically locate a certificate authority in Active Directory
+        Automatically locate a certificate authority in Active Directory
 
     .DESCRIPTION
-    Automatically locates a certificate autority in Active Directory environments
-    by leveraging ADSI to look inside the container CDP and subsequently trying to
-    certutil -ping every located CA until one is found.
+        Automatically locates a certificate autority in Active Directory environments
+        by leveraging ADSI to look inside the container CDP and subsequently trying to
+        certutil -ping every located CA until one is found.
 
     .PARAMETER DomainName
-    The domain name of the domain that will be used to locate the CA. Can be left
-    empty to use the current domain.
+        The domain name of the domain that will be used to locate the CA. Can be left
+        empty to use the current domain.
 #>
 function Find-CertificateAuthority
 {
@@ -450,7 +511,7 @@ function Find-CertificateAuthority
 
 <#
     .SYNOPSIS
-    Wraps a single ADSI command to get the domain naming context so it can be mocked.
+        Wraps a single ADSI command to get the domain naming context so it can be mocked.
 #>
 function Get-DirectoryEntry
 {
@@ -462,13 +523,13 @@ function Get-DirectoryEntry
 
 <#
     .SYNOPSIS
-    Test to see if the specified ADCS CA is available.
+        Test to see if the specified ADCS CA is available.
 
     .PARAMETER CAServerFQDN
-    The FQDN of the ADCS CA to test for availability.
+        The FQDN of the ADCS CA to test for availability.
 
     .PARAMETER CARootName
-    The name of the ADCS CA to test for availability.
+        The name of the ADCS CA to test for availability.
 #>
 function Test-CertificateAuthority
 {
@@ -530,19 +591,19 @@ function Test-CertificateAuthority
 
 <#
     .SYNOPSIS
-    Get certificate template names from Active Directory for x509 certificates.
+        Get certificate template names from Active Directory for x509 certificates.
 
     .DESCRIPTION
-    Gets the certificate templates from Active Directory by using a
-    DirectorySearcher object to find all objects with an objectClass
-    of pKICertificateTemplate from the search root of
-    CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration
+        Gets the certificate templates from Active Directory by using a
+        DirectorySearcher object to find all objects with an objectClass
+        of pKICertificateTemplate from the search root of
+        CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration
 
     .NOTES
-    The domain variable is populated based on the domain of the user running the
-    function. When run as System this will return the domain of computer.
-    Normally this won't make any difference unless the user is from a foreign
-    domain.
+        The domain variable is populated based on the domain of the user running the
+        function. When run as System this will return the domain of computer.
+        Normally this won't make any difference unless the user is from a foreign
+        domain.
 #>
 function Get-CertificateTemplatesFromActiveDirectory
 {
@@ -586,18 +647,18 @@ function Get-CertificateTemplatesFromActiveDirectory
 
 <#
     .SYNOPSIS
-    Gets information about the certificate template.
+        Gets information about the certificate template.
 
     .DESCRIPTION
-    This function returns the information about the certificate template by retreiving
-    the available templates from Active Directory and matching the formatted certificate
-    template name against this list.
-    In addition to the template name the display name, template OID, the major version
-    and minor version is also returned.
+        This function returns the information about the certificate template by retreiving
+        the available templates from Active Directory and matching the formatted certificate
+        template name against this list.
+        In addition to the template name the display name, template OID, the major version
+        and minor version is also returned.
 
     .PARAMETER FormattedTemplate
-    The text from the certificate template extension, retrieved from
-    Get-CertificateTemplateText.
+        The text from the certificate template extension, retrieved from
+        Get-CertificateTemplateText.
 #>
 function Get-CertificateTemplateInformation
 {
@@ -680,20 +741,20 @@ function Get-CertificateTemplateInformation
 
 <#
     .SYNOPSIS
-    Returns one or more matching extensions matching the requested Oid.
+        Returns one or more matching extensions matching the requested Oid.
 
     .DESCRIPTION
-    This function finds all extensions matching one of the specified Oid values
-    and returns one or more of them.
+        This function finds all extensions matching one of the specified Oid values
+        and returns one or more of them.
 
     .PARAMETER Certificate
-    The X509 certificate to return the extensions from.
+        The X509 certificate to return the extensions from.
 
     .PARAMETER Oid
-    The list of Oid's to extract extensions from.
+        The list of Oid's to extract extensions from.
 
     .PARAMETER First
-    The number of matching extensions to return.
+        The number of matching extensions to return.
 #>
 function Get-CertificateExtension
 {
@@ -723,14 +784,14 @@ function Get-CertificateExtension
 
 <#
     .SYNOPSIS
-    Gets the formatted text output from an X509 certificate template extension.
+        Gets the formatted text output from an X509 certificate template extension.
 
     .DESCRIPTION
-    Looks up the extensions with either the Oid "1.3.6.1.4.1.311.21.7" or
-    "1.3.6.1.4.1.311.20.2" and returns the formatted extension value.
+        Looks up the extensions with either the Oid "1.3.6.1.4.1.311.21.7" or
+        "1.3.6.1.4.1.311.20.2" and returns the formatted extension value.
 
     .PARAMETER Certificate
-    The x509 certificate to return the template extension from.
+        The x509 certificate to return the template extension from.
 #>
 function Get-CertificateTemplateExtensionText
 {
@@ -755,15 +816,15 @@ function Get-CertificateTemplateExtensionText
 
 <#
     .SYNOPSIS
-    Get a certificate template name from an x509 certificate.
+        Get a certificate template name from an x509 certificate.
 
     .DESCRIPTION
-    Gets the name of the template used for the certificate that is passed to
-    this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or
-    "1.3.6.1.4.1.311.20.2".
+        Gets the name of the template used for the certificate that is passed to
+        this cmdlet by translating the OIDs "1.3.6.1.4.1.311.21.7" or
+        "1.3.6.1.4.1.311.20.2".
 
     .PARAMETER Certificate
-    The x509 certificate to return the formatted template extension from.
+        The x509 certificate to return the formatted template extension from.
 #>
 function Get-CertificateTemplateName
 {
@@ -792,14 +853,14 @@ function Get-CertificateTemplateName
 
 <#
     .SYNOPSIS
-    Get the first Subject Alternative Name entry for a certificate.
+        Get the first Subject Alternative Name entry for a certificate.
 
     .DESCRIPTION
-    Gets the first entry in the Subject Alternative Name extension from the
-    certificate provided.
+        Gets the first entry in the Subject Alternative Name extension from the
+        certificate provided.
 
     .PARAMETER Certificate
-    The certificate to return the Subject Alternative Name from.
+        The certificate to return the Subject Alternative Name from.
 #>
 function Get-CertificateSubjectAlternativeName
 {
@@ -830,14 +891,14 @@ function Get-CertificateSubjectAlternativeName
 
 <#
     .SYNOPSIS
-    Get the list of Subject Alternative Name entries in a Certificate.
+        Get the list of Subject Alternative Name entries in a Certificate.
 
     .DESCRIPTION
-    Gets the list of Subject Alternative Name entries in the extension
-    with Oid 2.5.29.17 from the certificate provided.
+        Gets the list of Subject Alternative Name entries in the extension
+        with Oid 2.5.29.17 from the certificate provided.
 
     .PARAMETER Certificate
-    The certificate to return the Subject Alternative Name entry list from.
+        The certificate to return the Subject Alternative Name entry list from.
 #>
 function Get-CertificateSubjectAlternativeNameList
 {
@@ -863,10 +924,10 @@ function Get-CertificateSubjectAlternativeNameList
 
 <#
     .SYNOPSIS
-    Tests whether or not the command with the specified name exists.
+        Tests whether or not the command with the specified name exists.
 
     .PARAMETER Name
-    The name of the command to test for.
+        The name of the command to test for.
 #>
 function Test-CommandExists
 {
@@ -886,13 +947,13 @@ function Test-CommandExists
 
 <#
     .SYNOPSIS
-    This function imports a 509 public key certificate to the specific Store.
+        This function imports a 509 public key certificate to the specific Store.
 
     .PARAMETER FilePath
-    The path to the certificate file to import.
+        The path to the certificate file to import.
 
     .PARAMETER CertStoreLocation
-    The Certificate Store and Location Path to import the certificate to.
+        The Certificate Store and Location Path to import the certificate to.
 #>
 function Import-CertificateEx
 {
@@ -925,20 +986,20 @@ function Import-CertificateEx
 
 <#
     .SYNOPSIS
-    This function imports a Pfx public - private certificate to the specific
-    Certificate Store Location.
+        This function imports a Pfx public - private certificate to the specific
+        Certificate Store Location.
 
     .PARAMETER FilePath
-    The path to the certificate file to import.
+        The path to the certificate file to import.
 
     .PARAMETER CertStoreLocation
-    The Certificate Store and Location Path to import the certificate to.
+        The Certificate Store and Location Path to import the certificate to.
 
     .PARAMETER Exportable
-    The parameter controls if certificate will be able to export the private key.
+        The parameter controls if certificate will be able to export the private key.
 
     .PARAMETER Password
-    The password that the certificate located at the FilePath needs to be imported.
+        The password that the certificate located at the FilePath needs to be imported.
   #>
 function Import-PfxCertificateEx
 {
@@ -994,13 +1055,13 @@ function Import-PfxCertificateEx
 
 <#
     .SYNOPSIS
-    This function generates the path to a Windows Certificate Store.
+        This function generates the path to a Windows Certificate Store.
 
     .PARAMETER Location
-    The Windows Certificate Store Location.
+        The Windows Certificate Store Location.
 
     .PARAMETER Store
-    The Windows Certificate Store Name.
+        The Windows Certificate Store Name.
 #>
 function Get-CertificateStorePath
 {
@@ -1035,17 +1096,17 @@ function Get-CertificateStorePath
 
 <#
     .SYNOPSIS
-    This function returns the full path to a certificate in the Windows
-    Certificate Store.
+        This function returns the full path to a certificate in the Windows
+        Certificate Store.
 
     .PARAMETER Thumbprint
-    The Thumbprint of the certificate.
+        The Thumbprint of the certificate.
 
     .PARAMETER Location
-    The Windows Certificate Store Location.
+        The Windows Certificate Store Location.
 
     .PARAMETER Store
-    The Windows Certificate Store Name.
+        The Windows Certificate Store Name.
 #>
 function Get-CertificatePath
 {
@@ -1075,13 +1136,13 @@ function Get-CertificatePath
 
 <#
     .SYNOPSIS
-    This function generates the path to a Windows Certificate Store.
+        This function generates the path to a Windows Certificate Store.
 
     .PARAMETER Location
-    The Windows Certificate Store Location.
+        The Windows Certificate Store Location.
 
     .PARAMETER Store
-    The Windows Certificate Store Name.
+        The Windows Certificate Store Name.
 #>
 function Get-CertificateFromCertificateStore
 {
@@ -1113,17 +1174,17 @@ function Get-CertificateFromCertificateStore
 
 <#
     .SYNOPSIS
-    This function deletes all certificates from the specified Windows Certificate
-    Store that match the thumbprint.
+        This function deletes all certificates from the specified Windows Certificate
+        Store that match the thumbprint.
 
     .PARAMETER Thumbprint
-    The Thumbprint of the certificates to remove.
+        The Thumbprint of the certificates to remove.
 
     .PARAMETER Location
-    The Windows Certificate Store Location.
+        The Windows Certificate Store Location.
 
     .PARAMETER Store
-    The Windows Certificate Store Name.
+        The Windows Certificate Store Name.
 #>
 function Remove-CertificateFromCertificateStore
 {
@@ -1161,20 +1222,20 @@ function Remove-CertificateFromCertificateStore
 
 <#
     .SYNOPSIS
-    This function sets the friendly name of a certificate in the
-    Windows Certificate Store.
+        This function sets the friendly name of a certificate in the
+        Windows Certificate Store.
 
     .PARAMETER Thumbprint
-    The Thumbprint of the certificates to set the friendly name of.
+        The Thumbprint of the certificates to set the friendly name of.
 
     .PARAMETER Location
-    The Windows Certificate Store Location.
+        The Windows Certificate Store Location.
 
     .PARAMETER Store
-    The Windows Certificate Store Name.
+        The Windows Certificate Store Name.
 
     .PARAMETER FriendlyName
-    The Friendly Name to set for the certificate.
+        The Friendly Name to set for the certificate.
 #>
 function Set-CertificateFriendlyNameInCertificateStore
 {

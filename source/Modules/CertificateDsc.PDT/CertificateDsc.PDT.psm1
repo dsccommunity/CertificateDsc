@@ -11,17 +11,17 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
 <#
     .SYNOPSIS
-    Extracts an array of arguments that were found in the Arguments list passed in.
-    It also optionally maps the arguments to a new name.
+        Extracts an array of arguments that were found in the Arguments list passed in.
+        It also optionally maps the arguments to a new name.
 
     .PARAMETER FunctionBoundParameters
-    The parameters that were passed to the calling function.
+        The parameters that were passed to the calling function.
 
     .PARAMETER ArgumentNames
-    The array of arguments that should be extracted.
+        The array of arguments that should be extracted.
 
     .PARAMETER NewArgumentNames
-    An array of argument names to rename each argument to.
+        An array of argument names to rename each argument to.
 #>
 function Get-Arguments
 {
@@ -67,7 +67,7 @@ function Get-Arguments
 
 <#
     .SYNOPSIS
-    Initialize the Win32 PInvoke wrapper.
+        Initialize the Win32 PInvoke wrapper.
 #>
 function Initialize-PInvoke
 {
@@ -406,6 +406,7 @@ function Get-Win32Process
             }
             catch
             {
+                Write-Warning -Message ($script:localizedData.Win32ProcessHandleError -f $_.Exception.Message)
             }
         }
     }
@@ -433,10 +434,10 @@ function Get-Win32Process
 
 <#
     .SYNOPSIS
-    Returns the Owner of a Win32 Process.
+        Returns the Owner of a Win32 Process.
 
     .PARAMETER Process
-    The Win32 WMI process to get the owner for.
+        The Win32 WMI process to get the owner for.
 #>
 function Get-Win32ProcessOwner
 {
@@ -453,6 +454,7 @@ function Get-Win32ProcessOwner
     }
     catch
     {
+        Write-Warning -Message ($script:localizedData.ProcessOwnerError -f $_.Exception.Message)
     }
 
     if ($null -ne $owner.Domain)
@@ -467,10 +469,10 @@ function Get-Win32ProcessOwner
 
 <#
     .SYNOPSIS
-    Extracts the arguments from a complete command line
+        Extracts the arguments from a complete command line
 
     .PARAMETER CommandLine
-    The complete command line to extract the arguments from.
+        The complete command line to extract the arguments from.
 #>
 function Get-Win32ProcessArgumentsFromCommandLine
 {
@@ -514,16 +516,16 @@ function Get-Win32ProcessArgumentsFromCommandLine
 
 <#
     .SYNOPSIS
-    Starts a Win32 Process using PInvoke.
+        Starts a Win32 Process using PInvoke.
 
     .PARAMETER Path
-    The full path to the executable to start the process with.
+        The full path to the executable to start the process with.
 
     .PARAMETER Arguments
-    The arguments to pass to the executable when starting the process.
+        The arguments to pass to the executable when starting the process.
 
     .PARAMETER Credential
-    The user account to start the process under.
+        The user account to start the process under.
 #>
 function Start-Win32Process
 {
@@ -613,19 +615,19 @@ function Start-Win32Process
 
 <#
     .SYNOPSIS
-    Wait for a Win32 process to start.
+        Wait for a Win32 process to start.
 
     .PARAMETER Path
-    The full path to the executable of the process to wait for.
+        The full path to the executable of the process to wait for.
 
     .PARAMETER Arguments
-    The arguments passed to the executable of the process to wait for.
+        The arguments passed to the executable of the process to wait for.
 
     .PARAMETER Credential
-    The user account the process will be running under.
+        The user account the process will be running under.
 
     .PARAMETER Timeout
-    The milliseconds to wait for the process to start.
+        The milliseconds to wait for the process to start.
 #>
 function Wait-Win32ProcessStart
 {
@@ -667,20 +669,20 @@ function Wait-Win32ProcessStart
 
 <#
     .SYNOPSIS
-    Wait for a Win32 process to stop. This assumes the process was aleady confirmed to have been started by first
-    calling Wait-Win32ProcessStart.
+        Wait for a Win32 process to stop. This assumes the process was aleady confirmed to have been started by first
+        calling Wait-Win32ProcessStart.
 
     .PARAMETER Path
-    The full path to the executable of the process to wait for.
+        The full path to the executable of the process to wait for.
 
     .PARAMETER Arguments
-    The arguments passed to the executable of the process to wait for.
+        The arguments passed to the executable of the process to wait for.
 
     .PARAMETER Credential
-    The user account the process will be running under.
+        The user account the process will be running under.
 
     .PARAMETER Timeout
-    The milliseconds to wait for the process to stop.
+        The milliseconds to wait for the process to stop.
 #>
 function Wait-Win32ProcessStop
 {
@@ -722,19 +724,19 @@ function Wait-Win32ProcessStop
 
 <#
     .SYNOPSIS
-    Wait for a Win32 process to complete.
+        Wait for a Win32 process to complete.
 
     .PARAMETER Path
-    The full path to the executable of the process to wait for.
+        The full path to the executable of the process to wait for.
 
     .PARAMETER Arguments
-    The arguments passed to the executable of the process to wait for.
+        The arguments passed to the executable of the process to wait for.
 
     .PARAMETER Credential
-    The user account the process will be running under.
+        The user account the process will be running under.
 
     .PARAMETER Timeout
-    The amount of time to wait for the process to end.
+        The amount of time to wait for the process to end.
 #>
 function Wait-Win32ProcessEnd
 {

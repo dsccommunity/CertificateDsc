@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed `master` branch to `main` - Fixes [Issue #237](https://github.com/dsccommunity/CertificateDsc/issues/237).
 - Updated `GitVersion.yml` to latest pattern - Fixes [Issue #245](https://github.com/dsccommunity/CertificateDsc/issues/245).
+- Changed `Test-Thumbprint` to cache supported hash algorithms to increase
+  performance - Fixes [Issue #221](https://github.com/dsccommunity/CertificateDsc/issues/221).
+- Added warning messages into empty catch blocks in `Certificate.PDT` module to
+  assist with debugging.
+
+### Fixed
+
+- Removed requirement for tests to use `New-SelfSignedCertificateEx` from
+  [TechNet Gallery due to retirement](https://docs.microsoft.com/teamblog/technet-gallery-retirement).
+  This will prevent tests from running on Windows Server 2012 R2 - Fixes [Issue #250](https://github.com/dsccommunity/CertificateDsc/issues/250).
+- Fixed FIPS support when used in versions of PowerShell Core 6 & PowerShell 7.
+- Moved thumbprint generation for testing into helper function `New-CertificateThumbprint`
+  and fixed tests for validating FIPS thumbprints in `Test-Thumbprint` so that it runs
+  on PowerShell Core/7.x.
 
 ## [5.0.0] - 2020-10-16
 

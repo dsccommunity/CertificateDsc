@@ -36,17 +36,7 @@ Invoke-TestSetup
 try
 {
     InModuleScope $script:dscResourceName {
-        $definedRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object -FilterScript { $null -ne $_.DefinedTypes }).GetTypes()
-        $validThumbprint = (
-            $definedRuntimeTypes | Where-Object -FilterScript {
-                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
-                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
-            } | Select-Object -First 1 | ForEach-Object -Process {
-                (New-Object $_).ComputeHash([String]::Empty) | ForEach-Object -Process {
-                    '{0:x2}' -f $_
-                }
-            }
-        ) -join ''
+        $validThumbprint = New-CertificateThumbprint -Fips
         $invalidThumbprint = $validThumbprint + 1
         $caServerFQDN = 'rootca.contoso.com'
         $caRootName = 'contoso-CA'
