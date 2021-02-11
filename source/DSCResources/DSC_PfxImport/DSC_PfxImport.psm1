@@ -14,42 +14,42 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
 <#
     .SYNOPSIS
-    Returns the current state of the PFX Certificte file that should be imported.
+        Returns the current state of the PFX Certificte file that should be imported.
 
     .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the PFX file you're importing.
+        The thumbprint (unique identifier) of the PFX file you're importing.
 
     .PARAMETER Path
-    The path to the PFX file you want to import.
-    This parameter is ignored.
+        The path to the PFX file you want to import.
+        This parameter is ignored.
 
     .PARAMETER Content
     The base64 encoded content of the PFX file you want to import.
     This parameter is ignored.
 
     .PARAMETER Location
-    The Windows Certificate Store Location to import the PFX file to.
+        The Windows Certificate Store Location to import the PFX file to.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the PFX file to.
+        The Windows Certificate Store Name to import the PFX file to.
 
     .PARAMETER Exportable
-    Determines whether the private key is exportable from the machine after
-    it has been imported.
-    This parameter is ignored.
+        Determines whether the private key is exportable from the machine after
+        it has been imported.
+        This parameter is ignored.
 
     .PARAMETER Credential
-    A `PSCredential` object that is used to decrypt the PFX file. Only the
-    password is used, so any user name is valid.
-    This parameter is ignored.
+        A `PSCredential` object that is used to decrypt the PFX file. Only the
+        password is used, so any user name is valid.
+        This parameter is ignored.
 
     .PARAMETER Ensure
-    Specifies whether the PFX file should be present or absent.
-    This parameter is ignored.
+        Specifies whether the PFX file should be present or absent.
+        This parameter is ignored.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to set in the Windows Certificate Store.
-    This parameter is ignored.
+        The friendly name of the certificate to set in the Windows Certificate Store.
+        This parameter is ignored.
 #>
 function Get-TargetResource
 {
@@ -159,36 +159,36 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Tests if the PFX Certificate file needs to be imported or removed.
+        Tests if the PFX Certificate file needs to be imported or removed.
 
     .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the PFX file you're importing.
+        The thumbprint (unique identifier) of the PFX file you're importing.
 
     .PARAMETER Path
-    The path to the PFX file you want to import.
+        The path to the PFX file you want to import.
 
     .PARAMETER Content
     The base64 encoded content of the PFX file you want to import.
 
     .PARAMETER Location
-    The Windows Certificate Store Location to import the PFX file to.
+        The Windows Certificate Store Location to import the PFX file to.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the PFX file to.
+        The Windows Certificate Store Name to import the PFX file to.
 
     .PARAMETER Exportable
-    Determines whether the private key is exportable from the machine after
-    it has been imported.
+        Determines whether the private key is exportable from the machine after
+        it has been imported.
 
     .PARAMETER Credential
-    A `PSCredential` object that is used to decrypt the PFX file. Only the
-    password is used, so any user name is valid.
+        A `PSCredential` object that is used to decrypt the PFX file. Only the
+        password is used, so any user name is valid.
 
     .PARAMETER Ensure
-    Specifies whether the PFX file should be present or absent.
+        Specifies whether the PFX file should be present or absent.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to set in the Windows Certificate Store.
+        The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Test-TargetResource
 {
@@ -269,36 +269,36 @@ function Test-TargetResource
 
 <#
     .SYNOPSIS
-    Imports or removes the specified PFX Certifiicate file.
+        Imports or removes the specified PFX Certifiicate file.
 
     .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the PFX file you're importing.
+        The thumbprint (unique identifier) of the PFX file you're importing.
 
     .PARAMETER Path
-    The path to the PFX file you want to import.
+        The path to the PFX file you want to import.
 
     .PARAMETER Content
     The base64 encoded content of the PFX file you want to import.
 
     .PARAMETER Location
-    The Windows Certificate Store Location to import the PFX file to.
+        The Windows Certificate Store Location to import the PFX file to.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the PFX file to.
+        The Windows Certificate Store Name to import the PFX file to.
 
     .PARAMETER Exportable
-    Determines whether the private key is exportable from the machine after
-    it has been imported.
+        Determines whether the private key is exportable from the machine after
+        it has been imported.
 
     .PARAMETER Credential
-    A `PSCredential` object that is used to decrypt the PFX file. Only the
-    password is used, so any user name is valid.
+        A `PSCredential` object that is used to decrypt the PFX file. Only the
+        password is used, so any user name is valid.
 
     .PARAMETER Ensure
-    Specifies whether the PFX file should be present or absent.
+        Specifies whether the PFX file should be present or absent.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to set in the Windows Certificate Store.
+        The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Set-TargetResource
 {

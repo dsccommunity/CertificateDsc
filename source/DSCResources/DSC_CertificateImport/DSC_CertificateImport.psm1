@@ -14,32 +14,32 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
 
 <#
     .SYNOPSIS
-    Returns the current state of the CER Certificte file that should be imported.
+        Returns the current state of the CER Certificte file that should be imported.
 
     .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the certificate you're importing.
+        The thumbprint (unique identifier) of the certificate you're importing.
 
     .PARAMETER Path
-    The path to the CER file you want to import.
-    This parameter is ignored.
+        The path to the CER file you want to import.
+        This parameter is ignored.
 
     .PARAMETER Content
     The base64 encoded content of the CER file you want to import.
     This parameter is ignored.
 
     .PARAMETER Location
-    The Windows Certificate Store Location to import the certificate to.
+        The Windows Certificate Store Location to import the certificate to.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the certificate to.
+        The Windows Certificate Store Name to import the certificate to.
 
     .PARAMETER Ensure
-    Specifies whether the certificate should be present or absent.
-    This parameter is ignored.
+        Specifies whether the certificate should be present or absent.
+        This parameter is ignored.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to set in the Windows Certificate Store.
-    This parameter is ignored.
+        The friendly name of the certificate to set in the Windows Certificate Store.
+        This parameter is ignored.
 #>
 function Get-TargetResource
 {
@@ -113,28 +113,28 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Tests if the CER Certificate file needs to be imported or removed.
+        Tests if the CER Certificate file needs to be imported or removed.
 
     .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the certificate you're importing.
+        The thumbprint (unique identifier) of the certificate you're importing.
 
     .PARAMETER Path
-    The path to the CER file you want to import.
+        The path to the CER file you want to import.
 
     .PARAMETER Content
     The base64 encoded content of the CER file you want to import.
 
     .PARAMETER Location
-    The Windows Certificate Store Location to import the certificate to.
+        The Windows Certificate Store Location to import the certificate to.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the certificate to.
+        The Windows Certificate Store Name to import the certificate to.
 
     .PARAMETER Ensure
-    Specifies whether the certificate should be present or absent.
+        Specifies whether the certificate should be present or absent.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to set in the Windows Certificate Store.
+        The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Test-TargetResource
 {
@@ -206,28 +206,28 @@ function Test-TargetResource
 
 <#
     .SYNOPSIS
-    Imports or removes the specified CER Certifiicate file.
+        Imports or removes the specified CER Certifiicate file.
 
     .PARAMETER Thumbprint
-    The thumbprint (unique identifier) of the certificate you're importing.
+        The thumbprint (unique identifier) of the certificate you're importing.
 
     .PARAMETER Path
-    The path to the CER file you want to import.
+        The path to the CER file you want to import.
 
     .PARAMETER Content
     The base64 encoded content of the CER file you want to import.
 
     .PARAMETER Location
-    The Windows Certificate Store Location to import the certificate to.
+        The Windows Certificate Store Location to import the certificate to.
 
     .PARAMETER Store
-    The Windows Certificate Store Name to import the certificate to.
+        The Windows Certificate Store Name to import the certificate to.
 
     .PARAMETER Ensure
-    Specifies whether the certificate should be present or absent.
+        Specifies whether the certificate should be present or absent.
 
     .PARAMETER FriendlyName
-    The friendly name of the certificate to set in the Windows Certificate Store.
+        The friendly name of the certificate to set in the Windows Certificate Store.
 #>
 function Set-TargetResource
 {

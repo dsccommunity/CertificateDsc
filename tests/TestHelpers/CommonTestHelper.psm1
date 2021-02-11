@@ -81,55 +81,72 @@ function Get-InvalidOperationRecord
     return New-Object @newObjectParams
 }
 
+
 <#
     .SYNOPSIS
-    Some tests require a self-signed certificate to be created. However, the
-    New-SelfSignedCertificate cmdlet built into Windows Server 2012 R2 is too
-    limited to work for this process.
+        Generates a valid certificate thumprint for use in testing
 
-    Therefore an alternate method of creating self-signed certificates to meet the
-    reqirements. A script on Microsoft Script Center can be used for this but must
-    be downloaded:
-    https://gallery.technet.microsoft.com/scriptcenter/Self-signed-certificate-5920a7c6
-
-    This cmdlet will install the script if it is not available and dot source it.
-
-    .PARAMETER OutputPath
-    The path to download the script to. If not provided will default to the current
-    users temp folder.
-
-    .OUTPUTS
-    The path to the script that was downloaded.
+    .PARAMETER Fips
+        Returns a certificate thumbprint that is FIPS compliant.
 #>
-function Install-NewSelfSignedCertificateExScript
+function New-CertificateThumbprint
 {
     [CmdletBinding()]
-    [OutputType([String])]
+    [OutputType([System.String])]
     param
     (
         [Parameter()]
-        [String]
-        $OutputPath = $env:Temp
+        [switch]
+        $Fips
     )
 
-    $newSelfSignedCertURL = 'https://gallery.technet.microsoft.com/scriptcenter/Self-signed-certificate-5920a7c6/file/101251/2/New-SelfSignedCertificateEx.zip'
-    $newSelfSignedCertZip = Split-Path -Path $newSelfSignedCertURL -Leaf
-    $newSelfSignedCertZipPath = Join-Path -Path $OutputPath -ChildPath $newSelfSignedCertZip
-    $newSelfSignedCertScriptPath = Join-Path -Path $OutputPath -ChildPath 'New-SelfSignedCertificateEx.ps1'
-    if (-not (Test-Path -Path $newSelfSignedCertScriptPath))
+    # To ensure the FIPS hash algorithms are loaded by .NET Core load the assembly
+    if ($IsCoreCLR)
     {
-        if (Test-Path -Path $newSelfSignedCertZip)
-        {
-            Remove-Item -Path $newSelfSignedCertZipPath -Force
+        Add-Type -AssemblyName System.Security.Cryptography.Csp
+    }
+
+    <#
+        Get a list of Hash Providers, but exclude assemblies that set DefinedTypes
+        to null instead of an empty array. Otherwise, the call to GetTypes() fails.
+    #>
+    $allRuntimeTypes = ([System.AppDomain]::CurrentDomain.GetAssemblies() |
+        Where-Object -FilterScript {
+            $null -ne $_.DefinedTypes
+        }).GetTypes()
+
+    if ($Fips)
+    {
+        # Get the list of supported hash algorthms for FIPS
+        $supportedHashAlgorithms = $allRuntimeTypes | Where-Object -FilterScript {
+            $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+            ($_.Name -cmatch 'Provider$' -and $_.Name -cnotmatch 'MD5')
         }
-        Invoke-WebRequest -Uri $newSelfSignedCertURL -OutFile $newSelfSignedCertZipPath
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        [System.IO.Compression.ZipFile]::ExtractToDirectory($newSelfSignedCertZipPath, $OutputPath)
-    } # if
-    return $newSelfSignedCertScriptPath
-} # end function Install-NewSelfSignedCertificateExScript
+    }
+    else
+    {
+        # Get the list of supported hash algorthms
+        $supportedHashAlgorithms = $allRuntimeTypes | Where-Object -FilterScript {
+                $_.BaseType.BaseType -eq [System.Security.Cryptography.HashAlgorithm] -and
+                ($_.Name -cmatch 'Managed$' -or $_.Name -cmatch 'Provider$')
+            }
+    }
+
+    # Generate a valid thumbprint from the supported algorithms
+    $validThumbprint = ($supportedHashAlgorithms |
+        Select-Object -First 1 |
+        ForEach-Object -Process {
+            (New-Object -TypeName $_).ComputeHash([System.String]::Empty) |
+            ForEach-Object -Process {
+                '{0:x2}' -f $_
+            }
+        }
+    ) -join ''
+
+    return $validThumbprint
+}
 
 Export-ModuleMember -Function `
-    Install-NewSelfSignedCertificateExScript, `
+    New-CertificateThumbprint, `
     Get-InvalidArgumentRecord, `
     Get-InvalidOperationRecord

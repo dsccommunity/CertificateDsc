@@ -26,9 +26,6 @@ try
             $configFile = Join-Path -Path $PSScriptRoot -ChildPath "$($script:DSCResourceName).config.ps1"
             . $configFile
 
-            # Download and dot source the New-SelfSignedCertificateEx script
-            . (Install-NewSelfSignedCertificateExScript)
-
             # Prepare CER certificate properties
             $script:certificatePath = Join-Path -Path $env:Temp -ChildPath 'CertificateExportTestCert.cer'
             $null = Remove-Item -Path $script:certificatePath -Force -ErrorAction SilentlyContinue
@@ -44,18 +41,26 @@ try
             # Generate the Valid certificate for testing
             $certificateDNSNames = @('www.fabrikam.com', 'www.contoso.com')
             $certificateKeyUsage = @('DigitalSignature', 'DataEncipherment')
+            <#
+                To set Enhanced Key Usage, we must use OIDs:
+                Enhanced Key Usage. 2.5.29.37
+                Client Authentication. 1.3.6.1.5.5.7.3.2
+                Server Authentication. 1.3.6.1.5.5.7.3.1
+            #>
             $certificateEKU = @('Server Authentication', 'Client authentication')
+            $certificateEKUOID = '2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1'
             $certificateSubject = 'CN=contoso, DC=com'
             $certFriendlyName = 'Contoso Test Cert'
-            $validCertificate = New-SelfSignedCertificateEx `
+            # This will fail if run on OS versions older than Windows Server 2016/Windows 10.
+            $validCertificate = New-SelfSignedCertificate `
                 -Subject $certificateSubject `
                 -KeyUsage $certificateKeyUsage `
-                -KeySpec 'Exchange' `
-                -EKU $certificateEKU `
-                -SubjectAlternativeName $certificateDNSNames `
+                -KeySpec 'KeyExchange' `
+                -TextExtension $certificateEKUOID `
+                -DnsName $certificateDNSNames `
                 -FriendlyName $certFriendlyName `
-                -StoreLocation 'LocalMachine' `
-                -Exportable
+                -CertStoreLocation 'cert:\LocalMachine' `
+                -KeyExportPolicy Exportable
             $script:validCertificateThumbprint = $validCertificate.Thumbprint
         }
 
