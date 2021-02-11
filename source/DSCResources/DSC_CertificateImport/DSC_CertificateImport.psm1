@@ -24,8 +24,8 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
         This parameter is ignored.
 
     .PARAMETER Content
-    The base64 encoded content of the CER file you want to import.
-    This parameter is ignored.
+        The base64 encoded content of the CER file you want to import.
+        This parameter is ignored.
 
     .PARAMETER Location
         The Windows Certificate Store Location to import the certificate to.
@@ -122,7 +122,7 @@ function Get-TargetResource
         The path to the CER file you want to import.
 
     .PARAMETER Content
-    The base64 encoded content of the CER file you want to import.
+        The base64 encoded content of the CER file you want to import.
 
     .PARAMETER Location
         The Windows Certificate Store Location to import the certificate to.
@@ -215,7 +215,7 @@ function Test-TargetResource
         The path to the CER file you want to import.
 
     .PARAMETER Content
-    The base64 encoded content of the CER file you want to import.
+        The base64 encoded content of the CER file you want to import.
 
     .PARAMETER Location
         The Windows Certificate Store Location to import the certificate to.
