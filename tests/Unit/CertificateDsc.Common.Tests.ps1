@@ -40,9 +40,6 @@ InModuleScope $script:subModuleName {
     $invalidPath = 'TestDrive:'
     $validPath = "TestDrive:\$testFile"
 
-    $tmpCertificateName = $(New-Guid).Guid + '.cer'
-    $validTmpPath = Join-Path -Path $env:TMP -ChildPath $tmpCertificateName
-
     $cerFileWithSan = "
             -----BEGIN CERTIFICATE-----
             MIIGJDCCBAygAwIBAgITewAAAAqQ+bxgiZZPtgAAAAAACjANBgkqhkiG9w0BAQsF

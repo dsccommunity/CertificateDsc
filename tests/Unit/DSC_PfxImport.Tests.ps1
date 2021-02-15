@@ -149,7 +149,6 @@ try
 
         $presentParamsWithFriendlyNameWithContent = @{
             Thumbprint   = $validThumbprint
-            Path         = $validPath
             Content      = $certificateContent
             Ensure       = 'Present'
             Location     = 'LocalMachine'
@@ -163,6 +162,32 @@ try
         $presentParamsWithoutContentAndPath = @{
             Thumbprint   = $validThumbprint
             Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Exportable   = $True
+            Credential   = $testCredential
+            Verbose      = $True
+            FriendlyName = $certificateFriendlyName
+        }
+
+        $presentParamsWithBothContentAndPath = @{
+            Thumbprint   = $validThumbprint
+            Content      = $certificateContent
+            Path         = $validPath
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Exportable   = $True
+            Credential   = $testCredential
+            Verbose      = $True
+            FriendlyName = $certificateFriendlyName
+        }
+
+        $absentParamsWithBothContentAndPath = @{
+            Thumbprint   = $validThumbprint
+            Content      = $certificateContent
+            Path         = $validPath
+            Ensure       = 'Absent'
             Location     = 'LocalMachine'
             Store        = 'My'
             Exportable   = $True
@@ -286,6 +311,34 @@ try
         }
 
         Describe 'DSC_PfxImport\Test-TargetResource' -Tag 'Test' {
+            Context 'When Content and Path parameters are null' {
+                It 'Should throw exception when Ensure is Present' {
+                    {
+                        Test-TargetResource @presentParamsWithoutContentAndPath
+                    } | Should -Throw
+                }
+
+                It 'Should not throw exception when Ensure is Absent' {
+                    {
+                        Test-TargetResource @absentParamsWithoutContentAndPath
+                    } | Should -Not -Throw
+                }
+            }
+
+            Context 'When both Content and Path parameters are set' {
+                It 'Should throw exception when Ensure is Present' {
+                    {
+                        Test-TargetResource @presentParamsWithBothContentAndPath
+                    } | Should -Throw ($script:localizedData.ContentAndPathParametersAreSet)
+                }
+
+                It 'Should not throw exception when Ensure is Absent' {
+                    {
+                        Test-TargetResource @absentParamsWithBothContentAndPath
+                    } | Should -Not -Throw
+                }
+            }
+
             Context 'When certificate is not in store but should be' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
@@ -349,15 +402,29 @@ try
             }
 
             Context 'When Content and Path parameters are null' {
-                It 'Should throw exception wnen Ensure is Present' {
+                It 'Should throw exception when Ensure is Present' {
                     {
                         Set-TargetResource @presentParamsWithoutContentAndPath
                     } | Should -Throw ($script:localizedData.ContentAndPathParametersAreNull)
                 }
 
-                It 'Should not throw exception wnen Ensure is Absent' {
+                It 'Should not throw exception when Ensure is Absent' {
                     {
                         Set-TargetResource @absentParamsWithoutContentAndPath
+                    } | Should -Not -Throw
+                }
+            }
+
+            Context 'When both Content and Path parameters are set' {
+                It 'Should throw exception when Ensure is Present' {
+                    {
+                        Set-TargetResource @presentParamsWithBothContentAndPath
+                    } | Should -Throw ($script:localizedData.ContentAndPathParametersAreSet)
+                }
+
+                It 'Should not throw exception when Ensure is Absent' {
+                    {
+                        Set-TargetResource @absentParamsWithBothContentAndPath
                     } | Should -Not -Throw
                 }
             }

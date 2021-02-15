@@ -181,6 +181,8 @@ function Test-TargetResource
             $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
+    Assert-ResourceProperty @PSBoundParameters
+
     $currentState = Get-TargetResource @PSBoundParameters
 
     if ($Ensure -ne $currentState.Ensure)
@@ -350,7 +352,7 @@ function Set-TargetResource
             -Location $Location `
             -Store $Store
     }
-}  # end function Test-TargetResource
+}  # end function Set-TargetResource
 
 function Assert-ResourceProperty
 {
@@ -376,10 +378,17 @@ function Assert-ResourceProperty
 
     if ($Ensure -ieq 'Present')
     {
-        if ([string]::IsNullOrWhiteSpace($Content) -band [string]::IsNullOrWhiteSpace($Path))
+        if ([System.String]::IsNullOrWhiteSpace($Content) -band [System.String]::IsNullOrWhiteSpace($Path))
         {
             New-InvalidArgumentException `
                 -Message ($script:localizedData.ContentAndPathParametersAreNull) `
+                -ArgumentName 'Path|Content'
+        }
+
+        if ($PSBoundParameters.ContainsKey('Content') -and $PSBoundParameters.ContainsKey('Path'))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.ContentAndPathParametersAreSet) `
                 -ArgumentName 'Path|Content'
         }
     }

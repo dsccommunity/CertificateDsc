@@ -119,7 +119,6 @@ try
 
         $presentParamsWithFriendlyNameWithContent = @{
             Thumbprint   = $validThumbprint
-            Path         = $validPath
             Content      = $certificateContent
             Ensure       = 'Present'
             Location     = 'LocalMachine'
@@ -136,6 +135,24 @@ try
             Verbose      = $true
         }
 
+        $presentParamsWithBothContentAndPath = @{
+            Thumbprint   = $validThumbprint
+            Content      = $certificateContent
+            Path         = $validPath
+            Ensure       = 'Present'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Verbose      = $true
+        }
+
+        $absentParamsWithBothContentAndPath = @{
+            Thumbprint   = $validThumbprint
+            Ensure       = 'Absent'
+            Location     = 'LocalMachine'
+            Store        = 'My'
+            Verbose      = $true
+        }
+
         $absentParams = @{
             Thumbprint = $validThumbprint
             Path       = $validPath
@@ -147,7 +164,6 @@ try
 
         $absentParamsWithContent = @{
             Thumbprint = $validThumbprint
-            Path       = $validPath
             Content    = $certificateContent
             Ensure     = 'Absent'
             Location   = 'LocalMachine'
@@ -224,6 +240,34 @@ try
         }
 
         Describe 'DSC_CertificateImport\Test-TargetResource' -Tag 'Test' {
+            Context 'When Content and Path parameters are null' {
+                It 'Should throw exception when Ensure is Present' {
+                    {
+                        Test-TargetResource @presentParamsWithoutContentAndPath
+                    } | Should -Throw
+                }
+
+                It 'Should not throw exception when Ensure is Absent' {
+                    {
+                        Test-TargetResource @absentParamsWithoutContentAndPath
+                    } | Should -Not -Throw
+                }
+            }
+
+            Context 'When both Content and Path parameters are set' {
+                It 'Should throw exception when Ensure is Present' {
+                    {
+                        Test-TargetResource @presentParamsWithBothContentAndPath
+                    } | Should -Throw ($script:localizedData.ContentAndPathParametersAreSet)
+                }
+
+                It 'Should not throw exception when Ensure is Absent' {
+                    {
+                        Test-TargetResource @absentParamsWithBothContentAndPath
+                    } | Should -Not -Throw
+                }
+            }
+
             Context 'When certificate is not in store but should be' {
                 Mock -CommandName Get-CertificateFromCertificateStore
 
@@ -286,15 +330,29 @@ try
             }
 
             Context 'When Content and Path parameters are null' {
-                It 'Should throw exception wnen Ensure is Present' {
+                It 'Should throw exception when Ensure is Present' {
                     {
                         Set-TargetResource @presentParamsWithoutContentAndPath
                     } | Should -Throw
                 }
 
-                It 'Should not throw exception wnen Ensure is Absent' {
+                It 'Should not throw exception when Ensure is Absent' {
                     {
                         Set-TargetResource @absentParamsWithoutContentAndPath
+                    } | Should -Not -Throw
+                }
+            }
+
+            Context 'When both Content and Path parameters are set' {
+                It 'Should throw exception when Ensure is Present' {
+                    {
+                        Set-TargetResource @presentParamsWithBothContentAndPath
+                    } | Should -Throw ($script:localizedData.ContentAndPathParametersAreSet)
+                }
+
+                It 'Should not throw exception when Ensure is Absent' {
+                    {
+                        Set-TargetResource @absentParamsWithBothContentAndPath
                     } | Should -Not -Throw
                 }
             }

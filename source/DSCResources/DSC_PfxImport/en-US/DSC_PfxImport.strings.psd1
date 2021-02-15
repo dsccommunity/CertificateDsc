@@ -11,4 +11,5 @@ ConvertFrom-StringData @'
     SettingCertficateFriendlyNameMessage = Setting Certificate '{0}' from '{1}' store '{2}' friendly name to '{3}'. (PI0011)
     CertificateFriendlyNameMismatchMessage = The Fiendly Name of Certificate '{0}' from '{1}' store '{2}' is set to '{3}', but should be '{4}'. (PI0012)
     ContentAndPathParametersAreNull = A non-null or non-empty value must be supplied for the Path or Content parameter. (CI0013)
+    ContentAndPathParametersAreSet = The use of both Path and Content parameters is not supported. (CI0014)
 '@
