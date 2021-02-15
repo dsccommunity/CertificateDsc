@@ -135,7 +135,7 @@ try
 
             It 'Should compile the MOF without throwing an exception' {
                 {
-                    & "$($script:DSCResourceName)_Config" `
+                    & "$($script:DSCResourceName)_Config_WithContent" `
                         -OutputPath $TestDrive `
                         -ConfigurationData $configData
                 } | Should -Not -Throw
