@@ -20,7 +20,6 @@ Configuration DSC_PfxImport_Add_Config_With_Content {
     node localhost {
         PfxImport Integration_Test {
             Thumbprint   = $Node.Thumbprint
-            Path         = $Node.Path
             Content      = $Node.Content
             Location     = $Node.Location
             Store        = $Node.Store

@@ -127,7 +127,6 @@ try
                         Location     = 'LocalMachine'
                         Store        = 'My'
                         Ensure       = 'Present'
-                        Path         = $certificatePath
                         Content      = $testBase64Content
                         FriendlyName = $certificateFriendlyName
                     }

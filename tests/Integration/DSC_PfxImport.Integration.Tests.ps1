@@ -97,7 +97,6 @@ try
                         Location                    = 'LocalMachine'
                         Store                       = 'My'
                         Ensure                      = 'Present'
-                        Path                        = $pfxPathContentOutput
                         Content                     = $testBase64Content
                         Credential                  = $testCredential
                         FriendlyName                = $certificateFriendlyName
