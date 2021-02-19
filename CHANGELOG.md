@@ -5,6 +5,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+### Added
+
+- PfxImport:
+  - Added Base64Content parameter to specify the content of a PFX file that can be included in the configuration MOF - Fixes [Issue #241](https://github.com/dsccommunity/CertificateDsc/issues/241).
+- CertificateImport:
+  - Added Base64Content parameter to specify the content of a certificate file that can be included in the configuration MOF - Fixes [Issue #241](https://github.com/dsccommunity/CertificateDsc/issues/241).
+
 ### Changed
 
 - Renamed `master` branch to `main` - Fixes [Issue #237](https://github.com/dsccommunity/CertificateDsc/issues/237).

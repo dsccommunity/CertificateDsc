@@ -45,21 +45,30 @@ try
                 -Path $certificate.PSPath `
                 -Force
             $certificateFriendlyName = 'Test Certificate Friendly Name'
+
+            $testBase64Content = [Convert]::ToBase64String([IO.File]::ReadAllBytes($certificatePath))
         }
 
         AfterAll {
             # Cleanup
-            $null = Remove-Item `
-                -Path $certificatePath `
-                -Force `
-                -ErrorAction SilentlyContinue
-            $null = Remove-Item `
-                -Path $certificate.PSPath `
-                -Force `
-                -ErrorAction SilentlyContinue
+            if ($null -ne $certificatePath)
+            {
+                $null = Remove-Item `
+                    -Path $certificatePath `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+            }
+
+            if ($null -ne $certificate.PSPath)
+            {
+                $null = Remove-Item `
+                    -Path $certificate.PSPath `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+            }
         }
 
-        Context 'Import certificate' {
+        Context 'Import certificate file' {
             $configData = @{
                 AllNodes = @(
                     @{
@@ -77,6 +86,56 @@ try
             It 'Should compile the MOF without throwing an exception' {
                 {
                     & "$($script:DSCResourceName)_Config" `
+                        -OutputPath $TestDrive `
+                        -ConfigurationData $configData
+                } | Should -Not -Throw
+            }
+
+            It 'Should apply the MOF without throwing an exception' {
+                {
+                    Start-DscConfiguration `
+                        -Path $TestDrive `
+                        -ComputerName localhost `
+                        -Wait `
+                        -Verbose `
+                        -Force `
+                        -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                # Get the Certificate details
+                $certificateNew = Get-Item `
+                    -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
+                $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
+            }
+        }
+
+        Context 'Import certificate content' {
+            $configData = @{
+                AllNodes = @(
+                    @{
+                        NodeName     = 'localhost'
+                        Thumbprint   = $certificate.Thumbprint
+                        Location     = 'LocalMachine'
+                        Store        = 'My'
+                        Ensure       = 'Present'
+                        Content      = $testBase64Content
+                        FriendlyName = $certificateFriendlyName
+                    }
+                )
+            }
+
+            It 'Should compile the MOF without throwing an exception' {
+                {
+                    & "$($script:DSCResourceName)_Config_WithContent" `
                         -OutputPath $TestDrive `
                         -ConfigurationData $configData
                 } | Should -Not -Throw
