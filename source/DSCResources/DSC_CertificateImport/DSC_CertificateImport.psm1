@@ -23,6 +23,10 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
         The path to the CER file you want to import.
         This parameter is ignored.
 
+    .PARAMETER Content
+        The base64 encoded content of the CER file you want to import.
+        This parameter is ignored.
+
     .PARAMETER Location
         The Windows Certificate Store Location to import the certificate to.
 
@@ -48,9 +52,13 @@ function Get-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -95,6 +103,7 @@ function Get-TargetResource
     return @{
         Thumbprint   = $Thumbprint
         Path         = $Path
+        Content      = $Content
         Location     = $Location
         Store        = $Store
         Ensure       = $Ensure
@@ -111,6 +120,9 @@ function Get-TargetResource
 
     .PARAMETER Path
         The path to the CER file you want to import.
+
+    .PARAMETER Content
+        The base64 encoded content of the CER file you want to import.
 
     .PARAMETER Location
         The Windows Certificate Store Location to import the certificate to.
@@ -135,9 +147,13 @@ function Test-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -164,6 +180,8 @@ function Test-TargetResource
             "$($MyInvocation.MyCommand): "
             $($script:localizedData.TestingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
+
+    Assert-ResourceProperty @PSBoundParameters
 
     $currentState = Get-TargetResource @PSBoundParameters
 
@@ -198,6 +216,9 @@ function Test-TargetResource
     .PARAMETER Path
         The path to the CER file you want to import.
 
+    .PARAMETER Content
+        The base64 encoded content of the CER file you want to import.
+
     .PARAMETER Location
         The Windows Certificate Store Location to import the certificate to.
 
@@ -220,9 +241,13 @@ function Set-TargetResource
         [System.String]
         $Thumbprint,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -250,6 +275,8 @@ function Set-TargetResource
             $($script:localizedData.SettingCertificateStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
+    Assert-ResourceProperty @PSBoundParameters
+
     if ($Ensure -ieq 'Present')
     {
         $currentState = Get-TargetResource @PSBoundParameters
@@ -262,14 +289,6 @@ function Set-TargetResource
                     $($script:localizedData.ImportingCertficateMessage -f $Path, $Location, $Store)
                 ) -join '' )
 
-            # Check that the certificate file exists before trying to import
-            if (-not (Test-Path -Path $Path))
-            {
-                New-InvalidArgumentException `
-                    -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
-                    -ArgumentName 'Path'
-            }
-
             $getCertificateStorePathParameters = @{
                 Location = $Location
                 Store    = $Store
@@ -278,15 +297,29 @@ function Set-TargetResource
 
             $importCertificateParameters = @{
                 CertStoreLocation = $certificateStore
-                FilePath          = $Path
                 Verbose           = $VerbosePreference
             }
 
-            <#
-                Using Import-CertificateEx instead of Import-Certificate due to the following issue:
-                https://github.com/dsccommunity/CertificateDsc/issues/161
-            #>
-            Import-CertificateEx @importCertificateParameters
+            if ($PSBoundParameters.ContainsKey('Content'))
+            {
+                Import-CertificateEx @importCertificateParameters -Base64Content $Content
+            }
+            else
+            {
+                # Check that the certificate file exists before trying to import
+                if (-not (Test-Path -Path $Path))
+                {
+                    New-InvalidArgumentException `
+                        -Message ($script:localizedData.CertificateFileNotFoundError -f $Path) `
+                        -ArgumentName 'Path'
+                }
+
+                <#
+                    Using Import-CertificateEx instead of Import-Certificate due to the following issue:
+                    https://github.com/dsccommunity/CertificateDsc/issues/161
+                #>
+                Import-CertificateEx @importCertificateParameters -FilePath $Path
+            }
         }
 
         if ($PSBoundParameters.ContainsKey('FriendlyName') `
@@ -319,6 +352,46 @@ function Set-TargetResource
             -Location $Location `
             -Store $Store
     }
-}  # end function Test-TargetResource
+}  # end function Set-TargetResource
+
+function Assert-ResourceProperty
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.String]
+        $Path,
+
+        [Parameter()]
+        [System.String]
+        $Content,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
+        [Parameter(ValueFromRemainingArguments)]
+        $RemainingParameters
+    )
+
+    if ($Ensure -ieq 'Present')
+    {
+        if ([System.String]::IsNullOrWhiteSpace($Content) -band [System.String]::IsNullOrWhiteSpace($Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.ContentAndPathParametersAreNull) `
+                -ArgumentName 'Path|Content'
+        }
+
+        if ($PSBoundParameters.ContainsKey('Content') -and $PSBoundParameters.ContainsKey('Path'))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.ContentAndPathParametersAreSet) `
+                -ArgumentName 'Path|Content'
+        }
+    }
+}
 
 Export-ModuleMember -Function *-TargetResource

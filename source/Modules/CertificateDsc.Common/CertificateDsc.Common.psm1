@@ -952,6 +952,9 @@ function Test-CommandExists
     .PARAMETER FilePath
         The path to the certificate file to import.
 
+    .PARAMETER Base64Content
+        The base64 content of the certificate file to import.
+
     .PARAMETER CertStoreLocation
         The Certificate Store and Location Path to import the certificate to.
 #>
@@ -960,9 +963,13 @@ function Import-CertificateEx
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Path', Mandatory = $true)]
         [System.String]
         $FilePath,
+
+        [Parameter(ParameterSetName = 'Content', Mandatory = $true)]
+        [System.String]
+        $Base64Content,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -973,8 +980,17 @@ function Import-CertificateEx
     $store = Split-Path -Path $CertStoreLocation -Leaf
 
     $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2Collection
-    $cert.Import($FilePath)
 
+    if ($PSCmdlet.ParameterSetName -eq 'Path')
+    {
+        $certificateData = $FilePath
+    }
+    else
+    {
+        $certificateData = [Convert]::FromBase64String($Base64Content)
+    }
+
+    $cert.Import($certificateData)
     $certStore = New-Object `
         -TypeName System.Security.Cryptography.X509Certificates.X509Store `
         -ArgumentList ($store, $location)
@@ -992,6 +1008,9 @@ function Import-CertificateEx
     .PARAMETER FilePath
         The path to the certificate file to import.
 
+    .PARAMETER Base64Content
+        The base64 content of the certificate file to import.
+
     .PARAMETER CertStoreLocation
         The Certificate Store and Location Path to import the certificate to.
 
@@ -1006,9 +1025,13 @@ function Import-PfxCertificateEx
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Path', Mandatory = $true)]
         [System.String]
         $FilePath,
+
+        [Parameter(ParameterSetName = 'Content', Mandatory = $true)]
+        [System.String]
+        $Base64Content,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -1039,6 +1062,15 @@ function Import-PfxCertificateEx
         $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet
     }
 
+    if ($PSCmdlet.ParameterSetName -eq 'Path')
+    {
+        $importDataValue = $FilePath
+    }
+    else
+    {
+        $importDataValue = [Convert]::FromBase64String($Base64Content)
+    }
+
     if ($Exportable)
     {
         $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
@@ -1046,11 +1078,11 @@ function Import-PfxCertificateEx
 
     if ($Password)
     {
-        $cert.Import($FilePath, $Password, $flags)
+        $cert.Import($importDataValue, $Password, $flags)
     }
     else
     {
-        $cert.Import($FilePath, $flags)
+        $cert.Import($importDataValue, $flags)
     }
 
     $certStore = New-Object `

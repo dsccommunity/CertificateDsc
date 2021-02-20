@@ -23,6 +23,10 @@ $script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
         The path to the PFX file you want to import.
         This parameter is ignored.
 
+    .PARAMETER Content
+        The base64 encoded content of the PFX file you want to import.
+        This parameter is ignored.
+
     .PARAMETER Location
         The Windows Certificate Store Location to import the PFX file to.
 
@@ -61,6 +65,11 @@ function Get-TargetResource
         [Parameter()]
         [System.String]
         $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -138,6 +147,7 @@ function Get-TargetResource
     return @{
         Thumbprint   = $Thumbprint
         Path         = $Path
+        Content      = $Content
         Location     = $Location
         Store        = $Store
         Exportable   = $Exportable
@@ -156,6 +166,9 @@ function Get-TargetResource
 
     .PARAMETER Path
         The path to the PFX file you want to import.
+
+    .PARAMETER Content
+        The base64 encoded content of the PFX file you want to import.
 
     .PARAMETER Location
         The Windows Certificate Store Location to import the PFX file to.
@@ -192,6 +205,11 @@ function Test-TargetResource
         [System.String]
         $Path,
 
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
+
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
@@ -226,6 +244,8 @@ function Test-TargetResource
             $($script:localizedData.TestingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
+    Assert-ResourceProperty @PSBoundParameters
+
     $currentState = Get-TargetResource @PSBoundParameters
 
     if ($Ensure -ne $currentState.Ensure)
@@ -258,6 +278,9 @@ function Test-TargetResource
 
     .PARAMETER Path
         The path to the PFX file you want to import.
+
+    .PARAMETER Content
+        The base64 encoded content of the PFX file you want to import.
 
     .PARAMETER Location
         The Windows Certificate Store Location to import the PFX file to.
@@ -293,6 +316,11 @@ function Set-TargetResource
         [System.String]
         $Path,
 
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Content,
+
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [System.String]
@@ -327,6 +355,8 @@ function Set-TargetResource
             $($script:localizedData.SettingPfxStatusMessage -f $Thumbprint, $Location, $Store)
         ) -join '' )
 
+    Assert-ResourceProperty @PSBoundParameters
+
     if ($Ensure -ieq 'Present')
     {
         $currentState = Get-TargetResource @PSBoundParameters
@@ -339,14 +369,6 @@ function Set-TargetResource
                     $($script:localizedData.ImportingPfxMessage -f $Path, $Location, $Store)
                 ) -join '' )
 
-            # Check that the certificate PFX file exists before trying to import
-            if (-not (Test-Path -Path $Path))
-            {
-                New-InvalidArgumentException `
-                    -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
-                    -ArgumentName 'Path'
-            }
-
             $getCertificateStorePathParameters = @{
                 Location = $Location
                 Store    = $Store
@@ -356,7 +378,6 @@ function Set-TargetResource
             $importPfxCertificateParameters = @{
                 Exportable        = $Exportable
                 CertStoreLocation = $certificateStore
-                FilePath          = $Path
                 Verbose           = $VerbosePreference
             }
 
@@ -365,14 +386,29 @@ function Set-TargetResource
                 $importPfxCertificateParameters['Password'] = $Credential.Password
             }
 
-            # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
-            if (Test-CommandExists -Name 'Import-PfxCertificate')
+            if ($PSBoundParameters.ContainsKey('Content'))
             {
-                Import-PfxCertificate @importPfxCertificateParameters
+                Import-PfxCertificateEx @importPfxCertificateParameters -Base64Content $Content
             }
             else
             {
-                Import-PfxCertificateEx @importPfxCertificateParameters
+                # Check that the certificate PFX file exists before trying to import
+                if (-not (Test-Path -Path $Path))
+                {
+                    New-InvalidArgumentException `
+                        -Message ($script:localizedData.CertificatePfxFileNotFoundError -f $Path) `
+                        -ArgumentName 'Path'
+                }
+
+                # If the built in PKI cmdlet exists then use that, otherwise command in Common module.
+                if (Test-CommandExists -Name 'Import-PfxCertificate')
+                {
+                    Import-PfxCertificate @importPfxCertificateParameters -FilePath $Path
+                }
+                else
+                {
+                    Import-PfxCertificateEx @importPfxCertificateParameters -FilePath $Path
+                }
             }
         }
 
@@ -407,5 +443,45 @@ function Set-TargetResource
             -Store $Store
     }
 } # end function Set-TargetResource
+
+function Assert-ResourceProperty
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.String]
+        $Path,
+
+        [Parameter()]
+        [System.String]
+        $Content,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
+        [Parameter(ValueFromRemainingArguments)]
+        $RemainingParameters
+    )
+
+    if ($Ensure -ieq 'Present')
+    {
+        if ([System.String]::IsNullOrWhiteSpace($Content) -band [System.String]::IsNullOrWhiteSpace($Path))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.ContentAndPathParametersAreNull) `
+                -ArgumentName 'Path|Content'
+        }
+
+        if ($PSBoundParameters.ContainsKey('Content') -and $PSBoundParameters.ContainsKey('Path'))
+        {
+            New-InvalidArgumentException `
+                -Message ($script:localizedData.ContentAndPathParametersAreSet) `
+                -ArgumentName 'Path|Content'
+        }
+    }
+}
 
 Export-ModuleMember -Function *-TargetResource

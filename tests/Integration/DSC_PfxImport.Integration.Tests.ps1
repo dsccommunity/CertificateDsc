@@ -40,6 +40,11 @@ try
             $pfxPath = Join-Path `
                 -Path $env:Temp `
                 -ChildPath "PfxImport-$($certificate.Thumbprint).pfx"
+
+            $pfxPathContentOutput = Join-Path `
+                -Path $env:Temp `
+                -ChildPath "PfxContentImport1-$($certificate.Thumbprint).pfx"
+
             $cerPath = Join-Path `
                 -Path $env:Temp `
                 -ChildPath "CerImport-$($certificate.Thumbprint).cer"
@@ -54,6 +59,8 @@ try
                 -Cert $certificate `
                 -FilePath $pfxPath `
                 -Password $testCredential.Password
+
+            $testBase64Content = [Convert]::ToBase64String([IO.File]::ReadAllBytes($pfxPath))
 
             $null = Export-Certificate `
                 -Type CERT `
@@ -82,6 +89,22 @@ try
                 )
             }
 
+            $configDataForAddWithContent = @{
+                AllNodes = @(
+                    @{
+                        NodeName                    = 'localhost'
+                        Thumbprint                  = $certificate.Thumbprint
+                        Location                    = 'LocalMachine'
+                        Store                       = 'My'
+                        Ensure                      = 'Present'
+                        Content                     = $testBase64Content
+                        Credential                  = $testCredential
+                        FriendlyName                = $certificateFriendlyName
+                        PSDscAllowPlainTextPassword = $true
+                    }
+                )
+            }
+
             $configDataForRemove = @{
                 AllNodes = @(
                     @{
@@ -103,12 +126,16 @@ try
                 -Force `
                 -ErrorAction SilentlyContinue
             $null = Remove-Item `
+                -Path $pfxPathContentOutput `
+                -Force `
+                -ErrorAction SilentlyContinue
+            $null = Remove-Item `
                 -Path $certificate.PSPath `
                 -Force `
                 -ErrorAction SilentlyContinue
         }
 
-        Context 'When certificate has not been imported yet' {
+        Context 'When certificate file has not been imported yet' {
             It 'Should compile the MOF without throwing an exception' {
                 {
                     & "$($script:DSCResourceName)_Add_Config" `
@@ -145,7 +172,7 @@ try
             }
         }
 
-        Context 'When certificate has been imported but the private key is missing' {
+        Context 'When certificate file has been imported but the private key is missing' {
             $null = Remove-Item `
                 -Path $certificate.PSPath `
                 -Force
@@ -188,12 +215,129 @@ try
             }
         }
 
-        Context 'When certificate has already been imported' {
+        Context 'When certificate file has already been imported' {
             It 'Should compile the MOF without throwing an exception' {
                 {
                     & "$($script:DSCResourceName)_Add_Config" `
                         -OutputPath $TestDrive `
                         -ConfigurationData $configDataForAdd
+                } | Should -Not -Throw
+            }
+
+            It 'Should apply the MOF without throwing an exception' {
+                {
+                    Start-DscConfiguration `
+                        -Path $TestDrive `
+                        -ComputerName localhost `
+                        -Wait `
+                        -Verbose `
+                        -Force `
+                        -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                # Get the Certificate details
+                $certificateNew = Get-Item `
+                    -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
+                $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.HasPrivateKey | Should -BeTrue
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
+            }
+        }
+
+        Context 'When certificate content has not been imported yet' {
+            It 'Should compile the MOF without throwing an exception' {
+                {
+                    & "$($script:DSCResourceName)_Add_Config_With_Content" `
+                        -OutputPath $TestDrive `
+                        -ConfigurationData $configDataForAddWithContent
+                } | Should -Not -Throw
+            }
+
+            It 'Should apply the MOF without throwing an exception' {
+                {
+                    Start-DscConfiguration `
+                        -Path $TestDrive `
+                        -ComputerName localhost `
+                        -Wait `
+                        -Verbose `
+                        -Force `
+                        -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                # Get the Certificate details
+                $certificateNew = Get-Item `
+                    -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
+                $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.HasPrivateKey | Should -Be $true
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
+            }
+        }
+
+        Context 'When certificate content has been imported but the private key is missing' {
+            $null = Remove-Item `
+                -Path $certificate.PSPath `
+                -Force
+
+            Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\My
+
+            It 'Should compile the MOF without throwing an exception' {
+                {
+                    & "$($script:DSCResourceName)_Add_Config_With_Content" `
+                        -OutputPath $TestDrive `
+                        -ConfigurationData $configDataForAddWithContent
+                } | Should -Not -Throw
+            }
+
+            It 'Should apply the MOF without throwing an exception' {
+                {
+                    Start-DscConfiguration `
+                        -Path $TestDrive `
+                        -ComputerName localhost `
+                        -Wait `
+                        -Verbose `
+                        -Force `
+                        -ErrorAction Stop
+                } | Should -Not -Throw
+            }
+
+            It 'Should be able to call Get-DscConfiguration without throwing' {
+                { Get-DscConfiguration -Verbose -ErrorAction Stop } | Should -Not -Throw
+            }
+
+            It 'Should have set the resource and all the parameters should match' {
+                # Get the Certificate details
+                $certificateNew = Get-Item `
+                    -Path "Cert:\LocalMachine\My\$($certificate.Thumbprint)"
+                $certificateNew | Should -BeOfType System.Security.Cryptography.X509Certificates.X509Certificate2
+                $certificateNew.HasPrivateKey | Should -BeTrue
+                $certificateNew.Thumbprint | Should -BeExactly $certificate.Thumbprint
+                $certificateNew.Subject | Should -BeExactly $certificate.Subject
+                $certificateNew.FriendlyName | Should -BeExactly $certificateFriendlyName
+            }
+        }
+
+        Context 'When certificate content has already been imported' {
+            It 'Should compile the MOF without throwing an exception' {
+                {
+                    & "$($script:DSCResourceName)_Add_Config_With_Content" `
+                        -OutputPath $TestDrive `
+                        -ConfigurationData $configDataForAddWithContent
                 } | Should -Not -Throw
             }
 
