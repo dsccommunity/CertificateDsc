@@ -1053,6 +1053,15 @@ function Import-PfxCertificateEx
 
     $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
 
+    if ($location -eq 'LocalMachine')
+    {
+        $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::MachineKeySet
+    }
+    else
+    {
+        $flags = $flags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet
+    }
+
     if ($PSCmdlet.ParameterSetName -eq 'Path')
     {
         $importDataValue = $FilePath

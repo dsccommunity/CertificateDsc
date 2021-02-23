@@ -62,7 +62,7 @@ InModuleScope $script:subModuleName {
             It 'Should have imported the certificate with the correct values' {
                 $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $certificate.Thumbprint)
                 $importedCert.Thumbprint | Should -Be $certificate.Thumbprint
-                $importedCert.HasPrivateKey | Should -Be $false
+                $importedCert.HasPrivateKey | Should -BeFalse
             }
         }
     }
@@ -112,13 +112,13 @@ InModuleScope $script:subModuleName {
             It 'Should have imported the containing certificate with the correct values' {
                 $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $containingCertificate.Thumbprint)
                 $importedCert.Thumbprint | Should -Be $containingCertificate.Thumbprint
-                $importedCert.HasPrivateKey | Should -Be $false
+                $importedCert.HasPrivateKey | Should -BeFalse
             }
 
             It 'Should have imported the included certificate with the correct values' {
                 $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $includedCertificate.Thumbprint)
                 $importedCert.Thumbprint | Should -Be $includedCertificate.Thumbprint
-                $importedCert.HasPrivateKey | Should -Be $false
+                $importedCert.HasPrivateKey | Should -BeFalse
             }
         }
     }
@@ -156,13 +156,17 @@ InModuleScope $script:subModuleName {
     Describe 'CertificateDsc.Common\Import-PfxCertificateEx' {
         Context 'Import a valid PKCS12 PFX Certificate file into "CurrentUser\My" store with non-exportable key' {
             It 'Should not throw an exception' {
-                { Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\CurrentUser\My' -Password $testPasswordSecure } | Should -Not -Throw
+                {
+                    Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\CurrentUser\My' -Password $testPasswordSecure
+                } | Should -Not -Throw
             }
 
             It 'Should have imported the certificate with the correct values' {
                 $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $certificate.Thumbprint)
+                $rsaKey = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($importedCert)
+                $rsaKey.Key.IsMachineKey | Should -BeFalse
                 $importedCert.Thumbprint | Should -Be $certificate.Thumbprint
-                $importedCert.HasPrivateKey | Should -Be $true
+                $importedCert.HasPrivateKey | Should -BeTrue
             }
 
             It 'Should not be exportable and should throw the expected exception message' {
@@ -183,6 +187,39 @@ InModuleScope $script:subModuleName {
             Remove-Item -Path ('Cert:\CurrentUser\My\{0}' -f $certificate.Thumbprint) -Force -ErrorAction SilentlyContinue
         }
 
+        Context 'Import a valid PKCS12 PFX Certificate file into "LocalMachine\My" store with non-exportable key' {
+            It 'Should not throw an exception' {
+                {
+                    Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\LocalMachine\My' -Password $testPasswordSecure
+                } | Should -Not -Throw
+            }
+
+            It 'Should have imported the certificate with the correct values' {
+                $importedCert = Get-ChildItem -Path ('Cert:\LocalMachine\My\{0}' -f $certificate.Thumbprint)
+                $rsaKey = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($importedCert)
+                $rsaKey.Key.IsMachineKey | Should -BeTrue
+                $importedCert.Thumbprint | Should -Be $certificate.Thumbprint
+                $importedCert.HasPrivateKey | Should -BeTrue
+            }
+
+            It 'Should not be exportable and should throw the expected exception message' {
+                $importedCert = Get-ChildItem -Path ('Cert:\LocalMachine\My\{0}' -f $certificate.Thumbprint)
+                { $null = Export-PfxCertificate `
+                        -Cert $importedCert `
+                        -FilePath $certificateExportPath `
+                        -Password $testCredential.Password
+                } | Should -Throw 'Cannot export non-exportable private key.'
+
+                $null = Remove-Item `
+                    -Path $certificateExportPath `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+            }
+
+            # Remove the imported certificate
+            Remove-Item -Path ('Cert:\LocalMachine\My\{0}' -f $certificate.Thumbprint) -Force -ErrorAction SilentlyContinue
+        }
+
         Context 'Import a valid PKCS12 PFX Certificate file into "CurrentUser\My" store with exportable key' {
             It 'Should not throw an exception' {
                 { Import-PfxCertificateEx -FilePath $certificatePath -CertStoreLocation 'Cert:\CurrentUser\My' -Password $testPasswordSecure -Exportable } | Should -Not -Throw
@@ -191,7 +228,7 @@ InModuleScope $script:subModuleName {
             It 'Should have imported the certificate with the correct values' {
                 $importedCert = Get-ChildItem -Path ('Cert:\CurrentUser\My\{0}' -f $certificate.Thumbprint)
                 $importedCert.Thumbprint | Should -Be $certificate.Thumbprint
-                $importedCert.HasPrivateKey | Should -Be $true
+                $importedCert.HasPrivateKey | Should -BeTrue
             }
 
             It 'Should be exportable' {
