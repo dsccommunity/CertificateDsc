@@ -64,7 +64,9 @@ Pester:
     - tests/Unit
   ExcludeTag:
   Tag:
-  CodeCoverageThreshold: 70
+  CodeCoverageOutputFile: JaCoCo_coverage.xml
+  CodeCoverageOutputFileEncoding: ascii
+  CodeCoverageThreshold: 80
 
 DscTest:
   OutputFormat: NUnitXML
@@ -84,6 +86,8 @@ Resolve-Dependency:
 ModuleBuildTasks:
   Sampler:
     - '*.build.Sampler.ib.tasks'
+  Sampler.GitHubTasks:
+    - '*.ib.tasks'
   DscResource.DocGenerator:
     - 'Task.*'
 
