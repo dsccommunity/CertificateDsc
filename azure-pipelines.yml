@@ -46,8 +46,8 @@ stages:
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Build Artifact'
             inputs:
-              PathtoPublish: 'output/'
-              ArtifactName: 'output'
+              PathtoPublish: '$(buildFolderName)/'
+              ArtifactName: $(buildArtifactName)
               publishLocation: 'Container'
 
   - stage: Test
@@ -59,13 +59,12 @@ stages:
           vmImage: 'windows-2019'
         timeoutInMinutes: 0
         steps:
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifact'
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifact'
             inputs:
               buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'output'
-              downloadPath: '$(Build.SourcesDirectory)'
+              artifactName: $(buildArtifactName)
+              targetPath: '$(Build.SourcesDirectory)/$(buildArtifactName)'
 
           - task: PowerShell@2
             name: test
@@ -96,13 +95,12 @@ stages:
             name: dscBuildVariable
             displayName: 'Set Environment Variables'
 
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifact'
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifact'
             inputs:
               buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'output'
-              downloadPath: '$(Build.SourcesDirectory)'
+              artifactName: $(buildArtifactName)
+              targetPath: '$(Build.SourcesDirectory)/$(buildArtifactName)'
 
           - task: PowerShell@2
             name: test
@@ -141,13 +139,12 @@ stages:
             name: dscBuildVariable
             displayName: 'Set Environment Variables'
 
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifact'
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifact'
             inputs:
               buildType: 'current'
-              downloadType: 'single'
               artifactName: $(buildArtifactName)
-              downloadPath: '$(Build.SourcesDirectory)'
+              targetPath: '$(Build.SourcesDirectory)/$(buildArtifactName)'
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download Test Artifact'
@@ -173,13 +170,12 @@ stages:
           vmImage: 'vs2017-win2016'
         timeoutInMinutes: 0
         steps:
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifact'
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifact'
             inputs:
               buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'output'
-              downloadPath: '$(Build.SourcesDirectory)'
+              artifactName: $(buildArtifactName)
+              targetPath: '$(Build.SourcesDirectory)/$(buildArtifactName)'
 
           - task: PowerShell@2
             name: configureWinRM
@@ -218,13 +214,12 @@ stages:
             name: dscBuildVariable
             displayName: 'Set Environment Variables'
 
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifact'
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifact'
             inputs:
               buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'output'
-              downloadPath: '$(Build.SourcesDirectory)'
+              artifactName: $(buildArtifactName)
+              targetPath: '$(Build.SourcesDirectory)/$(buildArtifactName)'
 
           - task: PowerShell@2
             name: test
@@ -248,13 +243,12 @@ stages:
           vmImage: 'windows-2019'
         timeoutInMinutes: 0
         steps:
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifact'
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifact'
             inputs:
               buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'output'
-              downloadPath: '$(Build.SourcesDirectory)'
+              artifactName: $(buildArtifactName)
+              targetPath: '$(Build.SourcesDirectory)/$(buildArtifactName)'
 
           - task: PowerShell@2
             name: configureWinRM
@@ -297,13 +291,12 @@ stages:
         pool:
           vmImage: 'ubuntu 16.04'
         steps:
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifact'
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifact'
             inputs:
               buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'output'
-              downloadPath: '$(Build.SourcesDirectory)'
+              artifactName: $(buildArtifactName)
+              targetPath: '$(Build.SourcesDirectory)/$(buildArtifactName)'
 
           - task: PowerShell@2
             name: publishRelease
