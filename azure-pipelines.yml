@@ -44,11 +44,10 @@ stages:
               ModuleVersion: $(gitVersion.Informationalversion)
 
           - task: PublishPipelineArtifact@1
-            displayName: 'Publish Pipeline Artifact'
+            displayName: 'Publish Test Artifact'
             inputs:
-              targetPath: '$(buildFolderName)/'
-              artifact: $(buildArtifactName)
-              publishLocation: 'pipeline'
+              targetPath: '$(buildFolderName)/$(testResultFolderName)/'
+              artifactName: $(testArtifactName)
               parallel: true
 
   - stage: Test
