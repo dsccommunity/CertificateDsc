@@ -6,7 +6,6 @@
 [![PowerShell Gallery (with prereleases)](https://img.shields.io/powershellgallery/vpre/CertificateDsc?label=CertificateDsc%20Preview)](https://www.powershellgallery.com/packages/CertificateDsc/)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/v/CertificateDsc?label=CertificateDsc)](https://www.powershellgallery.com/packages/CertificateDsc/)
 [![codecov](https://codecov.io/gh/dsccommunity/StorageDsc/branch/main/graph/badge.svg)](https://codecov.io/gh/dsccommunity/CertificateDsc)
-![Azure DevOps coverage (branch)](https://img.shields.io/azure-devops/coverage/dsccommunity/CertificateDsc/14/main)
 
 ## Code of Conduct
 

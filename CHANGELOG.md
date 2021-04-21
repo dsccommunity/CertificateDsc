@@ -5,6 +5,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Added support for publishing code coverage to `CodeCov.io` and
+  Azure Pipelines - Fixes [Issue #255](https://github.com/dsccommunity/CertificateDsc/issues/255).
+- Updated build to use `Sampler.GitHubTasks` - Fixes [Issue #254](https://github.com/dsccommunity/CertificateDsc/issues/254).
+- Corrected changelog.
+- Updated pipeline tasks to latest pattern.
+
 ## [5.1.0] - 2021-02-26
 
 ### Added
@@ -26,9 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   performance - Fixes [Issue #221](https://github.com/dsccommunity/CertificateDsc/issues/221).
 - Added warning messages into empty catch blocks in `Certificate.PDT` module to
   assist with debugging.
-- Added support for publishing code coverage to `CodeCov.io` and
-  Azure Pipelines - Fixes [Issue #255](https://github.com/dsccommunity/CertificateDsc/issues/255).
-- Updated build to use `Sampler.GitHubTasks` - Fixes [Issue #254](https://github.com/dsccommunity/CertificateDsc/issues/254).
 
 ### Fixed
 
