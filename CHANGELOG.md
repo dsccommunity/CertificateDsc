@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated build to use `Sampler.GitHubTasks` - Fixes [Issue #254](https://github.com/dsccommunity/CertificateDsc/issues/254).
 - Corrected changelog.
 - Updated pipeline tasks to latest pattern.
+- Passed in an empty string to X509Certificate2.Import so that we do not get MethodCountCouldNotFindBest exception when using a null 
+  password for the PFX certificate.
 
 ## [5.1.0] - 2021-02-26
 
