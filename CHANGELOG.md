@@ -12,7 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated build to use `Sampler.GitHubTasks` - Fixes [Issue #254](https://github.com/dsccommunity/CertificateDsc/issues/254).
 - Corrected changelog.
 - Updated pipeline tasks to latest pattern.
-- Passed in an empty string to X509Certificate2.Import so that we do not get MethodCountCouldNotFindBest exception when using a null 
+- Build pipeline: Removed unused `dscBuildVariable` tasks.
+- Updated .github issue templates to standard - Fixes [Issue #263](https://github.com/dsccommunity/CertificateDsc/issues/263).
+- Added Create_ChangeLog_GitHub_PR task to publish stage of build pipeline.
+- Added SECURITY.md.
+- Updated pipeline Deploy_Module anb Code_Coverage jobs to use ubuntu-latest
+  images - Fixes [Issue #262](https://github.com/dsccommunity/CertificateDsc/issues/262).
+- Updated pipeline unit tests and integration tests to use Windows Server 2019 and
+  Windows Server 2022 images - Fixes [Issue #262](https://github.com/dsccommunity/CertificateDsc/issues/262).
+
+### Fixed
+
+- Fixed pipeline by replacing the GitVersion task in the `azure-pipelines.yml`
+  with a script.
+- Passed in an empty string to X509Certificate2.Import so that we do not get MethodCountCouldNotFindBest exception when using a null
   password for the PFX certificate. Fixes [Issue #258](https://github.com/dsccommunity/CertificateDsc/issues/258)
 
 ## [5.1.0] - 2021-02-26
