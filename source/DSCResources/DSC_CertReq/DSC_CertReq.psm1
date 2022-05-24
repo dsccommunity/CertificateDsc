@@ -416,14 +416,15 @@ function Set-TargetResource
         $Subject = "CN=$Subject"
     } # if
 
-    # If we should look for renewals, check for existing certs
+    # If we should look for renewals, check for existing, non-expired certs
     if ($AutoRenew)
     {
         $certs = Get-ChildItem -Path Cert:\LocalMachine\My |
             Where-Object -FilterScript {
                 $_.Subject -eq $Subject -and `
                 (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
-                    $_.NotAfter -lt (Get-Date).AddDays(30)
+                $_.NotAfter -gt (Get-Date) -and `
+                $_.NotAfter -lt (Get-Date).AddDays(30)
             }
 
         # If multiple certs have the same subject and were issued by the CA and are 30 days from expiration, return the newest
