@@ -1709,7 +1709,6 @@ OID = $oid
                 }
             }
 
-
             Context 'When a certificate exists but does not match the Certificate Template' {
                 It 'Should return false' {
                     Mock -CommandName Get-ChildItem `
