@@ -85,6 +85,14 @@ try
             FriendlyName = $friendlyName + ' 2'
         }
 
+        $validCertEmptyFriendlyName = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = New-CertificateThumbprint -Fips
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-1) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+        }
+
         $invalidCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $invalidThumbprint
             Subject      = "CN=$invalidSubject"
@@ -712,6 +720,32 @@ OID = $oid
                 -MockWith { $validCertUndesiredFriendlyName, $validCert }
 
             Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
+
+                $result = Get-TargetResource @paramsStandard -Verbose
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values for the cert with desired friendly name' {
+                    $result.Subject | Should -BeExactly $validSubject
+                    $result.CAServerFQDN | Should -BeNullOrEmpty
+                    $result.CARootName | Should -BeExactly $caRootName
+                    $result.KeyLength | Should -BeNullOrEmpty
+                    $result.Exportable | Should -BeNullOrEmpty
+                    $result.ProviderName | Should -BeNullOrEmpty
+                    $result.OID | Should -BeNullOrEmpty
+                    $result.KeyUsage | Should -BeNullOrEmpty
+                    $result.CertificateTemplate | Should -BeExactly $certificateTemplate
+                    $result.SubjectAltName | Should -BeNullOrEmpty
+                    $result.FriendlyName | Should -BeExactly $friendlyName
+                }
+            }
+
+            Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+            -MockWith { $validCertEmptyFriendlyName, $validCert }
+
+            Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with no friendly name' {
 
                 $result = Get-TargetResource @paramsStandard -Verbose
 
