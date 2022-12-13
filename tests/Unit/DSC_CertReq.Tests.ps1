@@ -76,6 +76,15 @@ try
             FriendlyName = $friendlyName
         }
 
+        $validCertUndesiredFriendlyName = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = New-CertificateThumbprint -Fips
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-1) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            FriendlyName = $friendlyName + ' 2'
+        }
+
         $invalidCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $invalidThumbprint
             Subject      = "CN=$invalidSubject"
@@ -207,6 +216,7 @@ try
         $mock_getCertificateTemplateName_validDCCertificateTemplate = { $certificateDCTemplate }
         $mock_GetChildItem_validCertWithoutSubject = { $validCertWithoutSubject }
         $mock_getChildItem_validCert = { $validCert }
+        $mock_getChildItem_twoValidCerts = { $validCert, $validCertUndesiredFriendlyName }
         $mock_getChildItem_expiredCert = { $expiredCert }
         $mock_getChildItem_expiringCert = { $expiringCert }
         $mock_getChildItem_validSANCert = { $validSANCert }
@@ -695,6 +705,32 @@ OID = $oid
 
                 It 'Should call the mocked function Find-CertificateAuthority once' {
                     Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
+                }
+            }
+
+            Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                -MockWith { $validCertUndesiredFriendlyName, $validCert }
+
+            Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
+
+                $result = Get-TargetResource @paramsStandard -Verbose
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values for the cert with desired friendly name' {
+                    $result.Subject | Should -BeExactly $validSubject
+                    $result.CAServerFQDN | Should -BeNullOrEmpty
+                    $result.CARootName | Should -BeExactly $caRootName
+                    $result.KeyLength | Should -BeNullOrEmpty
+                    $result.Exportable | Should -BeNullOrEmpty
+                    $result.ProviderName | Should -BeNullOrEmpty
+                    $result.OID | Should -BeNullOrEmpty
+                    $result.KeyUsage | Should -BeNullOrEmpty
+                    $result.CertificateTemplate | Should -BeExactly $certificateTemplate
+                    $result.SubjectAltName | Should -BeNullOrEmpty
+                    $result.FriendlyName | Should -BeExactly $friendlyName
                 }
             }
 
