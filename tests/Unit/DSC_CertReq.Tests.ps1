@@ -716,10 +716,10 @@ OID = $oid
                 }
             }
 
-            Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
-                -MockWith { $validCertUndesiredFriendlyName, $validCert }
-
             Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
+
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -MockWith { $validCertUndesiredFriendlyName, $validCert }
 
                 $result = Get-TargetResource @paramsStandard -Verbose
 
@@ -742,10 +742,10 @@ OID = $oid
                 }
             }
 
-            Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
-            -MockWith { $validCertEmptyFriendlyName, $validCert }
-
             Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with no friendly name' {
+
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -MockWith { $validCertEmptyFriendlyName, $validCert }
 
                 $result = Get-TargetResource @paramsStandard -Verbose
 
