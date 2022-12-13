@@ -85,7 +85,7 @@ try
             FriendlyName = $friendlyName + ' 2'
         }
 
-        $validCertEmptyFriendlyName = New-Object -TypeName PSObject -Property @{
+        $validCertWithoutFriendlyName = New-Object -TypeName PSObject -Property @{
             Thumbprint   = New-CertificateThumbprint -Fips
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
@@ -224,7 +224,8 @@ try
         $mock_getCertificateTemplateName_validDCCertificateTemplate = { $certificateDCTemplate }
         $mock_GetChildItem_validCertWithoutSubject = { $validCertWithoutSubject }
         $mock_getChildItem_validCert = { $validCert }
-        $mock_getChildItem_twoValidCerts = { $validCert, $validCertUndesiredFriendlyName }
+        $mock_getChildItem_twoCerts_OneWithUndesiredFriendlyName = { $validCert, $validCertUndesiredFriendlyName }
+        $mock_getChildItem_twoCerts_OneWithoutFriendlyName = { $validCert, $validCertWithoutFriendlyName }
         $mock_getChildItem_expiredCert = { $expiredCert }
         $mock_getChildItem_expiringCert = { $expiringCert }
         $mock_getChildItem_validSANCert = { $validSANCert }
@@ -745,7 +746,7 @@ OID = $oid
             Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with no friendly name' {
 
                 Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
-                    -MockWith { $validCertEmptyFriendlyName, $validCert }
+                    -MockWith { $validCertWithoutFriendlyName, $validCert }
 
                 $result = Get-TargetResource @paramsStandard -Verbose
 
@@ -1742,6 +1743,58 @@ OID = $oid
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $false
                 }
             }
+
+            ##### DJC
+            Context 'When two valid certs exist matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
+
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName   = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_twoCerts_OneWithUndesiredFriendlyName
+
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
+
+                # Mock -CommandName Get-CertificateSubjectAlternativeName `
+                #     -MockWith $mock_getCertificateSan_subjectAltName
+
+                It 'Should return true' {
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                }
+            }
+
+            Context 'When two valid certs exist matching Subject and Issuer, one with desired friendly name and one without friendly name' {
+
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName   = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_twoCerts_OneWithoutFriendlyName
+
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
+
+                # Mock -CommandName Get-CertificateSubjectAlternativeName `
+                #     -MockWith $mock_getCertificateSan_subjectAltName
+
+                It 'Should return true' {
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                }
+            }
+            #####
 
             Context 'When a certificate exists but does not match the Certificate Template' {
                 It 'Should return false' {
