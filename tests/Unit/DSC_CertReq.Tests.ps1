@@ -51,6 +51,7 @@ try
         $oid = '1.3.6.1.5.5.7.3.1'
         $keyUsage = '0xa0'
         $certificateTemplate = 'WebServer'
+        $nonDefaultCertificateTemplate = 'RDS Session Host'
         $certificateDCTemplate = 'DomainControllerAuthentication'
         $invalidCertificateTemplate = 'Invalid Template'
         $subjectAltUrl = 'contoso.com'
@@ -65,6 +66,26 @@ try
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
             FriendlyName = $friendlyName
+        }
+
+        $validCertWithNonDefaultTemplate = New-Object -TypeName PSObject -Property @{
+            Thumbprint          = $validThumbprint
+            Subject             = "CN=$validSubject"
+            Issuer              = $validIssuer
+            NotBefore           = (Get-Date).AddDays(-30) # Issued on
+            NotAfter            = (Get-Date).AddDays(31) # Expires after
+            FriendlyName        = $friendlyName
+            CertificateTemplate = $nonDefaultCertificateTemplate
+        }
+
+        $validCertUndesiredTemplate = New-Object -TypeName PSObject -Property @{
+            Thumbprint          = $validThumbprint
+            Subject             = "CN=$validSubject"
+            Issuer              = $validIssuer
+            NotBefore           = (Get-Date).AddDays(-1) # Issued on
+            NotAfter            = (Get-Date).AddDays(31) # Expires after
+            FriendlyName        = $friendlyName
+            CertificateTemplate = $certificateTemplate
         }
 
         $validCertWithoutSubject = New-Object -TypeName PSObject -Property @{
@@ -220,11 +241,13 @@ try
         $testCredential = New-Object System.Management.Automation.PSCredential $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
 
         $mock_getCertificateTemplateName_validCertificateTemplate = { $certificateTemplate }
+        $mock_getCertificateTemplateName_validNonDefaultCertificateTemplate = { $nonDefaultCertificateTemplate }
         $mock_getCertificateTemplateName_invalidCertificateTemplate = { $invalidCertificateTemplate }
         $mock_getCertificateTemplateName_validDCCertificateTemplate = { $certificateDCTemplate }
         $mock_GetChildItem_validCertWithoutSubject = { $validCertWithoutSubject }
         $mock_getChildItem_validCert = { $validCert }
         $mock_getChildItem_twoCerts_OneWithUndesiredFriendlyName = { $validCert, $validCertUndesiredFriendlyName }
+        $mock_getChildItem_twoCerts_OneWithUndesiredTemplate = { $validCertWithNonDefaultTemplate, $validCertUndesiredTemplate }
         $mock_getChildItem_twoCerts_OneWithoutFriendlyName = { $validCert, $validCertWithoutFriendlyName }
         $mock_getChildItem_expiredCert = { $expiredCert }
         $mock_getChildItem_expiringCert = { $expiringCert }
@@ -719,7 +742,7 @@ OID = $oid
 
             Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
 
-                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `te
                     -MockWith { $validCertUndesiredFriendlyName, $validCert }
 
                 $result = Get-TargetResource @paramsStandard -Verbose
@@ -738,6 +761,32 @@ OID = $oid
                     $result.OID | Should -BeNullOrEmpty
                     $result.KeyUsage | Should -BeNullOrEmpty
                     $result.CertificateTemplate | Should -BeExactly $certificateTemplate
+                    $result.SubjectAltName | Should -BeNullOrEmpty
+                    $result.FriendlyName | Should -BeExactly $friendlyName
+                }
+            }
+
+            Context 'Two valid certs with matching Subject and Issuer, one with desired template and one with undesired template' {
+
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -MockWith { $validCertUndesiredTemplate, $validCertWithNonDefaultTemplate }
+
+                $result = Get-TargetResource @paramsStandard -Verbose
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values for the cert with desired template' {
+                    $result.Subject | Should -BeExactly $validSubject
+                    $result.CAServerFQDN | Should -BeNullOrEmpty
+                    $result.CARootName | Should -BeExactly $caRootName
+                    $result.KeyLength | Should -BeNullOrEmpty
+                    $result.Exportable | Should -BeNullOrEmpty
+                    $result.ProviderName | Should -BeNullOrEmpty
+                    $result.OID | Should -BeNullOrEmpty
+                    $result.KeyUsage | Should -BeNullOrEmpty
+                    $result.CertificateTemplate | Should -BeExactly $nonDefaultCertificateTemplate
                     $result.SubjectAltName | Should -BeNullOrEmpty
                     $result.FriendlyName | Should -BeExactly $friendlyName
                 }
@@ -1769,6 +1818,32 @@ OID = $oid
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $true
                 }
             }
+
+            Context 'When two valid certs exist matching Subject and Issuer, one with desired teplate and one with undesired template' {
+
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName   = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_twoCerts_OneWithUndesiredTemplate
+
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validNonDefaultCertificateTemplate
+
+                # Mock -CommandName Get-CertificateSubjectAlternativeName `
+                #     -MockWith $mock_getCertificateSan_subjectAltName
+
+                It 'Should return true' {
+                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                }
+            }
+
 
             Context 'When two valid certs exist matching Subject and Issuer, one with desired friendly name and one without friendly name' {
 
