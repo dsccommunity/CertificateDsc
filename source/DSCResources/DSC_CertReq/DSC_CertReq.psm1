@@ -158,7 +158,7 @@ function Get-TargetResource
         [System.Boolean]
         $UseMachineContext,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $FriendlyName,
@@ -379,7 +379,7 @@ function Set-TargetResource
         [System.Boolean]
         $UseMachineContext,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $FriendlyName,
@@ -837,7 +837,7 @@ function Test-TargetResource
         [System.Boolean]
         $UseMachineContext,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $FriendlyName,
