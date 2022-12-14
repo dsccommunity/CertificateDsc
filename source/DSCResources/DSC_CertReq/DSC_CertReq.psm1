@@ -197,25 +197,16 @@ function Get-TargetResource
         $Subject = "CN=$Subject"
     } # if
 
-    $certs = Get-ChildItem -Path Cert:\LocalMachine\My |
+    $cert = Get-ChildItem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-            $_.Subject -eq $Subject -and
-            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and
+            (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
+            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
             $_.FriendlyName -eq $FriendlyName
         }
 
-    $matchedCerts = @()
-    foreach ($cert in $certs)
-    {
-            $cTemplate = ( $cert.Extensions | Where-Object{ $_.oid.Friendlyname -match 'Certificate Template Information' }).Format($false)
-            if ($cTemplate -match "${CertificateTemplate}.*")
-            {
-                    $matchedCerts += $cert
-            }
-    }
-
     # If multiple certs have the same subject, issuer, friendly name and template, return the newest
-    $cert = $matchedCerts |
+    $cert = $cert |
         Sort-Object -Property NotBefore -Descending |
             Select-Object -First 1
 
