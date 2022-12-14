@@ -876,21 +876,24 @@ function Test-TargetResource
             $($script:localizedData.TestingCertReqStatusMessage -f $Subject, $ca)
         ) -join '' )
 
-    $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
-        Where-Object -FilterScript {
-            (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
-            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
-        }
+    $filterScript = {
+        (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
+        (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
+        (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+        $_.FriendlyName -eq $FriendlyName
+    }
 
     # Exception for standard template DomainControllerAuthentication
     if ($CertificateTemplate -eq 'DomainControllerAuthentication')
     {
-        $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
-            Where-Object -FilterScript {
-                (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
-                (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
-            }
+        $filterScript = {
+            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
+        }
     }
+
+    $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
+        Where-Object -FilterScript $filterScript
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $certificate = $certificate |
