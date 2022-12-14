@@ -1839,7 +1839,6 @@ OID = $oid
                 }
             }
 
-            ##### DJC
             Context 'When two valid certs exist matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
 
                 Mock -CommandName Find-CertificateAuthority `
@@ -1915,7 +1914,6 @@ OID = $oid
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $true
                 }
             }
-            #####
 
             Context 'When a certificate exists but does not match the Certificate Template' {
                 It 'Should return false' {
