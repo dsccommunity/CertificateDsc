@@ -817,7 +817,7 @@ OID = $oid
                 Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -MockWith { $validCertUndesiredTemplate, $validCertWithNonDefaultTemplate }
 
-                $result = Get-TargetResource @paramsStandard -Verbose
+                $result = Get-TargetResource @paramsNonDefaultCertificateTemplate -Verbose
 
                 It 'Should return a hashtable' {
                     $result | Should -BeOfType System.Collections.Hashtable
