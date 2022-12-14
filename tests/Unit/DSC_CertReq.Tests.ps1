@@ -1886,7 +1886,7 @@ OID = $oid
                 #     -MockWith $mock_getCertificateSan_subjectAltName
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                    Test-TargetResource @paramsNonDefaultCertificateTemplate -Verbose | Should -Be $true
                 }
             }
 
