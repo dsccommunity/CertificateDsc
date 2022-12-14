@@ -59,6 +59,20 @@ try
         $friendlyName = "Test Certificate"
         $invalidFriendlyName = 'Invalid Certificate'
 
+        $certificateTemplateOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{
+            Value = '1.3.6.1.4.1.311.21.7'
+            FriendlyName = 'Certificate Template Information'
+        }
+
+        $certificateTemplateExtension = New-Object -TypeName PSObject -Property @{
+            Oid = $certificateTemplateOid
+            Critical = $false
+        }
+
+        Add-Member -InputObject $certificateTemplateExtension -MemberType ScriptMethod -Name Format -Force -Value {
+            return "Template=$certificateTemplate(1.3.6.1.4.1.311.21.8.9213924.8643542.5195926.6309572.11459053.244.10365877.8067662), Major VersionNumber=100, Minor Version Number=10"
+        }
+
         $validCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $validThumbprint
             Subject      = "CN=$validSubject"
@@ -66,26 +80,40 @@ try
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
             FriendlyName = $friendlyName
+            Extensions   = $certificateTemplateExtension
+        }
+
+        Add-Member -InputObject $validCert -MemberType ScriptMethod -Name Verify -Value {
+            return $true
+        }
+
+        $nonDefaultCertificateTemplateExtension = New-Object -TypeName PSObject -Property @{
+            Oid = $certificateTemplateOid
+            Critical = $false
+        }
+
+        Add-Member -InputObject $nonDefaultCertificateTemplateExtension -MemberType ScriptMethod -Name Format -Force -Value {
+            return "Template=$nonDefaultCertificateTemplate(1.3.6.1.4.1.311.21.8.9213924.8643542.5195926.6309572.11459053.244.10365877.8067662), Major VersionNumber=100, Minor Version Number=10"
         }
 
         $validCertWithNonDefaultTemplate = New-Object -TypeName PSObject -Property @{
-            Thumbprint          = $validThumbprint
-            Subject             = "CN=$validSubject"
-            Issuer              = $validIssuer
-            NotBefore           = (Get-Date).AddDays(-30) # Issued on
-            NotAfter            = (Get-Date).AddDays(31) # Expires after
-            FriendlyName        = $friendlyName
-            CertificateTemplate = $nonDefaultCertificateTemplate
+            Thumbprint   = $validThumbprint
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-30) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($nonDefaultCertificateTemplateExtension)
+            FriendlyName = $friendlyName
         }
 
         $validCertUndesiredTemplate = New-Object -TypeName PSObject -Property @{
-            Thumbprint          = $validThumbprint
-            Subject             = "CN=$validSubject"
-            Issuer              = $validIssuer
-            NotBefore           = (Get-Date).AddDays(-1) # Issued on
-            NotAfter            = (Get-Date).AddDays(31) # Expires after
-            FriendlyName        = $friendlyName
-            CertificateTemplate = $certificateTemplate
+            Thumbprint   = $validThumbprint
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-1) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
+            FriendlyName = $friendlyName
         }
 
         $validCertWithoutSubject = New-Object -TypeName PSObject -Property @{
@@ -94,6 +122,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
 
@@ -103,6 +132,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-1) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName + ' 2'
         }
 
@@ -112,6 +142,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-1) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
         }
 
         $invalidCert = New-Object -TypeName PSObject -Property @{
@@ -123,16 +154,13 @@ try
             FriendlyName = $invalidFriendlyName
         }
 
-        Add-Member -InputObject $validCert -MemberType ScriptMethod -Name Verify -Value {
-            return $true
-        }
-
         $expiringCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $validThumbprint
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(30) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
 
@@ -146,6 +174,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(-1) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $expiredCert -MemberType ScriptMethod -Name Verify -Value {
@@ -167,6 +196,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $validCertSubjectDifferentOrder -MemberType ScriptMethod -Name Verify -Value {
@@ -179,7 +209,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = @($sanExt)
+            Extensions   = @($sanExt,$certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -200,7 +230,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = @($incorrectSanExt)
+            Extensions   = @($incorrectSanExt,$certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $incorrectSANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -213,7 +243,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = @()
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $emptySANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -226,6 +256,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = 'This name will not match'
         }
         Add-Member -InputObject $incorrectFriendlyName -MemberType ScriptMethod -Name Verify -Value {
