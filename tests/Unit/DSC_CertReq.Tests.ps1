@@ -773,7 +773,7 @@ OID = $oid
 
             Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
 
-                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `te
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
                     -MockWith { $validCertUndesiredFriendlyName, $validCert }
 
                 $result = Get-TargetResource @paramsStandard -Verbose
