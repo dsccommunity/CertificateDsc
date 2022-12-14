@@ -298,7 +298,6 @@ try
             ProviderName        = $providerName
             OID                 = $oid
             KeyUsage            = $keyUsage
-            CertificateTemplate = $certificateTemplate
             Credential          = $testCredential
             AutoRenew           = $false
             FriendlyName        = $friendlyName
