@@ -204,8 +204,18 @@ function Get-TargetResource
             $_.FriendlyName -eq $FriendlyName
         }
 
+    $matchedCerts = @()
+    foreach ($cert in $certs)
+    {
+            $cTemplate = ( $cert.Extensions | Where-Object{ $_.oid.Friendlyname -match 'Certificate Template Information' }).Format($false)
+            if ($cTemplate -match "${CertificateTemplate}.*")
+            {
+                    $matchedCerts += $cert
+            }
+    }
+
     # If multiple certs have the same subject, issuer, friendly name and template, return the newest
-    $cert = $certs |
+    $cert = $matchedCerts |
         Sort-Object -Property NotBefore -Descending |
             Select-Object -First 1
 
