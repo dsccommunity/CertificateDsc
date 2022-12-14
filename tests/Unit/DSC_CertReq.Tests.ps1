@@ -97,7 +97,7 @@ try
         }
 
         $validCertWithNonDefaultTemplate = New-Object -TypeName PSObject -Property @{
-            Thumbprint   = $validThumbprint
+            Thumbprint   = $validThumbprint + 2
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
@@ -107,7 +107,7 @@ try
         }
 
         $validCertUndesiredTemplate = New-Object -TypeName PSObject -Property @{
-            Thumbprint   = $validThumbprint
+            Thumbprint   = $validThumbprint + 3
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-1) # Issued on
@@ -127,7 +127,7 @@ try
         }
 
         $validCertUndesiredFriendlyName = New-Object -TypeName PSObject -Property @{
-            Thumbprint   = New-CertificateThumbprint -Fips
+            Thumbprint   = $validThumbprint + 5
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-1) # Issued on
@@ -137,7 +137,7 @@ try
         }
 
         $validCertWithoutFriendlyName = New-Object -TypeName PSObject -Property @{
-            Thumbprint   = New-CertificateThumbprint -Fips
+            Thumbprint   = $validThumbprint + 6
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-1) # Issued on
