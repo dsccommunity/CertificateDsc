@@ -305,6 +305,22 @@ try
             KeyType             = 'RSA'
         }
 
+        $paramsNonDefaultCertificateTemplate = @{
+            Subject             = $validSubject
+            CAServerFQDN        = $caServerFQDN
+            CARootName          = $caRootName
+            KeyLength           = $keyLength
+            Exportable          = $exportable
+            ProviderName        = $providerName
+            OID                 = $oid
+            KeyUsage            = $keyUsage
+            CertificateTemplate = $nonDefaultCertificateTemplate
+            Credential          = $testCredential
+            AutoRenew           = $false
+            FriendlyName        = $friendlyName
+            KeyType             = 'RSA'
+        }
+
         $paramsStandardProviderNameWithQuotes = @{
             Subject             = $validSubject
             CAServerFQDN        = $caServerFQDN
