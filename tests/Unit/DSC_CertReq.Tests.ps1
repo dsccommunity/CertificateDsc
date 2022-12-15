@@ -351,6 +351,21 @@ try
             FriendlyName        = $friendlyName
         }
 
+        $paramsNonMatchingFriendlyNameDomainController = @{
+            Subject             = $validSubject
+            CAServerFQDN        = $caServerFQDN
+            CARootName          = $caRootName
+            KeyLength           = $keyLength
+            Exportable          = $exportable
+            ProviderName        = $providerName
+            OID                 = $oid
+            KeyUsage            = $keyUsage
+            CertificateTemplate = $certificateDCTemplate
+            Credential          = $testCredential
+            AutoRenew           = $false
+            FriendlyName        = $friendlyName + ' 2'
+        }
+
         $paramsInvalid = @{
             Subject             = $invalidSubject
             CAServerFQDN        = $caServerFQDN
@@ -1943,6 +1958,22 @@ OID = $oid
                         -MockWith $mock_getCertificateSan_subjectAltName
 
                     Test-TargetResource @paramsStandardDomainController -Verbose | Should -Be $true
+                }
+            }
+
+            Context 'When a Domain Controller certificate template is used, A valid certificate already exists and has a non-matching FriendlyName' {
+                It 'Should return true' {
+                    Mock -CommandName Get-ChildItem `
+                        -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                        -Mockwith $mock_getChildItem_validCert
+
+                    Mock -CommandName Get-CertificateTemplateName `
+                        -MockWith $mock_getCertificateTemplateName_validDCCertificateTemplate
+
+                    Mock -CommandName Get-CertificateSubjectAlternativeName `
+                        -MockWith $mock_getCertificateSan_subjectAltName
+
+                    Test-TargetResource @paramsNonMatchingFriendlyNameDomainController -Verbose | Should -Be $false
                 }
             }
 
