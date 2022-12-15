@@ -1871,9 +1871,6 @@ OID = $oid
                 Mock -CommandName Get-CertificateTemplateName `
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                # Mock -CommandName Get-CertificateSubjectAlternativeName `
-                #     -MockWith $mock_getCertificateSan_subjectAltName
-
                 It 'Should return true' {
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $true
                 }
@@ -1896,9 +1893,6 @@ OID = $oid
                 Mock -CommandName Get-CertificateTemplateName `
                     -MockWith $mock_getCertificateTemplateName_validNonDefaultCertificateTemplate
 
-                # Mock -CommandName Get-CertificateSubjectAlternativeName `
-                #     -MockWith $mock_getCertificateSan_subjectAltName
-
                 It 'Should return true' {
                     Test-TargetResource @paramsNonDefaultCertificateTemplate -Verbose | Should -Be $true
                 }
@@ -1920,9 +1914,6 @@ OID = $oid
 
                 Mock -CommandName Get-CertificateTemplateName `
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
-
-                # Mock -CommandName Get-CertificateSubjectAlternativeName `
-                #     -MockWith $mock_getCertificateSan_subjectAltName
 
                 It 'Should return true' {
                     Test-TargetResource @paramsStandard -Verbose | Should -Be $true
