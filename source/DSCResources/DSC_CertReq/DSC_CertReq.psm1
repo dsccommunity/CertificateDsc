@@ -977,15 +977,6 @@ function Test-TargetResource
 
         $currentCertificateTemplateName = Get-CertificateTemplateName -Certificate $certificate
 
-        if ($CertificateTemplate -ne $currentCertificateTemplateName)
-        {
-            Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($script:localizedData.CertTemplateMismatch -f $Subject, $ca, $certificate.FriendlyName, $certificate.Thumbprint, $currentCertificateTemplateName)
-                ) -join '' )
-            return $false
-        } # if
-
         # Check the friendly name of the certificate matches
         if ($FriendlyName -ne $certificate.FriendlyName)
         {
