@@ -1904,7 +1904,6 @@ OID = $oid
                 }
             }
 
-
             Context 'When two valid certs exist matching Subject and Issuer, one with desired friendly name and one without friendly name' {
 
                 Mock -CommandName Find-CertificateAuthority `
