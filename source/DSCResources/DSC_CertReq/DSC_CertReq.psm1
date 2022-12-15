@@ -673,7 +673,7 @@ CertificateTemplate = "$CertificateTemplate"
 
         if ($acceptRequest -match '0x')
         {
-            New-InvalidOperationException -Message ($script:localizedData.GenericErrorThrown -f ($acceptRequest | Out-String))
+            New-InvalidOperationException -Message ($script:localizedData.GenericError -f ($acceptRequest | Out-String))
         }
         else
         {
@@ -968,7 +968,7 @@ function Test-TargetResource
                 # There are no current DNS SANs and there should be
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($script:localizedData.NoExistingSans -f $Subject, $ca, $FriendlyName, $CertificateTemplate, ($correctDns -join ',') ,$certificate.Thumbprint)
+                        $($script:localizedData.NoExistingSansMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate, ($correctDns -join ',') ,$certificate.Thumbprint)
                     ) -join '' )
                 return $false
             }
@@ -978,7 +978,7 @@ function Test-TargetResource
                 # Current DNS SANs and the desired DNS SANs do not match
                 Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($script:localizedData.SansMismatch -f $Subject, $ca, $FriendlyName, $CertificateTemplate,($currentDns -join ',') , ($correctDns -join ',') ,$certificate.Thumbprint)
+                    $($script:localizedData.SansMismatchMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate,($currentDns -join ',') , ($correctDns -join ',') ,$certificate.Thumbprint)
                 ) -join '' )
                 return $false
             }
@@ -991,7 +991,7 @@ function Test-TargetResource
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($script:localizedData.CertFriendlyNameMismatch -f $Subject, $ca, $currentCertificateTemplateName, $certificate.Thumbprint, $certificate.FriendlyName)
+                    $($script:localizedData.CertFriendlyNameMismatchMessage -f $Subject, $ca, $currentCertificateTemplateName, $certificate.Thumbprint, $certificate.FriendlyName)
                 ) -join '' )
             return $false
         } # if
@@ -1042,7 +1042,7 @@ function Assert-ResourceProperty
     if ((($KeyType -eq 'RSA') -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
         (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
     {
-        New-InvalidArgumentException -Message (($script:localizedData.InvalidKeySize) -f $KeyLength, $KeyType) -ArgumentName 'KeyLength'
+        New-InvalidArgumentException -Message (($script:localizedData.InvalidKeySizeError) -f $KeyLength, $KeyType) -ArgumentName 'KeyLength'
     }
 }# end function Assert-ResourceProperty
 

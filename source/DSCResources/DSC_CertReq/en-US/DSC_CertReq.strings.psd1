@@ -14,13 +14,13 @@ ConvertFrom-StringData @'
     ExpiringCertificateMessage = The certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' is about to expire.
     NoValidCertificateMessage = No valid certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}'.
     ExpiredCertificateMessage = The certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has expired: {4}.
-    NoExistingSans = The certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has no SANs, yet the following SANs are specified: {4}. Certificate has the Thumbprint '{5}'.
-    SansMismatch = The certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has the SANs '{4}', yet the following SANs are specified: {5}. Certificate has the Thumbprint '{6}'.
+    NoExistingSansMessage = The certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has no SANs, yet the following SANs are specified: {4}. Certificate has the Thumbprint '{5}'.
+    SansMismatchMessage = The certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has the SANs '{4}', yet the following SANs are specified: {5}. Certificate has the Thumbprint '{6}'.
     ValidCertificateExistsMessage = Valid certificate found with Subject '{0}', Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}': {4}
     CertificateReqNotFoundError = Certificate Request file '{0}' not found.
     CertificateCerNotFoundError = Certificate file '{0}' not found.
     CertReqOutNotFoundError = CertReq.exe output file '{0}' not found.
-    CertFriendlyNameMismatch = The certificate with Subject '{0}', Issuer '{1}', CertificateTemplate '{2}' and Thumbprint '{3}' has the wrong friendly name: {4}.
-    InvalidKeySize = The key length '{0}' specified is invalid for '{1}' key types.
-    GenericErrorThrown = A Generic Error was thrown when accepting a Certificate. It threw the following Error message: {0}
+    CertFriendlyNameMismatchMessage = The certificate with Subject '{0}', Issuer '{1}', CertificateTemplate '{2}' and Thumbprint '{3}' has the wrong friendly name: {4}.
+    InvalidKeySizeError = The key length '{0}' specified is invalid for '{1}' key types.
+    GenericError = A Generic Error was thrown when accepting a Certificate. It threw the following Error message: {0}
 '@
