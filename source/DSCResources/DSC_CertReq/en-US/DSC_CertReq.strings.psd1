@@ -18,7 +18,6 @@ ConvertFrom-StringData @'
     CertificateReqNotFoundError = Certificate Request file '{0}' not found.
     CertificateCerNotFoundError = Certificate file '{0}' not found.
     CertReqOutNotFoundError = CertReq.exe output file '{0}' not found.
-    CertTemplateMismatch = The certificate with Subject '{0}' Issuer '{1}', FriendlyName '{2}' with Thumbprint '{3}' has the wrong template: {4}.
     CertFriendlyNameMismatch = The certificate with Subject '{0}', Issuer '{1}', CertificateTemplate '{2}' and Thumbprint '{3}' has the wrong friendly name: {4}.
     InvalidKeySize = The key length '{0}' specified is invalid for '{1}' key types.
     GenericErrorThrown = A Generic Error was thrown when accepting a Certificate. It threw the following Error message: {0}
