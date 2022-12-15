@@ -22,5 +22,4 @@
     'DscResource.Common'        = 'latest'
     xDscResourceDesigner        = 'latest'
     xWebAdministration          = '3.1.1'
-    PSWSMan                     = 'latest'
 }
