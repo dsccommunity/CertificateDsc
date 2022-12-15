@@ -1650,7 +1650,7 @@ OID = $oid
                     -Mockwith $mock_GetChildItem_validCertWithoutSubject
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1667,7 +1667,7 @@ OID = $oid
                     -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1685,7 +1685,7 @@ OID = $oid
                     -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1709,7 +1709,7 @@ OID = $oid
                     -MockWith $mock_getCertificateSan_subjectAltName
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeTrue
                 }
             }
 
@@ -1727,7 +1727,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateSubjectAlternativeName `
                         -MockWith $mock_getCertificateSan_subjectAltName
 
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1747,7 +1747,7 @@ OID = $oid
                 Mock -CommandName Get-CertificateTemplateName `
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $false
+                Test-TargetResource @paramsAutoRenew -Verbose | Should -BeFalse
             }
 
             Context 'When a valid certificate already exists and X500 subjects are in a different order but match' {
@@ -1767,7 +1767,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsSubjectDifferentOrder -Verbose | Should -Be $true
+                    Test-TargetResource @paramsSubjectDifferentOrder -Verbose | Should -BeTrue
                 }
             }
 
@@ -1788,7 +1788,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $true
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -BeTrue
                 }
             }
 
@@ -1809,7 +1809,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -BeFalse
                 }
             }
 
@@ -1829,7 +1829,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -BeFalse
                 }
             }
 
@@ -1850,7 +1850,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1872,7 +1872,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeTrue
                 }
             }
 
@@ -1894,7 +1894,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validNonDefaultCertificateTemplate
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsNonDefaultCertificateTemplate -Verbose | Should -Be $true
+                    Test-TargetResource @paramsNonDefaultCertificateTemplate -Verbose | Should -BeTrue
                 }
             }
 
@@ -1916,7 +1916,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeTrue
                 }
             }
 
@@ -1931,7 +1931,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateTemplateName `
                         -MockWith $mock_getCertificateTemplateName_invalidCertificateTemplate
 
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1947,7 +1947,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateSubjectAlternativeName `
                         -MockWith $mock_getCertificateSan_subjectAltName
 
-                    Test-TargetResource @paramsStandardDomainController -Verbose | Should -Be $true
+                    Test-TargetResource @paramsStandardDomainController -Verbose | Should -BeTrue
                 }
             }
 
@@ -1963,7 +1963,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateSubjectAlternativeName `
                         -MockWith $mock_getCertificateSan_subjectAltName
 
-                    Test-TargetResource @paramsNonMatchingFriendlyNameDomainController -Verbose | Should -Be $false
+                    Test-TargetResource @paramsNonMatchingFriendlyNameDomainController -Verbose | Should -BeFalse
                 }
             }
 
@@ -1980,7 +1980,7 @@ OID = $oid
                     -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsAutoDiscovery -Verbose | Should -Be $false
+                    Test-TargetResource @paramsAutoDiscovery -Verbose | Should -BeFalse
                 }
 
                 It 'Should execute the auto-discovery function' {
@@ -2026,7 +2026,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=TestSubject' `
-                        -DifferenceSubject 'CN=TestSubject' | Should -Be $true
+                        -DifferenceSubject 'CN=TestSubject' | Should -BeTrue
                 }
             }
 
@@ -2034,7 +2034,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=TestSubject' `
-                        -DifferenceSubject 'CN=SubjectTest' | Should -Be $false
+                        -DifferenceSubject 'CN=SubjectTest' | Should -BeFalse
                 }
             }
 
@@ -2042,7 +2042,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $true
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeTrue
                 }
             }
 
@@ -2050,7 +2050,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'E=xyz@contoso.com, CN=xyz.contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $true
+                        -DifferenceSubject 'E=xyz@contoso.com, CN=xyz.contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeTrue
                 }
             }
 
@@ -2058,7 +2058,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=test@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=test@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeFalse
                 }
             }
 
@@ -2066,7 +2066,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -BeFalse
                 }
             }
 
@@ -2074,7 +2074,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject $null `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -BeFalse
                 }
             }
 
@@ -2082,7 +2082,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject '' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -BeFalse
                 }
             }
         }
@@ -2092,7 +2092,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=xyz.contoso.com' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $true
+                        -CARootName 'xyz.contoso.com' | Should -BeTrue
                 }
             }
 
@@ -2100,7 +2100,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $true
+                        -CARootName 'xyz.contoso.com' | Should -BeTrue
                 }
             }
 
@@ -2108,7 +2108,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=abc.contoso.com' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $false
+                        -CARootName 'xyz.contoso.com' | Should -BeFalse
                 }
             }
 
@@ -2116,7 +2116,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=abc.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $false
+                        -CARootName 'xyz.contoso.com' | Should -BeFalse
                 }
             }
         }
