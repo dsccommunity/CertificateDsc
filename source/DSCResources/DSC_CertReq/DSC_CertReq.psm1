@@ -948,10 +948,10 @@ function Test-TargetResource
             }
 
             # Find out what SANs are on the current cert
+            $currentDns = @()
             if ($certificate.Extensions.Count -gt 0)
             {
                 $currentSanList = Get-CertificateSubjectAlternativeNameList -Certificate $certificate
-                $currentDns = @()
 
                 foreach ($san in $currentSanList)
                 {
@@ -961,16 +961,17 @@ function Test-TargetResource
                         $currentDns += $san.split('=')[1]
                     }
                 }
-
-                # Do the cert's DNS SANs and the desired DNS SANs match?
-                if (@(Compare-Object -ReferenceObject $currentDns -DifferenceObject $correctDns).Count -gt 0)
-                {
-                    return $false
-                }
             }
-            else
+
+            if ($currentDns.Count -eq 0)
             {
-                # There are no SANs and there should be
+                # There are no current DNS SANs and there should be
+                return $false
+            }
+
+            if (@(Compare-Object -ReferenceObject $currentDns -DifferenceObject $correctDns).Count -gt 0)
+            {
+                # Current DNS SANs and the desired DNS SANs do not match
                 return $false
             }
         }
