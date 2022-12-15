@@ -24,6 +24,7 @@ stages:
       - job: Package_Module
         displayName: 'Package Module'
         pool:
+          # Fails on 'ubuntu-latest' as libmi shared object library not available
           vmImage: 'windows-latest'
         steps:
           - pwsh: |
