@@ -966,12 +966,20 @@ function Test-TargetResource
             if ($currentDns.Count -eq 0)
             {
                 # There are no current DNS SANs and there should be
+                Write-Verbose -Message ( @(
+                        "$($MyInvocation.MyCommand): "
+                        $($script:localizedData.NoExistingSans -f $Subject, $ca, $FriendlyName, $CertificateTemplate, ($correctDns -join ',') ,$certificate.Thumbprint)
+                    ) -join '' )
                 return $false
             }
 
             if (@(Compare-Object -ReferenceObject $currentDns -DifferenceObject $correctDns).Count -gt 0)
             {
                 # Current DNS SANs and the desired DNS SANs do not match
+                Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.SansMismatch -f $Subject, $ca, $FriendlyName, $CertificateTemplate,($currentDns -join ',') , ($correctDns -join ',') ,$certificate.Thumbprint)
+                ) -join '' )
                 return $false
             }
         }

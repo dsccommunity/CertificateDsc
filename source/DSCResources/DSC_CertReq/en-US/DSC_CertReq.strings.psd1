@@ -14,6 +14,8 @@ ConvertFrom-StringData @'
     ExpiringCertificateMessage = The certificate found with Subject '{0}' Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' is about to expire.
     NoValidCertificateMessage = No valid certificate found with Subject '{0}' Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}'.
     ExpiredCertificateMessage = The certificate found with Subject '{0}' Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has expired: {4}.
+    NoExistingSans = The certificate found with Subject '{0}' Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has no SANs, yet the following SANs are specified: {4}. Certificate has the Thumbprint '{5}'.
+    SansMismatch = The certificate found with Subject '{0}' Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}' has the SANs '{4}', yet the following SANs are specified: {5}. Certificate has the Thumbprint '{6}'.
     ValidCertificateExistsMessage = Valid certificate found with Subject '{0}' Issuer '{1}', FriendlyName '{2}' and CertificateTemplate '{3}': {4}
     CertificateReqNotFoundError = Certificate Request file '{0}' not found.
     CertificateCerNotFoundError = Certificate file '{0}' not found.
