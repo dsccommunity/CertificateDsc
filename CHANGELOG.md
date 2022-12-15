@@ -5,9 +5,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
 - CertReq:
-  - Made Certificate FriendlyName a mandatory parameter (key) so multiple certificates with same issuer and subject can be configured in the same DSC configuration - Fixes [Issue #269](https://github.com/dsccommunity/CertificateDsc/issues/269)
-  - Prevent certificates with differing FriendlyName and Template being considered as existing desired certificates - Fixes [Issue #121](https://github.com/dsccommunity/CertificateDsc/issues/121)
+  - Made Certificate FriendlyName a mandatory parameter - Fixes [Issue #269](https://github.com/dsccommunity/CertificateDsc/issues/269).
+  - Consider FriendlyName and Template when retrieving existing certs - Fixes [Issue #121](https://github.com/dsccommunity/CertificateDsc/issues/121).
 
 ### Changed
 
