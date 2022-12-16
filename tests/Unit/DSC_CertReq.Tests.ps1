@@ -1626,7 +1626,7 @@ OID = $oid
                 Mock -CommandName CertReq.exe -ParameterFilter {@('-accept', '-m', '-q', $pathCertReqTestCer_parameterFilter)} -MockWith {'0x'}
 
                 $errorRecord = Get-InvalidOperationRecord `
-                    -Message ($LocalizedData.GenericErrorThrown -f '0x')
+                    -Message ($LocalizedData.GenericError -f '0x')
 
                 It 'Should Throw A New-InvalidOperationException' {
                     { Set-TargetResource @paramsAutoDiscovery -Verbose } | Should -Throw $errorRecord
@@ -1998,9 +1998,9 @@ OID = $oid
 
             Context 'When RSA key type and key length is invalid' {
                 $errorRecord = Get-InvalidArgumentRecord `
-                    -Message (($LocalizedData.InvalidKeySize) -f '384', 'RSA') -ArgumentName 'KeyLength'
+                    -Message (($LocalizedData.InvalidKeySizeError) -f '384', 'RSA') -ArgumentName 'KeyLength'
 
-                It 'Should not throw' {
+                It 'Should throw' {
                     { Assert-ResourceProperty @paramRsaInvalid -Verbose } | Should -Throw $errorRecord
                 }
             }
@@ -2013,9 +2013,9 @@ OID = $oid
 
             Context 'When ECDH key type and key length is invalid' {
                 $errorRecord = Get-InvalidArgumentRecord `
-                    -Message (($LocalizedData.InvalidKeySize) -f '2048', 'ECDH') -ArgumentName 'KeyLength'
+                    -Message (($LocalizedData.InvalidKeySizeError) -f '2048', 'ECDH') -ArgumentName 'KeyLength'
 
-                It 'Should not throw' {
+                It 'Should throw' {
                     { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw $errorRecord
                 }
             }
