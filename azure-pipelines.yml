@@ -24,7 +24,8 @@ stages:
       - job: Package_Module
         displayName: 'Package Module'
         pool:
-          vmImage: 'ubuntu-latest'
+          # Fails on 'ubuntu-latest' as libmi shared object library not available
+          vmImage: 'windows-latest'
         steps:
           - pwsh: |
               dotnet tool install --global GitVersion.Tool

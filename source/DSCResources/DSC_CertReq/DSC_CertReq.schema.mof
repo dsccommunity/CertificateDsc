@@ -2,6 +2,7 @@
 class DSC_CertReq : OMI_BaseResource
 {
     [Key, Description("Provide the text string to use as the subject of the certificate.")] String Subject;
+    [Key, Description("Specifies a friendly name for the certificate.")] String FriendlyName;
     [Write, Description("The type of CA in use, Standalone/Enterprise.")] String CAType;
     [Write, Description("The FQDN of the Active Directory Certificate Authority on the local area network. Leave empty to automatically locate.")] String CAServerFQDN;
     [Write, Description("The name of the certificate authority, by default this will be in format domain-servername-ca. Leave empty to automatically locate.")] String CARootName;
@@ -17,7 +18,6 @@ class DSC_CertReq : OMI_BaseResource
     [Write, Description("The URL to the Certification Enrollment Policy Service.")] String CepURL;
     [Write, Description("The URL to the Certification Enrollment Service.")] String CesURL;
     [Write, Description("Indicates whether or not the flag -adminforcemachine will be used when requesting certificates. Necessary for certain templates like e.g. DomainControllerAuthentication")] Boolean UseMachineContext;
-    [Write, Description("Specifies a friendly name for the certificate.")] String FriendlyName;
     [Write, Description("Specifies if the key type should be RSA or ECDH, defaults to RSA."), ValueMap{"RSA","ECDH"}, Values{"RSA","ECDH"}] String KeyType;
     [Write, Description("Specifies if the request type should be CMC or PKCS10, deafults to CMC."), ValueMap{"CMC","PKCS10"},Values{"CMC","PKCS10"}] String RequestType;
 };
