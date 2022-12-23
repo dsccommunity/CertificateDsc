@@ -158,7 +158,7 @@ function Get-TargetResource
         [System.Boolean]
         $UseMachineContext,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $FriendlyName,
@@ -188,7 +188,7 @@ function Get-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.GettingCertReqStatusMessage -f $Subject, $CA)
+            $($script:localizedData.GettingCertReqStatusMessage -f $Subject, $CA, $FriendlyName, $CertificateTemplate)
         ) -join '' )
 
     # If the Subject does not contain a full X500 path, construct just the CN
@@ -199,11 +199,13 @@ function Get-TargetResource
 
     $cert = Get-ChildItem -Path Cert:\LocalMachine\My |
         Where-Object -FilterScript {
-            $_.Subject -eq $Subject -and `
-            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
+            (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
+            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+            $_.FriendlyName -eq $FriendlyName
         }
 
-    # If multiple certs have the same subject and were issued by the CA, return the newest
+    # If multiple certs have the same subject, issuer, friendly name and template, return the newest
     $cert = $cert |
         Sort-Object -Property NotBefore -Descending |
             Select-Object -First 1
@@ -212,7 +214,7 @@ function Get-TargetResource
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.CertificateExistsMessage -f $Subject, $ca, $cert.Thumbprint)
+                $($script:localizedData.CertificateExistsMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate, $certificate.Thumbprint)
             ) -join '' )
 
         $returnValue = @{
@@ -377,7 +379,7 @@ function Set-TargetResource
         [System.Boolean]
         $UseMachineContext,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $FriendlyName,
@@ -407,7 +409,7 @@ function Set-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.StartingCertReqMessage -f $Subject, $ca)
+            $($script:localizedData.StartingCertReqMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate)
         ) -join '' )
 
     # If the Subject does not contain a full X500 path, construct just the CN
@@ -671,7 +673,7 @@ CertificateTemplate = "$CertificateTemplate"
 
         if ($acceptRequest -match '0x')
         {
-            New-InvalidOperationException -Message ($script:localizedData.GenericErrorThrown -f ($acceptRequest | Out-String))
+            New-InvalidOperationException -Message ($script:localizedData.GenericError -f ($acceptRequest | Out-String))
         }
         else
         {
@@ -835,7 +837,7 @@ function Test-TargetResource
         [System.Boolean]
         $UseMachineContext,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $FriendlyName,
@@ -871,24 +873,27 @@ function Test-TargetResource
 
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.TestingCertReqStatusMessage -f $Subject, $ca)
+            $($script:localizedData.TestingCertReqStatusMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate)
         ) -join '' )
 
-    $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
-        Where-Object -FilterScript {
-            (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
-            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
-        }
+    $filterScript = {
+        (Compare-CertificateSubject -ReferenceSubject $_.Subject -DifferenceSubject $Subject) -and `
+        (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName) -and `
+        (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+        $_.FriendlyName -eq $FriendlyName
+    }
 
     # Exception for standard template DomainControllerAuthentication
     if ($CertificateTemplate -eq 'DomainControllerAuthentication')
     {
-        $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
-            Where-Object -FilterScript {
-                (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
-                (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
-            }
+        $filterScript = {
+            (Get-CertificateTemplateName -Certificate $PSItem) -eq $CertificateTemplate -and `
+            (Compare-CertificateIssuer -Issuer $_.Issuer -CARootName $CARootName)
+        }
     }
+
+    $certificate = Get-ChildItem -Path Cert:\LocalMachine\My |
+        Where-Object -FilterScript $filterScript
 
     # If multiple certs have the same subject and were issued by the CA, return the newest
     $certificate = $certificate |
@@ -899,7 +904,7 @@ function Test-TargetResource
     {
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.CertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
+                $($script:localizedData.CertificateExistsMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate, $certificate.Thumbprint)
             ) -join '' )
 
         if ($AutoRenew)
@@ -909,7 +914,7 @@ function Test-TargetResource
                 # The certificate was found but it is expiring within 30 days or has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($script:localizedData.ExpiringCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
+                        $($script:localizedData.ExpiringCertificateMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate ,$certificate.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
@@ -921,7 +926,7 @@ function Test-TargetResource
                 # The certificate has expired
                 Write-Verbose -Message ( @(
                         "$($MyInvocation.MyCommand): "
-                        $($script:localizedData.ExpiredCertificateMessage -f $Subject, $ca, $certificate.Thumbprint)
+                        $($script:localizedData.ExpiredCertificateMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate ,$certificate.Thumbprint)
                     ) -join '' )
                 return $false
             } # if
@@ -943,10 +948,10 @@ function Test-TargetResource
             }
 
             # Find out what SANs are on the current cert
+            $currentDns = @()
             if ($certificate.Extensions.Count -gt 0)
             {
                 $currentSanList = Get-CertificateSubjectAlternativeNameList -Certificate $certificate
-                $currentDns = @()
 
                 foreach ($san in $currentSanList)
                 {
@@ -956,37 +961,37 @@ function Test-TargetResource
                         $currentDns += $san.split('=')[1]
                     }
                 }
-
-                # Do the cert's DNS SANs and the desired DNS SANs match?
-                if (@(Compare-Object -ReferenceObject $currentDns -DifferenceObject $correctDns).Count -gt 0)
-                {
-                    return $false
-                }
             }
-            else
+
+            if ($currentDns.Count -eq 0)
             {
-                # There are no SANs and there should be
+                # There are no current DNS SANs and there should be
+                Write-Verbose -Message ( @(
+                        "$($MyInvocation.MyCommand): "
+                        $($script:localizedData.NoExistingSansMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate, ($correctDns -join ',') ,$certificate.Thumbprint)
+                    ) -join '' )
+                return $false
+            }
+
+            if (@(Compare-Object -ReferenceObject $currentDns -DifferenceObject $correctDns).Count -gt 0)
+            {
+                # Current DNS SANs and the desired DNS SANs do not match
+                Write-Verbose -Message ( @(
+                    "$($MyInvocation.MyCommand): "
+                    $($script:localizedData.SansMismatchMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate,($currentDns -join ',') , ($correctDns -join ',') ,$certificate.Thumbprint)
+                ) -join '' )
                 return $false
             }
         }
 
         $currentCertificateTemplateName = Get-CertificateTemplateName -Certificate $certificate
 
-        if ($CertificateTemplate -ne $currentCertificateTemplateName)
-        {
-            Write-Verbose -Message ( @(
-                    "$($MyInvocation.MyCommand): "
-                    $($script:localizedData.CertTemplateMismatch -f $Subject, $ca, $certificate.Thumbprint, $currentCertificateTemplateName)
-                ) -join '' )
-            return $false
-        } # if
-
         # Check the friendly name of the certificate matches
         if ($FriendlyName -ne $certificate.FriendlyName)
         {
             Write-Verbose -Message ( @(
                     "$($MyInvocation.MyCommand): "
-                    $($script:localizedData.CertFriendlyNameMismatch -f $Subject, $ca, $certificate.Thumbprint, $certificate.FriendlyName)
+                    $($script:localizedData.CertFriendlyNameMismatchMessage -f $Subject, $ca, $currentCertificateTemplateName, $certificate.Thumbprint, $certificate.FriendlyName)
                 ) -join '' )
             return $false
         } # if
@@ -994,7 +999,7 @@ function Test-TargetResource
         # The certificate was found and is OK - so no change required.
         Write-Verbose -Message ( @(
                 "$($MyInvocation.MyCommand): "
-                $($script:localizedData.ValidCertificateExistsMessage -f $Subject, $ca, $certificate.Thumbprint)
+                $($script:localizedData.ValidCertificateExistsMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate, $certificate.Thumbprint)
             ) -join '' )
         return $true
     } # if
@@ -1002,7 +1007,7 @@ function Test-TargetResource
     # A valid certificate was not found
     Write-Verbose -Message ( @(
             "$($MyInvocation.MyCommand): "
-            $($script:localizedData.NoValidCertificateMessage -f $Subject, $ca)
+            $($script:localizedData.NoValidCertificateMessage -f $Subject, $ca, $FriendlyName, $CertificateTemplate)
         ) -join '' )
     return $false
 } # end function Test-TargetResource
@@ -1037,7 +1042,7 @@ function Assert-ResourceProperty
     if ((($KeyType -eq 'RSA') -and ($KeyLength -notin '1024', '2048', '4096', '8192')) -or `
         (($KeyType -eq 'ECDH') -and ($KeyLength -notin '192', '224', '256', '384', '521')))
     {
-        New-InvalidArgumentException -Message (($script:localizedData.InvalidKeySize) -f $KeyLength, $KeyType) -ArgumentName 'KeyLength'
+        New-InvalidArgumentException -Message (($script:localizedData.InvalidKeySizeError) -f $KeyLength, $KeyType) -ArgumentName 'KeyLength'
     }
 }# end function Assert-ResourceProperty
 

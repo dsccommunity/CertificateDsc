@@ -51,6 +51,7 @@ try
         $oid = '1.3.6.1.5.5.7.3.1'
         $keyUsage = '0xa0'
         $certificateTemplate = 'WebServer'
+        $nonDefaultCertificateTemplate = 'RDS Session Host'
         $certificateDCTemplate = 'DomainControllerAuthentication'
         $invalidCertificateTemplate = 'Invalid Template'
         $subjectAltUrl = 'contoso.com'
@@ -58,12 +59,60 @@ try
         $friendlyName = "Test Certificate"
         $invalidFriendlyName = 'Invalid Certificate'
 
+        $certificateTemplateOid = New-Object -TypeName System.Security.Cryptography.Oid -Property @{
+            Value = '1.3.6.1.4.1.311.21.7'
+            FriendlyName = 'Certificate Template Information'
+        }
+
+        $certificateTemplateExtension = New-Object -TypeName PSObject -Property @{
+            Oid = $certificateTemplateOid
+            Critical = $false
+        }
+
+        Add-Member -InputObject $certificateTemplateExtension -MemberType ScriptMethod -Name Format -Force -Value {
+            return "Template=$certificateTemplate(1.3.6.1.4.1.311.21.8.9213924.8643542.5195926.6309572.11459053.244.10365877.8067662), Major VersionNumber=100, Minor Version Number=10"
+        }
+
         $validCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $validThumbprint
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            FriendlyName = $friendlyName
+            Extensions   = $certificateTemplateExtension
+        }
+
+        Add-Member -InputObject $validCert -MemberType ScriptMethod -Name Verify -Value {
+            return $true
+        }
+
+        $nonDefaultCertificateTemplateExtension = New-Object -TypeName PSObject -Property @{
+            Oid = $certificateTemplateOid
+            Critical = $false
+        }
+
+        Add-Member -InputObject $nonDefaultCertificateTemplateExtension -MemberType ScriptMethod -Name Format -Force -Value {
+            return "Template=$nonDefaultCertificateTemplate(1.3.6.1.4.1.311.21.8.9213924.8643542.5195926.6309572.11459053.244.10365877.8067662), Major VersionNumber=100, Minor Version Number=10"
+        }
+
+        $validCertWithNonDefaultTemplate = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = $validThumbprint + 2
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-30) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($nonDefaultCertificateTemplateExtension)
+            FriendlyName = $friendlyName
+        }
+
+        $validCertUndesiredTemplate = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = $validThumbprint + 3
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-1) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
 
@@ -73,7 +122,27 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
+        }
+
+        $validCertUndesiredFriendlyName = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = $validThumbprint + 5
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-1) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
+            FriendlyName = $friendlyName + ' 2'
+        }
+
+        $validCertWithoutFriendlyName = New-Object -TypeName PSObject -Property @{
+            Thumbprint   = $validThumbprint + 6
+            Subject      = "CN=$validSubject"
+            Issuer       = $validIssuer
+            NotBefore    = (Get-Date).AddDays(-1) # Issued on
+            NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
         }
 
         $invalidCert = New-Object -TypeName PSObject -Property @{
@@ -85,16 +154,13 @@ try
             FriendlyName = $invalidFriendlyName
         }
 
-        Add-Member -InputObject $validCert -MemberType ScriptMethod -Name Verify -Value {
-            return $true
-        }
-
         $expiringCert = New-Object -TypeName PSObject -Property @{
             Thumbprint   = $validThumbprint
             Subject      = "CN=$validSubject"
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(30) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
 
@@ -108,6 +174,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(-1) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $expiredCert -MemberType ScriptMethod -Name Verify -Value {
@@ -129,6 +196,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $validCertSubjectDifferentOrder -MemberType ScriptMethod -Name Verify -Value {
@@ -141,7 +209,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = @($sanExt)
+            Extensions   = @($sanExt,$certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $validSANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -162,7 +230,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = @($incorrectSanExt)
+            Extensions   = @($incorrectSanExt,$certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $incorrectSANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -175,7 +243,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
-            Extensions   = @()
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = $friendlyName
         }
         Add-Member -InputObject $emptySANCert -MemberType ScriptMethod -Name Verify -Value {
@@ -188,6 +256,7 @@ try
             Issuer       = $validIssuer
             NotBefore    = (Get-Date).AddDays(-30) # Issued on
             NotAfter     = (Get-Date).AddDays(31) # Expires after
+            Extensions   = @($certificateTemplateExtension)
             FriendlyName = 'This name will not match'
         }
         Add-Member -InputObject $incorrectFriendlyName -MemberType ScriptMethod -Name Verify -Value {
@@ -203,10 +272,14 @@ try
         $testCredential = New-Object System.Management.Automation.PSCredential $testUsername, (ConvertTo-SecureString $testPassword -AsPlainText -Force)
 
         $mock_getCertificateTemplateName_validCertificateTemplate = { $certificateTemplate }
+        $mock_getCertificateTemplateName_validNonDefaultCertificateTemplate = { $nonDefaultCertificateTemplate }
         $mock_getCertificateTemplateName_invalidCertificateTemplate = { $invalidCertificateTemplate }
         $mock_getCertificateTemplateName_validDCCertificateTemplate = { $certificateDCTemplate }
         $mock_GetChildItem_validCertWithoutSubject = { $validCertWithoutSubject }
         $mock_getChildItem_validCert = { $validCert }
+        $mock_getChildItem_twoCerts_OneWithUndesiredFriendlyName = { $validCert, $validCertUndesiredFriendlyName }
+        $mock_getChildItem_twoCerts_OneWithUndesiredTemplate = { $validCertWithNonDefaultTemplate, $validCertUndesiredTemplate }
+        $mock_getChildItem_twoCerts_OneWithoutFriendlyName = { $validCert, $validCertWithoutFriendlyName }
         $mock_getChildItem_expiredCert = { $expiredCert }
         $mock_getChildItem_expiringCert = { $expiringCert }
         $mock_getChildItem_validSANCert = { $validSANCert }
@@ -225,7 +298,22 @@ try
             ProviderName        = $providerName
             OID                 = $oid
             KeyUsage            = $keyUsage
-            CertificateTemplate = $certificateTemplate
+            Credential          = $testCredential
+            AutoRenew           = $false
+            FriendlyName        = $friendlyName
+            KeyType             = 'RSA'
+        }
+
+        $paramsNonDefaultCertificateTemplate = @{
+            Subject             = $validSubject
+            CAServerFQDN        = $caServerFQDN
+            CARootName          = $caRootName
+            KeyLength           = $keyLength
+            Exportable          = $exportable
+            ProviderName        = $providerName
+            OID                 = $oid
+            KeyUsage            = $keyUsage
+            CertificateTemplate = $nonDefaultCertificateTemplate
             Credential          = $testCredential
             AutoRenew           = $false
             FriendlyName        = $friendlyName
@@ -261,6 +349,21 @@ try
             Credential          = $testCredential
             AutoRenew           = $false
             FriendlyName        = $friendlyName
+        }
+
+        $paramsNonMatchingFriendlyNameDomainController = @{
+            Subject             = $validSubject
+            CAServerFQDN        = $caServerFQDN
+            CARootName          = $caRootName
+            KeyLength           = $keyLength
+            Exportable          = $exportable
+            ProviderName        = $providerName
+            OID                 = $oid
+            KeyUsage            = $keyUsage
+            CertificateTemplate = $certificateDCTemplate
+            Credential          = $testCredential
+            AutoRenew           = $false
+            FriendlyName        = $friendlyName + ' 2'
         }
 
         $paramsInvalid = @{
@@ -695,6 +798,84 @@ OID = $oid
 
                 It 'Should call the mocked function Find-CertificateAuthority once' {
                     Assert-MockCalled -CommandName Find-CertificateAuthority -Exactly -Times 1
+                }
+            }
+
+            Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
+
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -MockWith { $validCertUndesiredFriendlyName, $validCert }
+
+                $result = Get-TargetResource @paramsStandard -Verbose
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values for the cert with desired friendly name' {
+                    $result.Subject | Should -BeExactly $validSubject
+                    $result.CAServerFQDN | Should -BeNullOrEmpty
+                    $result.CARootName | Should -BeExactly $caRootName
+                    $result.KeyLength | Should -BeNullOrEmpty
+                    $result.Exportable | Should -BeNullOrEmpty
+                    $result.ProviderName | Should -BeNullOrEmpty
+                    $result.OID | Should -BeNullOrEmpty
+                    $result.KeyUsage | Should -BeNullOrEmpty
+                    $result.CertificateTemplate | Should -BeExactly $certificateTemplate
+                    $result.SubjectAltName | Should -BeNullOrEmpty
+                    $result.FriendlyName | Should -BeExactly $friendlyName
+                }
+            }
+
+            Context 'Two valid certs with matching Subject and Issuer, one with desired template and one with undesired template' {
+
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -MockWith { $validCertUndesiredTemplate, $validCertWithNonDefaultTemplate }
+
+                $result = Get-TargetResource @paramsNonDefaultCertificateTemplate -Verbose
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values for the cert with desired template' {
+                    $result.Subject | Should -BeExactly $validSubject
+                    $result.CAServerFQDN | Should -BeNullOrEmpty
+                    $result.CARootName | Should -BeExactly $caRootName
+                    $result.KeyLength | Should -BeNullOrEmpty
+                    $result.Exportable | Should -BeNullOrEmpty
+                    $result.ProviderName | Should -BeNullOrEmpty
+                    $result.OID | Should -BeNullOrEmpty
+                    $result.KeyUsage | Should -BeNullOrEmpty
+                    $result.CertificateTemplate | Should -BeExactly $nonDefaultCertificateTemplate
+                    $result.SubjectAltName | Should -BeNullOrEmpty
+                    $result.FriendlyName | Should -BeExactly $friendlyName
+                }
+            }
+
+            Context 'Two valid certs with matching Subject and Issuer, one with desired friendly name and one with no friendly name' {
+
+                Mock -CommandName Get-ChildItem -ParameterFilter { $Path -eq 'Cert:\LocalMachine\My' } `
+                    -MockWith { $validCertWithoutFriendlyName, $validCert }
+
+                $result = Get-TargetResource @paramsStandard -Verbose
+
+                It 'Should return a hashtable' {
+                    $result | Should -BeOfType System.Collections.Hashtable
+                }
+
+                It 'Should contain the input values for the cert with desired friendly name' {
+                    $result.Subject | Should -BeExactly $validSubject
+                    $result.CAServerFQDN | Should -BeNullOrEmpty
+                    $result.CARootName | Should -BeExactly $caRootName
+                    $result.KeyLength | Should -BeNullOrEmpty
+                    $result.Exportable | Should -BeNullOrEmpty
+                    $result.ProviderName | Should -BeNullOrEmpty
+                    $result.OID | Should -BeNullOrEmpty
+                    $result.KeyUsage | Should -BeNullOrEmpty
+                    $result.CertificateTemplate | Should -BeExactly $certificateTemplate
+                    $result.SubjectAltName | Should -BeNullOrEmpty
+                    $result.FriendlyName | Should -BeExactly $friendlyName
                 }
             }
 
@@ -1445,7 +1626,7 @@ OID = $oid
                 Mock -CommandName CertReq.exe -ParameterFilter {@('-accept', '-m', '-q', $pathCertReqTestCer_parameterFilter)} -MockWith {'0x'}
 
                 $errorRecord = Get-InvalidOperationRecord `
-                    -Message ($LocalizedData.GenericErrorThrown -f '0x')
+                    -Message ($LocalizedData.GenericError -f '0x')
 
                 It 'Should Throw A New-InvalidOperationException' {
                     { Set-TargetResource @paramsAutoDiscovery -Verbose } | Should -Throw $errorRecord
@@ -1469,7 +1650,7 @@ OID = $oid
                     -Mockwith $mock_GetChildItem_validCertWithoutSubject
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1486,7 +1667,7 @@ OID = $oid
                     -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1504,7 +1685,7 @@ OID = $oid
                     -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1528,7 +1709,7 @@ OID = $oid
                     -MockWith $mock_getCertificateSan_subjectAltName
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $true
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeTrue
                 }
             }
 
@@ -1546,7 +1727,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateSubjectAlternativeName `
                         -MockWith $mock_getCertificateSan_subjectAltName
 
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1566,7 +1747,7 @@ OID = $oid
                 Mock -CommandName Get-CertificateTemplateName `
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
-                Test-TargetResource @paramsAutoRenew -Verbose | Should -Be $false
+                Test-TargetResource @paramsAutoRenew -Verbose | Should -BeFalse
             }
 
             Context 'When a valid certificate already exists and X500 subjects are in a different order but match' {
@@ -1586,7 +1767,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsSubjectDifferentOrder -Verbose | Should -Be $true
+                    Test-TargetResource @paramsSubjectDifferentOrder -Verbose | Should -BeTrue
                 }
             }
 
@@ -1607,7 +1788,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return true' {
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $true
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -BeTrue
                 }
             }
 
@@ -1628,7 +1809,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -BeFalse
                 }
             }
 
@@ -1648,7 +1829,7 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -Be $false
+                    Test-TargetResource @paramsSubjectAltName -Verbose | Should -BeFalse
                 }
             }
 
@@ -1669,10 +1850,75 @@ OID = $oid
                     -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
+            Context 'When two valid certs exist matching Subject and Issuer, one with desired friendly name and one with undesired friendly name' {
+
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName   = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_twoCerts_OneWithUndesiredFriendlyName
+
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
+
+                It 'Should return true' {
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeTrue
+                }
+            }
+
+            Context 'When two valid certs exist matching Subject and Issuer, one with desired teplate and one with undesired template' {
+
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName   = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_twoCerts_OneWithUndesiredTemplate
+
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validNonDefaultCertificateTemplate
+
+                It 'Should return true' {
+                    Test-TargetResource @paramsNonDefaultCertificateTemplate -Verbose | Should -BeTrue
+                }
+            }
+
+            Context 'When two valid certs exist matching Subject and Issuer, one with desired friendly name and one without friendly name' {
+
+                Mock -CommandName Find-CertificateAuthority `
+                    -MockWith {
+                    return New-Object -TypeName psobject -Property @{
+                        CARootName   = "ContosoCA"
+                        CAServerFQDN = "ContosoVm.contoso.com"
+                    }
+                }
+
+                Mock -CommandName Get-ChildItem `
+                    -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                    -Mockwith $mock_getChildItem_twoCerts_OneWithoutFriendlyName
+
+                Mock -CommandName Get-CertificateTemplateName `
+                    -MockWith $mock_getCertificateTemplateName_validCertificateTemplate
+
+                It 'Should return true' {
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeTrue
+                }
+            }
 
             Context 'When a certificate exists but does not match the Certificate Template' {
                 It 'Should return false' {
@@ -1685,7 +1931,7 @@ OID = $oid
                     Mock -CommandName Get-CertificateTemplateName `
                         -MockWith $mock_getCertificateTemplateName_invalidCertificateTemplate
 
-                    Test-TargetResource @paramsStandard -Verbose | Should -Be $false
+                    Test-TargetResource @paramsStandard -Verbose | Should -BeFalse
                 }
             }
 
@@ -1701,7 +1947,23 @@ OID = $oid
                     Mock -CommandName Get-CertificateSubjectAlternativeName `
                         -MockWith $mock_getCertificateSan_subjectAltName
 
-                    Test-TargetResource @paramsStandardDomainController -Verbose | Should -Be $true
+                    Test-TargetResource @paramsStandardDomainController -Verbose | Should -BeTrue
+                }
+            }
+
+            Context 'When a Domain Controller certificate template is used, A valid certificate already exists and has a non-matching FriendlyName' {
+                It 'Should return true' {
+                    Mock -CommandName Get-ChildItem `
+                        -ParameterFilter $pathCertLocalMachineMy_parameterFilter `
+                        -Mockwith $mock_getChildItem_validCert
+
+                    Mock -CommandName Get-CertificateTemplateName `
+                        -MockWith $mock_getCertificateTemplateName_validDCCertificateTemplate
+
+                    Mock -CommandName Get-CertificateSubjectAlternativeName `
+                        -MockWith $mock_getCertificateSan_subjectAltName
+
+                    Test-TargetResource @paramsNonMatchingFriendlyNameDomainController -Verbose | Should -BeFalse
                 }
             }
 
@@ -1718,7 +1980,7 @@ OID = $oid
                     -ParameterFilter $pathCertLocalMachineMy_parameterFilter
 
                 It 'Should return false' {
-                    Test-TargetResource @paramsAutoDiscovery -Verbose | Should -Be $false
+                    Test-TargetResource @paramsAutoDiscovery -Verbose | Should -BeFalse
                 }
 
                 It 'Should execute the auto-discovery function' {
@@ -1736,9 +1998,9 @@ OID = $oid
 
             Context 'When RSA key type and key length is invalid' {
                 $errorRecord = Get-InvalidArgumentRecord `
-                    -Message (($LocalizedData.InvalidKeySize) -f '384', 'RSA') -ArgumentName 'KeyLength'
+                    -Message (($LocalizedData.InvalidKeySizeError) -f '384', 'RSA') -ArgumentName 'KeyLength'
 
-                It 'Should not throw' {
+                It 'Should throw' {
                     { Assert-ResourceProperty @paramRsaInvalid -Verbose } | Should -Throw $errorRecord
                 }
             }
@@ -1751,9 +2013,9 @@ OID = $oid
 
             Context 'When ECDH key type and key length is invalid' {
                 $errorRecord = Get-InvalidArgumentRecord `
-                    -Message (($LocalizedData.InvalidKeySize) -f '2048', 'ECDH') -ArgumentName 'KeyLength'
+                    -Message (($LocalizedData.InvalidKeySizeError) -f '2048', 'ECDH') -ArgumentName 'KeyLength'
 
-                It 'Should not throw' {
+                It 'Should throw' {
                     { Assert-ResourceProperty @paramEcdhInvalid -Verbose } | Should -Throw $errorRecord
                 }
             }
@@ -1764,7 +2026,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=TestSubject' `
-                        -DifferenceSubject 'CN=TestSubject' | Should -Be $true
+                        -DifferenceSubject 'CN=TestSubject' | Should -BeTrue
                 }
             }
 
@@ -1772,7 +2034,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=TestSubject' `
-                        -DifferenceSubject 'CN=SubjectTest' | Should -Be $false
+                        -DifferenceSubject 'CN=SubjectTest' | Should -BeFalse
                 }
             }
 
@@ -1780,7 +2042,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $true
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeTrue
                 }
             }
 
@@ -1788,7 +2050,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'E=xyz@contoso.com, CN=xyz.contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $true
+                        -DifferenceSubject 'E=xyz@contoso.com, CN=xyz.contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeTrue
                 }
             }
 
@@ -1796,7 +2058,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=test@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=test@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' | Should -BeFalse
                 }
             }
 
@@ -1804,7 +2066,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -BeFalse
                 }
             }
 
@@ -1812,7 +2074,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject $null `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -BeFalse
                 }
             }
 
@@ -1820,7 +2082,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateSubject `
                         -ReferenceSubject '' `
-                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -Be $false
+                        -DifferenceSubject 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, C=country' | Should -BeFalse
                 }
             }
         }
@@ -1830,7 +2092,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=xyz.contoso.com' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $true
+                        -CARootName 'xyz.contoso.com' | Should -BeTrue
                 }
             }
 
@@ -1838,7 +2100,7 @@ OID = $oid
                 It 'Should return a true' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=xyz.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $true
+                        -CARootName 'xyz.contoso.com' | Should -BeTrue
                 }
             }
 
@@ -1846,7 +2108,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=abc.contoso.com' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $false
+                        -CARootName 'xyz.contoso.com' | Should -BeFalse
                 }
             }
 
@@ -1854,7 +2116,7 @@ OID = $oid
                 It 'Should return a false' {
                     Compare-CertificateIssuer `
                         -Issuer 'CN=abc.contoso.com, E=xyz@contoso.com, OU=Organisation Unit, O=Organisation, L=Locality, S=State, C=country' `
-                        -CARootName 'xyz.contoso.com' | Should -Be $false
+                        -CARootName 'xyz.contoso.com' | Should -BeFalse
                 }
             }
         }
