@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- CertReq:
+  - BREAKING CHANGE: Made Certificate FriendlyName a mandatory parameter - Fixes [Issue #269](https://github.com/dsccommunity/CertificateDsc/issues/269).
+  - Consider FriendlyName + Template when getting existing certs - Fixes [Issue #121](https://github.com/dsccommunity/CertificateDsc/issues/121).
+
+### Changed
+
 - Added support for publishing code coverage to `CodeCov.io` and
   Azure Pipelines - Fixes [Issue #255](https://github.com/dsccommunity/CertificateDsc/issues/255).
 - Updated build to use `Sampler.GitHubTasks` - Fixes [Issue #254](https://github.com/dsccommunity/CertificateDsc/issues/254).
