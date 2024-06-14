@@ -1,7 +1,7 @@
 mode: ContinuousDelivery
 next-version: 4.7.0
-major-version-bump-message: '\s?(breaking|major|breaking\schange)'
-minor-version-bump-message: '\s?(add|feature|minor)'
+major-version-bump-message: '(breaking\schange|breaking)\b'
+minor-version-bump-message: '(adds?|minor)\b'
 patch-version-bump-message: '\s?(fix|patch)'
 no-bump-message: '\+semver:\s?(none|skip)'
 assembly-informational-format: '{NuGetVersionV2}+Sha.{Sha}.Date.{CommitDate}'
@@ -21,6 +21,7 @@ branches:
     increment: Patch
     regex: (hot)?fix(es)?[\/-]
     source-branches: ['master']
+
 ignore:
   sha: []
 merge-message-formats: {}
