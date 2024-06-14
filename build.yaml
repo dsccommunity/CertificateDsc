@@ -44,6 +44,7 @@ BuildWorkflow:
 CopyPaths:
   - en-US
   - DSCResources
+  - Modules
 Prefix: prefix.ps1
 Suffix: suffix.ps1
 Encoding: UTF8
