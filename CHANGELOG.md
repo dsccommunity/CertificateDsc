@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   images - Fixes [Issue #262](https://github.com/dsccommunity/CertificateDsc/issues/262).
 - Updated pipeline unit tests and integration tests to use Windows Server 2019 and
   Windows Server 2022 images - Fixes [Issue #262](https://github.com/dsccommunity/CertificateDsc/issues/262).
+- Adds logic to exclude certificates which have _already expired_ from being included in the array of 
+  certificates returned from the certificate store, when building a certificate request to be submitted to the PKI.
 
 ### Fixed
 
