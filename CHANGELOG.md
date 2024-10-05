@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed pipeline by replacing the GitVersion task in the `azure-pipelines.yml`
   with a script.
+- Passed in an empty string to X509Certificate2.Import so that we do not get MethodCountCouldNotFindBest exception when using a null
+  password for the PFX certificate. Fixes [Issue #258](https://github.com/dsccommunity/CertificateDsc/issues/258)
 
 ## [5.1.0] - 2021-02-26
 

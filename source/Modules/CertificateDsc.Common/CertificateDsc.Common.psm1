@@ -1082,7 +1082,7 @@ function Import-PfxCertificateEx
     }
     else
     {
-        $cert.Import($importDataValue, $flags)
+        $cert.Import($importDataValue, "", $flags)
     }
 
     $certStore = New-Object `
