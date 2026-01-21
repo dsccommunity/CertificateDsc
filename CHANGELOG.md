@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Remove `windows-2019` images fixes [#278](https://github.com/dsccommunity/CertificateDsc/issues/278).
   - Fix linting errors.
 
+### Fixed
+
+- Changed PFX certificate import to use X509Certificate2 constructor instead of the "Import" method. - Fixes [Issue #280](https://github.com/dsccommunity/CertificateDsc/issues/280).
+
 ## [6.0.0] - 2024-10-05
 
 ### Changed
